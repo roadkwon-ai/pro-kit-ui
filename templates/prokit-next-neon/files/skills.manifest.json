@@ -1,0 +1,538 @@
+{
+	"skillsCli": "skills@latest",
+	"skills": [
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "vercel/next.js",
+			"skills": [
+				"next-dev-loop",
+				"next-cache-components-adoption",
+				"next-cache-components-optimizer",
+				"next-partial-prefetching-adoption",
+				"next-partial-prefetching-optimizer"
+			]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "vercel-labs/agent-skills",
+			"skills": [
+				"vercel-react-best-practices",
+				"vercel-composition-patterns",
+				"web-design-guidelines",
+				"deploy-to-vercel",
+				"vercel-cli-with-tokens"
+			]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "vercel/vercel-plugin",
+			"skills": ["access-protected-vercel-deployment"]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "vercel-labs/agent-browser",
+			"skills": ["agent-browser"]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "shadcn/ui",
+			"skills": ["shadcn"]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "better-auth/skills",
+			"skills": [
+				"better-auth-best-practices",
+				"better-auth-security-best-practices",
+				"email-and-password-best-practices"
+			],
+			"stack": true
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "neondatabase/agent-skills",
+			"skills": [
+				"neon",
+				"neon-postgres",
+				"neon-postgres-branches",
+				"neon-postgres-egress-optimizer"
+			],
+			"stack": true
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "supabase/agent-skills",
+			"skills": ["supabase-postgres-best-practices"]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "pbakaus/impeccable",
+			"skills": ["impeccable"]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "GENEXIS-AI/gpt-image-skill",
+			"skills": ["gpt-image"]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "CaesiumY/ko-design-md",
+			"skills": ["use-design-md"]
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "vercel/turborepo",
+			"skills": ["turborepo"],
+			"stack": true
+		},
+		{
+			"agents": ["claude-code", "codex"],
+			"source": "mattpocock/skills",
+			"skills": ["domain-modeling", "grilling", "grill-with-docs"]
+		},
+		{
+			"agents": ["codex"],
+			"source": "anthropics/skills",
+			"skills": ["skill-creator"]
+		}
+	],
+	"mattpocock": {
+		"source": "mattpocock/skills",
+		"agents": ["claude-code", "codex"],
+		"pool": [
+			"tdd",
+			"diagnosing-bugs",
+			"codebase-design",
+			"prototype",
+			"research",
+			"improve-codebase-architecture",
+			"wizard",
+			"to-questionnaire",
+			"handoff",
+			"teach",
+			"wait-what",
+			"writing-for-agents",
+			"code-review",
+			"pr"
+		]
+	},
+	"optional": {
+		"ops": {
+			"description": "운영 환경: 배포한 프로젝트의 비용·성능 점검, Neon 함수·파일 저장·LLM 게이트웨이",
+			"skills": [
+				{
+					"agents": ["claude-code", "codex"],
+					"source": "vercel-labs/agent-skills",
+					"skills": ["vercel-optimize"]
+				},
+				{
+					"agents": ["claude-code", "codex"],
+					"source": "neondatabase/agent-skills",
+					"skills": ["neon-functions", "neon-object-storage", "neon-ai-gateway"]
+				}
+			]
+		},
+		"motion": {
+			"description": "화면 전환과 공유 요소 애니메이션(React <ViewTransition>)",
+			"skills": [
+				{
+					"agents": ["claude-code", "codex"],
+					"source": "vercel-labs/agent-skills",
+					"skills": ["vercel-react-view-transitions"]
+				}
+			]
+		},
+		"mobile": {
+			"description": "React Native·Expo 모바일 앱(이 템플릿은 웹 앱만 만든다)",
+			"skills": [
+				{
+					"agents": ["claude-code", "codex"],
+					"source": "vercel-labs/agent-skills",
+					"skills": ["vercel-react-native-skills"]
+				}
+			]
+		},
+		"i-have-adhd": {
+			"description": "행동 중심 짧은 응답(/i-have-adhd로 켠다. 대화 응답에만)",
+			"skills": [
+				{
+					"agents": ["claude-code", "codex"],
+					"source": "ayghri/i-have-adhd",
+					"skills": ["i-have-adhd"]
+				}
+			]
+		},
+		"taste": {
+			"description": "화면 디자인 보조 taste-skill(고른 화면에만. 검사에 Chrome 필요)",
+			"skills": [
+				{
+					"agents": ["claude-code", "codex"],
+					"source": "Leonxlnx/taste-skill",
+					"skills": ["design-taste-frontend"]
+				}
+			]
+		}
+	},
+	"brains": {
+		"superpowers": {
+			"description": "설계 합의·계획·테스트 먼저·작업별 리뷰를 거는 규율형",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "full"
+			},
+			"skills": [
+				{
+					"agents": ["codex"],
+					"source": "obra/superpowers",
+					"skills": [
+						"using-superpowers",
+						"brainstorming",
+						"writing-plans",
+						"executing-plans",
+						"subagent-driven-development",
+						"dispatching-parallel-agents",
+						"test-driven-development",
+						"systematic-debugging",
+						"requesting-code-review",
+						"receiving-code-review",
+						"verification-before-completion",
+						"finishing-a-development-branch",
+						"using-git-worktrees",
+						"writing-skills",
+						"diagnosing-superpowers"
+					]
+				}
+			],
+			"claude": {
+				"marketplaces": {
+					"claude-plugins-official": {
+						"source": "github",
+						"repo": "anthropics/claude-plugins-official"
+					}
+				},
+				"plugins": ["superpowers@claude-plugins-official"]
+			},
+			"userTraces": [
+				{
+					"path": ".agents/skills/using-superpowers"
+				},
+				{
+					"path": ".codex/skills/using-superpowers"
+				}
+			],
+			"forces": true
+		},
+		"agent-skills": {
+			"description": "스펙부터 출시까지 보안·성능·접근성 기준을 단계별 명령으로",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "full"
+			},
+			"skills": [
+				{
+					"agents": ["codex"],
+					"source": "addyosmani/agent-skills",
+					"skills": [
+						"using-agent-skills",
+						"interview-me",
+						"idea-refine",
+						"spec-driven-development",
+						"planning-and-task-breakdown",
+						"incremental-implementation",
+						"test-driven-development",
+						"context-engineering",
+						"source-driven-development",
+						"doubt-driven-development",
+						"constraint-driven-development",
+						"frontend-ui-engineering",
+						"api-and-interface-design",
+						"browser-testing-with-devtools",
+						"debugging-and-error-recovery",
+						"code-review-and-quality",
+						"code-simplification",
+						"security-and-hardening",
+						"performance-optimization",
+						"observability-and-instrumentation",
+						"git-workflow-and-versioning",
+						"ci-cd-and-automation",
+						"deprecation-and-migration",
+						"documentation-and-adrs",
+						"shipping-and-launch"
+					]
+				}
+			],
+			"claude": {
+				"marketplaces": {
+					"addy-agent-skills": {
+						"source": "github",
+						"repo": "addyosmani/agent-skills"
+					}
+				},
+				"plugins": ["agent-skills@addy-agent-skills"]
+			}
+		},
+		"pstack": {
+			"description": "poteto-mode 플레이북으로 적게 쓰고 검증하는 엄격한 엔지니어링. Claude Code만",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "none"
+			},
+			"claude": {
+				"marketplaces": {
+					"cursor-plugins": {
+						"source": "github",
+						"repo": "cursor/plugins"
+					}
+				},
+				"plugins": ["pstack@cursor-plugins"]
+			}
+		},
+		"gstack": {
+			"description": "제품 판단·디자인·실사용 QA. 전역 설치(Bun)",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "full"
+			},
+			"global": [
+				{
+					"name": "gstack(Claude)",
+					"check": "test -d \"$HOME/.claude/skills/gstack/bin\"",
+					"install": "command -v bun >/dev/null || { echo 'gstack 설치에는 bun이 필요하다: https://bun.sh'; exit 1; }; git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git \"$HOME/.claude/skills/gstack\" && cd \"$HOME/.claude/skills/gstack\" && ./setup",
+					"hint": "pnpm skills:setup --brain gstack (bun 필요) 또는 https://github.com/garrytan/gstack",
+					"tool": "claude"
+				},
+				{
+					"name": "gstack(Codex)",
+					"check": "test -d \"$HOME/.codex/skills/gstack\"",
+					"install": "test -x \"$HOME/.claude/skills/gstack/setup\" && cd \"$HOME/.claude/skills/gstack\" && ./setup --host codex",
+					"hint": "pnpm skills:setup --brain gstack (gstack(Claude) 설치 뒤)",
+					"tool": "codex"
+				}
+			],
+			"userSkills": ".claude/skills/gstack",
+			"userTraces": [
+				{
+					"path": ".codex/skills/gstack"
+				}
+			],
+			"forces": true
+		},
+		"oh-my": {
+			"description": "큰 작업을 자동·병렬 모드로(Claude는 OMC, Codex는 OMX)",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "full"
+			},
+			"claude": {
+				"marketplaces": {
+					"omc": {
+						"source": "git",
+						"url": "https://github.com/Yeachan-Heo/oh-my-claudecode.git"
+					}
+				},
+				"plugins": ["oh-my-claudecode@omc"]
+			},
+			"omx": ["setup", "--scope", "project", "--no-merge-agents"],
+			"global": [
+				{
+					"name": "OMX CLI",
+					"check": "command -v omx",
+					"install": "npm install -g oh-my-codex",
+					"tool": "codex"
+				}
+			],
+			"userTraces": [
+				{
+					"path": ".claude/CLAUDE.md",
+					"contains": "<!-- OMC:START -->"
+				}
+			],
+			"forces": true
+		},
+		"mattpocock": {
+			"description": "필수 3개에 고른 mattpocock 추가 스킬로 단계마다 기법을 골라 진행",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "full"
+			}
+		},
+		"openspec": {
+			"description": "변경마다 제안·설계·작업 목록을 먼저 합의하는 가벼운 스펙 주도형. 전역 CLI(npm)",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "full"
+			},
+			"global": [
+				{
+					"name": "OpenSpec CLI",
+					"check": "command -v openspec >/dev/null",
+					"install": "npm install -g @fission-ai/openspec@latest",
+					"hint": "pnpm skills:setup --brain openspec (npm 전역 설치) 또는 https://github.com/Fission-AI/OpenSpec"
+				}
+			],
+			"init": {
+				"run": "openspec init --tools claude,codex,antigravity --force --profile core --no-animation",
+				"env": {
+					"OPENSPEC_TELEMETRY": "0"
+				},
+				"marker": [
+					".claude/skills/openspec-propose/SKILL.md",
+					".agents/skills/openspec-propose/SKILL.md"
+				],
+				"remove": "rm -rf .claude/skills/openspec-* .agents/skills/openspec-* .agents/skills/.openspec-target .claude/commands/opsx .agents/workflows/opsx-*.md",
+				"keep": ["openspec"]
+			}
+		},
+		"spec-kit": {
+			"description": "헌법·스펙·계획·작업 목록을 차례로 쓰는 GitHub의 꼼꼼한 스펙 주도형. 설치에 uv 필요",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "full"
+			},
+			"init": {
+				"run": "command -v uvx >/dev/null || { echo 'spec-kit 설치에는 uv가 필요하다: https://docs.astral.sh/uv/getting-started/installation/'; exit 1; }; uvx --from specify-cli specify init --here --force --non-interactive --integration claude --integration-options='--events false' --script sh --ignore-agent-tools && uvx --from specify-cli specify integration install codex --integration-options='--events false'",
+				"marker": [
+					".claude/skills/speckit-specify/SKILL.md",
+					".agents/skills/speckit-specify/SKILL.md"
+				],
+				"remove": "rm -rf .claude/skills/speckit-* .agents/skills/speckit-* .specify/scripts .specify/templates .specify/workflows .specify/integrations .specify/integration.json .specify/init-options.json .specify/.gitignore",
+				"keep": ["specs", ".specify/memory"]
+			}
+		},
+		"compound-engineering": {
+			"description": "계획·리뷰에 힘을 싣고 배운 것을 docs/solutions에 쌓아 다음 작업을 쉽게 만드는 복리형",
+			"hosts": {
+				"claude-code": "full",
+				"codex": "full"
+			},
+			"claude": {
+				"marketplaces": {
+					"compound-engineering-plugin": {
+						"source": "github",
+						"repo": "EveryInc/compound-engineering-plugin"
+					}
+				},
+				"plugins": ["compound-engineering@compound-engineering-plugin"]
+			},
+			"skills": [
+				{
+					"agents": ["codex"],
+					"source": "EveryInc/compound-engineering-plugin",
+					"skills": [
+						"ce-brainstorm",
+						"ce-plan",
+						"ce-work",
+						"ce-simplify-code",
+						"ce-code-review",
+						"ce-compound",
+						"ce-compound-refresh",
+						"ce-debug",
+						"ce-ideate",
+						"ce-doc-review",
+						"ce-explain",
+						"ce-prototype",
+						"ce-optimize",
+						"ce-handoff"
+					]
+				}
+			]
+		}
+	},
+	"simplicity": {
+		"ponytail": {
+			"description": "늘 켜지는 미니멀 모드와 구현 diff 간결성 검토(추천)",
+			"skills": [
+				{
+					"agents": ["codex"],
+					"source": "DietrichGebert/ponytail",
+					"skills": [
+						"ponytail",
+						"ponytail-review",
+						"ponytail-audit",
+						"ponytail-debt",
+						"ponytail-help",
+						"ponytail-gain"
+					]
+				}
+			],
+			"claude": {
+				"marketplaces": {
+					"ponytail": {
+						"source": "github",
+						"repo": "DietrichGebert/ponytail"
+					}
+				},
+				"plugins": ["ponytail@ponytail"]
+			},
+			"codex": {
+				"marketplace": {
+					"name": "ponytail",
+					"source": "DietrichGebert/ponytail"
+				},
+				"plugins": ["ponytail@ponytail"]
+			}
+		},
+		"caveman": {
+			"description": "작업별 간결 패턴(새 기능·버그·리팩터), 한 줄 리뷰, /caveman 응답 압축",
+			"skills": [
+				{
+					"agents": ["claude-code", "codex"],
+					"source": "JuliusBrussee/caveman",
+					"skills": [
+						"lean-build",
+						"surgical-patch",
+						"safe-refactor",
+						"caveman-review",
+						"caveman"
+					]
+				}
+			]
+		},
+		"karpathy": {
+			"description": "카파시 네 원칙 지침 하나(andrej-karpathy-skills)",
+			"skills": [
+				{
+					"agents": ["claude-code", "codex"],
+					"source": "multica-ai/andrej-karpathy-skills",
+					"skills": ["karpathy-guidelines"]
+				}
+			]
+		}
+	},
+	"claude": {
+		"marketplaces": {
+			"claude-plugins-official": {
+				"source": "github",
+				"repo": "anthropics/claude-plugins-official"
+			}
+		},
+		"plugins": ["skill-creator@claude-plugins-official"],
+		"conflicts": {
+			"frontend-design@claude-plugins-official": "impeccable과 같은 일(impeccable이 이 스킬에서 출발했다)"
+		}
+	},
+	"global": [
+		{
+			"name": "agent-browser CLI(npm 최신판)",
+			"check": "v=$(agent-browser --version 2>/dev/null | awk '{print $2}'); want=$(npm view agent-browser version --fetch-timeout=5000 --fetch-retries=0 2>/dev/null); want=${want:-0.31.1}; [ -n \"$v\" ] && [ \"$(printf '%s\\n' \"$want\" \"$v\" | sort -V | head -n1)\" = \"$want\" ]",
+			"install": "if brew list agent-browser >/dev/null 2>&1; then brew upgrade agent-browser; else npm install -g agent-browser@latest; fi && agent-browser install",
+			"hint": "npm install -g agent-browser@latest && agent-browser install (Homebrew 설치본은 brew upgrade agent-browser. 올린 뒤에도 남으면 PATH 앞쪽의 다른 설치본(command -v agent-browser)을 지운다)",
+			"auto": true
+		},
+		{
+			"name": "Vercel CLI",
+			"check": "command -v vercel",
+			"install": "npm install -g vercel"
+		},
+		{
+			"name": "ego-browser",
+			"check": "command -v ego-browser",
+			"hint": "https://lite.ego.app/ 에서 ego lite(macOS 앱)를 설치하고 첫 실행 설정을 마친다"
+		},
+		{
+			"name": "Neon CLI",
+			"check": "command -v neon",
+			"install": "npm install -g neon"
+		}
+	]
+}
