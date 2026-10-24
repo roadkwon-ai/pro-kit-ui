@@ -47,4 +47,4 @@
 - 2026-10-08 확인 결과 Better Auth skills와 GENEXIS-AI GPT Image Skill은 공개 설치 안내가 있으나 명시적 소스 라이선스는 미확인이다. 이 안내로 사용 금지 또는 포괄적 상업 허락을 확정하지 않는다.
 - 외부 원문을 포함한 프로젝트를 다른 사람에게 전달하거나 공개할 때에는 그 원본의 적용 조건을 별도로 확인한다. 프로킷의 MIT는 외부 원본의 허락을 대신하지 않는다.
 
-원본 출처·확인 판·고지는 [프로킷 제3자 안내](https://github.com/roadkwon-ai/pro-kit/blob/main/THIRD_PARTY_NOTICES.md)에 있다. 이 주소의 최신 안내와 실제 설치 판이 다를 수 있으므로 설치된 원본의 LICENSE/NOTICE를 함께 확인한다.
+원본 출처·확인 판·고지는 [프로킷 제3자 안내](https://github.com/roadkwon-ai/pro-kit-ui/blob/main/THIRD_PARTY_NOTICES.md)에 있다. 이 주소의 최신 안내와 실제 설치 판이 다를 수 있으므로 설치된 원본의 LICENSE/NOTICE를 함께 확인한다.

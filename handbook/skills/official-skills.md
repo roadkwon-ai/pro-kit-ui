@@ -1,0 +1,99 @@
+# 공식 스킬과 연결
+
+> 한눈에: 공식 스킬은 Next.js, Vercel, Better Auth처럼 도구를 만든 곳이 직접 관리하는 에이전트 스킬이에요. 프로킷은 새 프로젝트를 만들 때 그 최신판을 설치하고, 어느 단계에서 어떤 스킬을 읽을지 에이전트의 짐작에 맡기지 않고 미리 정해 둬요. **읽은 스킬은 대조표의 증거 칸에 이름이 남아요.**
+
+## 처음에는 읽지 않아도 돼요
+
+이 쪽은 프로젝트에 어떤 공식 스킬이 설치되고 어디서 읽히는지 찾아보는 참고 쪽이에요.
+
+> [!TIP]
+> 설치와 연결은 프로킷이 알아서 하므로, 일반적인 개발에서는 읽지 않고 넘어가도 돼요.
+
+- **왜 필요한가**: 에이전트는 학습한 시점의 지식으로 일해서 Next.js나 Better Auth처럼 자주 바뀌는 도구는 옛 방식으로 쓰기 쉬워요. 도구를 만든 곳이 직접 쓴 스킬(공식 스킬)을 읽게 하면 최신 방식으로 만들어요.
+- **무엇인가**: 도구 제작사가 공개한 에이전트용 작업 설명서예요([용어](../../tutorials/reference/glossary.md#도구)). 프로킷은 새 프로젝트를 만들 때 그 최신판을 받아 프로젝트 안에 설치해요.
+- **언제 보나**: "이 스킬이 왜 설치됐지?", "이 행에서 어떤 스킬을 읽어야 하지?"가 궁금할 때, 또는 아래 "Ponytail 사용하기"의 규칙을 확인할 때요.
+- **내가 할 일**: 보통 없어요. 새 버전은 [설치와 업데이트 구조](install-and-update.md#status가-알려-주는-것)대로 에이전트가 알려 줘요. 스킬이 빠졌는지는 `pnpm skills:check`로 확인해요.
+
+## 설치되는 공식 스킬
+
+기본으로 설치하는 공식 스킬의 기준 목록은 `files/skills.manifest.json`이에요. 용어 정리에 쓰는 `domain-modeling`처럼 널리 쓰이는 외부 스킬도 같은 방식으로 설치해요.
+
+### 화면과 Next.js
+
+B·F 라운드의 화면·런타임 행에서 읽는 스킬이에요. 먼저 이 묶음부터 보면 돼요.
+
+| 분야 | 스킬 | 출처 | 읽는 곳 |
+|---|---|---|---|
+| Next.js 동작·성능 | `next-dev-loop`, `next-cache-components-adoption`, `next-cache-components-optimizer`, `next-partial-prefetching-adoption`, `next-partial-prefetching-optimizer` | vercel/next.js | `prokit-verify`. `next-dev-loop`는 B·F 런타임 확인 행 |
+| React·화면 규칙 | `vercel-react-best-practices`, `vercel-composition-patterns`, `web-design-guidelines` | vercel-labs/agent-skills | `prokit-reviewer`(컴포넌트·훅은 react-best-practices, 합성 결정은 composition-patterns), `prokit-ui`(web-design-guidelines). B·F 설계 점검(재사용 API·합성), B 구현 행(react-best-practices), audit 행(web-design-guidelines). audit 행은 위반 목록을 impeccable audit 보고서와 함께 `tasks/evidence/ui-audit-<시각>.md`에 저장하고, `dev-cycle audit`이 그 파일을 확인해요 |
+| 컴포넌트 | `shadcn` | shadcn/ui | `prokit-ui`. B 구현 행 |
+| 화면 디자인 | `impeccable` | pbakaus/impeccable | `prokit-ui`. B·F 화면 설계, critique, audit 행. critique는 `.impeccable/critique/<시각>__<대상>.md` 기록을 남겨야 하고 그 점수가 증거와 같아야 해요. audit의 N/20은 저장한 보고서에 있어야 해요. 두 파일 모두 이번 라운드에 쓴 것이어야 해요. 기존 디자인을 이어 가는 프로젝트는 지금 화면에서 `DESIGN.md`를 만들어요 |
+| 이미지 그리기 (ChatGPT 요금제) | `gpt-image` | GENEXIS-AI/gpt-image-skill | `prokit-ui`. Claude Code에서 `OPENAI_API_KEY`가 없고 Codex CLI에 ChatGPT로 로그인했을 때 comp와 plate 이미지를 그려요 |
+| 디자인 스타일 카탈로그 | `use-design-md` | CaesiumY/ko-design-md | `prokit-ui`. B 첫 행에서 고른 스타일(getdesign.kr, awesome-design-md, Refero Styles)의 DESIGN.md를 받아 적용해요. 받은 파일은 Google 스펙 CLI(`@google/design.md`)로 lint해요. 기존 디자인을 이어 가기로 한 프로젝트는 쓰지 않아요 |
+| 브라우저 확인 | `agent-browser` | vercel-labs/agent-browser | `prokit-verify`. B·F 런타임 확인 행(macOS는 ego lite를 먼저 써요). 견본이 콘솔 오류와 가로 넘침을 모아 `결함:` 줄로 출력하고, 이 줄은 오류 예산에 들어가요. 띄우기 전에 3001 포트를 `lsof`로 보고, 다른 프로세스가 쓰면 끄지 않고 알려요 |
+
+인증과 데이터베이스 스킬(`better-auth-*`, `supabase-postgres-best-practices` 등)도 함께 설치되지만, 화면만 만드는 프로젝트에서는 읽지 않아요.
+
+### 모노레포, 질문, 배포
+
+| 분야 | 스킬 | 출처 | 읽는 곳 |
+|---|---|---|---|
+| 모노레포 | `turborepo` | vercel/turborepo | `prokit-dev-cycle`. 태스크·패키지 의존·환경 변수 캐시 입력을 설계하고 `turbo.json`을 바꿀 때 |
+| 용어·설계 질문 | `domain-modeling`, `grill-with-docs`, `grilling` | mattpocock/skills | `prokit-dev-cycle`. F 스펙 행과 공통 문서 행 |
+| Vercel 배포 | `deploy-to-vercel`, `vercel-cli-with-tokens`, `access-protected-vercel-deployment` | vercel-labs/agent-skills, vercel/vercel-plugin | `prokit-ui` |
+
+
+일부 프로젝트만 쓰는 스킬은 [선택 스킬 묶음](optional-bundles.md)에 따로 모아 두었어요. 화면 디자인을 보조하는 taste-skill([Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill))도 선택 묶음 `taste`로 더할 수 있어요. 고른 화면에서만 방향 뽑기, 공개 아카이브 사진, 실제 브라우저 검사를 보태고 impeccable 흐름은 그대로예요([화면 디자인 보조](brains.md#화면-디자인-보조)).
+
+재사용·컴포넌트화·설정 정본·환경 변수의 판단 기준은 설치된 `prokit-dev-cycle`의 [재사용과 설정 설계](../../templates/prokit-next-neon/files/.agents/skills/prokit-dev-cycle/references/reuse-design.md)에 있어요. 읽은 스킬 이름과 함께 기존 경로·소비자·적용한 결정을 남겨요. 새 스킬 설치로 대신하지 않아요.
+
+## 프로세스 스킬과 전역 도구
+
+위 표의 공식 도메인 스킬은 무엇으로 만드는지(Next.js, DB, 인증)를 다뤄요. 아래 도구는 어떤 순서로 일하는지(설계, 계획, 구현, 리뷰, 확인)를 다뤄요. 단계마다 무엇을 먼저 쓰고, 없으면 무엇으로 대신하는지는 설치된 프로젝트의 `.agents/skills/prokit-dev-cycle/references/process-routing.md`가 정본이에요. Vercel CLI, GitHub CLI처럼 배포에 쓰는 명령줄 도구는 [프로킷이 쓰는 기술과 도구](../reference/tech-stack.md)에 모았어요.
+
+리뷰에서는 바뀐 계층과 실제 계약에 맞는 스킬을 읽어요. 전문 제공자의 내장 리뷰가 확인한 관점은 재사용하고, 부족한 관점만 보완해요. 최종 `prokit-reviewer` 검수는 매번 해요. 작업 범위와 검사 담당자를 나누는 기준은 [위임과 자원 관리](../concepts/delegation-and-resources.md#독립-작업을-나눠서-확인하기)에 있어요.
+
+| 이름 | 무엇인가 | 설치 | 프로킷에서 맡는 일 |
+|---|---|---|---|
+| skill-creator | 스킬을 만들고 평가하는 도구(Anthropic) | 늘 설치. Claude Code는 플러그인, Codex는 스킬 | 스킬 본문을 바꾼 라운드(케이스 H)에서 eval을 다시 돌려요 |
+| 두뇌(하나 권장, 여럿 가능) | 요구 정리, 계획, 구현 진행, 디버깅의 순서를 주도하는 스킬 묶음: superpowers, agent-skills(addyosmani), gstack, oh-my(OMC·OMX), pstack, mattpocock(필수 3개 + 고른 추가 스킬), openspec, spec-kit, compound-engineering | 고른 것만 설치해요. 기본은 없음이고 지금 에이전트가 내장 절차로 진행해요. gstack, OMX CLI, OpenSpec CLI만 전역이에요. Spec Kit은 설치할 때 uv가 있어야 해요. 진행 중 바꾸기는 `prokit-skills-manage`가 맡아요 | 고른 두뇌가 맡는 단계의 방법만 바꿔요. 대조표, 리뷰 게이트, audit, 배포 경로는 그대로예요([두뇌와 선택 스킬](brains.md)) |
+| 과설계 방지 스킬(하나 고름) | 요청하지 않은 기능과 추상화를 막는 스킬: ponytail(추천), caveman, andrej-karpathy-skills | 고른 것만 설치해요. 기본은 없음이고 내장 간결성 규칙으로 진행해요. ponytail의 Codex 네이티브 플러그인은 `--with-global`에서만 설치해요 | 계획의 간결성 기준, 구현 diff 보완 검토, 공통화 점검을 맡아요. 아무것도 고르지 않으면 `prokit-reviewer`가 간결성까지 봐요 |
+| 응답 방식(고르면 설치) | 답을 긴 글 속에 묻어 두지 않게 하는 스킬: i-have-adhd([ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd)). 다음 행동부터, 번호 단계로, 다음 할 일 하나로 짧게 답해요 | 선택 묶음 `i-have-adhd`라 고를 때만 설치해요 | `/i-have-adhd`로 켤 때만 대화 답에 적용해요. 파일과 라운드 보고는 프로킷 형식을 따라요([두뇌와 선택 스킬](brains.md)) |
+| ego-browser (ego lite) | 실제 브라우저 창으로 화면을 보고 눌러 보는 macOS 앱 | 직접 설치해요([lite.ego.app](https://lite.ego.app/)) | `prokit-verify`의 화면 확인과 F의 QA 행에서 1순위예요. agent-browser와 같은 견본(오류 수집, 넘침 검사, `결함:` 출력)을 써요. 없으면(macOS 밖, CI, Codex 샌드박스) agent-browser CLI로 같은 흐름을 확인해요 |
+| agent-browser CLI | 명령으로 브라우저를 다루는 도구 | 전역. 없거나 npm 최신판보다 낮으면 기본으로 최신판을 설치 | ego-browser가 없을 때 쓰는 대안이에요. 쓰는 법은 위 표의 `agent-browser` 스킬이 알려 줘요 |
+
+### Ponytail 사용하기
+
+과설계 방지 스킬로 ponytail을 골랐을 때의 규칙이에요.
+
+- Codex는 사용 가능한 `$ponytail:ponytail-review`를 먼저 쓰고, 없을 때만 프로젝트의 `SKILL.md`를 읽어요. 두 경로로 같은 리뷰를 반복하지 않고, `off` 상태를 대체 경로로 되살리지 않아요.
+- `ponytail-review`는 한 번의 검토라 세션을 영구 review 모드로 바꾸지 않아요. 통합 리뷰 행은 `prokit-reviewer`의 판정으로 채워요. Ponytail은 전문 리뷰가 비운 계약만 보완하고 최종 게이트를 대신하지 않아요.
+- `ponytail-audit`은 저장소 전체를 검토해 달라는 요청에, `ponytail-debt`는 미뤄 둔 한계를 확인할 때 써요. debt는 새 `shortcut:` 주석과 기존 `ponytail:` 주석을 함께 모아 보여 주고, 장부(미뤄 둔 한계를 적은 기록) 저장이나 백로그 수정은 요청할 때만 해요.
+- `ponytail-gain`은 Ponytail 원본 저장소의 벤치마크를 보여 줄 뿐 프로킷의 시간·비용 절감값을 뜻하지 않아요. audit·debt·help·gain은 매 라운드 의무 작업이나 자동 장부·백로그 갱신이 아니에요.
+
+### 공통 운영 경계
+
+> [!IMPORTANT]
+> 통합 리뷰를 완료하려면 `prokit-reviewer`의 최종 판정이 있어야 해요. 과설계 방지 스킬의 검토(`ponytail-review`, `caveman-review`), 두뇌의 리뷰 스킬, Claude Code의 `/code-review`, 추가 스킬 `code-review`는 추가 관점이에요.
+
+> [!WARNING]
+> 두뇌의 실행 모드(OMC·OMX의 `team`, `ralph` 등)는 실행 수단이에요. 모드가 낸 완료 보고는 증거가 아니고, 라운드가 끝났는지는 `pnpm dev-cycle audit`만 판정해요. 모드가 커밋, push, 배포를 하게 두지 않아요.
+
+- 두뇌가 gstack이어도 코드를 고치거나 배포하는 스킬(`qa`, `ship`, `land-and-deploy`)은 사용자가 요청할 때만 써요. 
+- 빠진 것과 고르지 않은 두뇌·과설계 방지 스킬의 설치본은 `pnpm skills:check`로 확인해요. 두뇌가 oh-my여도 `omx`가 없는 기기는 OMX를 빠진 것으로 세지 않아요.
+
+## 읽을 스킬을 정해 두는 방법
+
+- 어떤 상황에서 어떤 공식 스킬을 읽을지 적은 "공식 스킬 연결" 표는 `prokit-dev-cycle`에 있어요. `prokit-ui`와 `prokit-verify`는 본문의 단계와 규칙에 스킬 이름을 적어 둬요.
+- dev-cycle 대조표의 행에도 그 단계에서 읽을 스킬 이름이 괄호로 들어가 있어요. 에이전트는 그 행을 진행할 때 스킬을 실제로 읽고 증거 칸에 이름을 남겨요(`사용: supabase-postgres-best-practices(schema-data-types)`).
+- 기본 연결은 프로젝트의 `.agents/skills/<이름>/SKILL.md`를 직접 읽어요. 사용자가 다른 출처를 지정했으면 그 실제 경로를 먼저 확인해요. 같은 이름이라도 경로·출처·내용 해시로 구분해요([선택 순서와 증거](../concepts/delegation-and-resources.md#위임할-때-남기는-근거)).
+- 이 표는 기본 설치와 연결을 설명해요. 접근 가능한 다른 전문 스킬도 작업에 맞으면 선택하고, 한 번 사용한 것만으로 매니페스트에 더하지 않아요. 행동 지침의 기본은 Ponytail을 유지해요.
+
+일반 화면과 사용자 흐름은 `ego-browser`로 확인하고, 사용할 수 없으면 `agent-browser`를 써요. 병렬 실행과 증거 재사용은 [위임과 자원 관리](../concepts/delegation-and-resources.md#독립-작업을-나눠서-확인하기)를 따라요.
+
+
+## 관련 문서
+
+- [prokit 스킬](prokit-skills.md)
+- [선택 스킬 묶음](optional-bundles.md)
+- [설치와 업데이트 구조](install-and-update.md)

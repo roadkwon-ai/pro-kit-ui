@@ -12,8 +12,8 @@ description: >-
 ## 복원
 
 1. 팩 README·CUSTOMIZE·SOURCES와 `preset-manifest.json`(있으면)을 읽는다. 버전·template·Next/pnpm 호환·화면만 여부와 프로젝트 환경을 대조한다. 지원하지 않는 schemaVersion은 중단하고 실제 계약을 확인한다.
-2. 팩을 아직 받지 않았다면 받은 pro-kit 저장소의 `node <pro-kit>/scripts/pack.mjs <slug>`를 사용한다. 로컬 ZIP은 기존 `--zip` 옵션으로 검증한다. `.pack.json`은 다운로드 캐시이며 소스 적용 증거가 아니다.
-3. `node <pro-kit>/scripts/apply-pack.mjs --pack <팩폴더> --project <프로젝트> --check`로 전체 파일 계획을 확인하고 같은 명령에서 `--check`를 빼 적용한다. 스크립트가 있는 pro-kit 절대 경로를 사용한다. 없는 실행 파일을 임의 명령으로 대체하지 않는다.
+2. 팩을 아직 받지 않았다면 받은 pro-kit-ui 저장소의 `node <pro-kit-ui>/scripts/pack.mjs <slug>`를 사용한다. 로컬 ZIP은 기존 `--zip` 옵션으로 검증한다. `.pack.json`은 다운로드 캐시이며 소스 적용 증거가 아니다.
+3. `node <pro-kit-ui>/scripts/apply-pack.mjs --pack <팩폴더> --project <프로젝트> --check`로 전체 파일 계획을 확인하고 같은 명령에서 `--check`를 빼 적용한다. 스크립트가 있는 pro-kit-ui 절대 경로를 사용한다. 없는 실행 파일을 임의 명령으로 대체하지 않는다.
 4. 소스 SHA256·fingerprint와 경로·링크·충돌 검사를 통과해야 적용한다. 기존 파일은 소스와 같거나 manifest의 scaffoldFiles 기본 해시와 일치할 때만 덮어쓴다. 삭제도 기본 해시 일치가 필요하다. 충돌은 해당 파일을 보존하고 차이·최소 병합안을 제시한다. manifest를 사용자 파일 해시에 맞춰 고쳐 검사를 우회하지 않는다.
 5. `.env*`, AGENTS·하네스 설정·설치 스킬은 팩으로 덮어쓰지 않는다. 화면 소스에 필요한 환경 변수 선언은 값 없이 기존 `.env.schema`와 소비자를 읽고 별도 기술 변경으로 적용한다. 동시에 대상 프로젝트를 수정하는 작업을 중지한 뒤 복원한다.
 6. 패키지 스크립트·의존성과 현재 환경을 읽은 뒤 기존 설치 절차로 의존성을 설치하고 타입·빌드·실행을 검증한다. 팩 적용 도구 자체는 설치·빌드를 실행하지 않는다. 실제 복원 상태와 미확인 항목을 보고한다. 도구 결과의 `supported`는 선언된 경로·언어·테마, `baselines`는 확인한 스크린샷 경로·실제 SHA256이며 시각 합격을 뜻하지 않는다. `compatibility`는 선언값·대상 관측값·unknown 필드를 반환한다. 단일 major를 확정할 수 없는 범위·catalog 의존성과 빈 대상의 unknown은 설치 환경에서 후속 확인한다.

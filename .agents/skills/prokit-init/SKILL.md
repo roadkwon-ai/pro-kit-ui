@@ -1,11 +1,11 @@
 ---
 name: prokit-init
 description: >-
-  pro-kit을 처음 들일 때 쓴다. 먼저 프로젝트 유형(새 프로젝트, 초기 프로젝트, 운영 중인 Next.js 프로젝트, 다른 언어·프레임워크에서
+  pro-kit-ui를 처음 들일 때 쓴다. 먼저 프로젝트 유형(새 프로젝트, 초기 프로젝트, 운영 중인 Next.js 프로젝트, 다른 언어·프레임워크에서
   Next.js로 전환)을 정한다. 새 프로젝트는 PRD를 받고, 기존 프로젝트는 기본 AI가 대상 폴더를 읽기 전용으로 초기 분석한 뒤
   그 프로젝트에 맞는 설정(템플릿, 적용 방식, 두뇌(여럿 가능: superpowers, agent-skills, pstack, gstack, oh-my, mattpocock,
   openspec, spec-kit, compound-engineering), 과설계 방지 스킬, mattpocock 추가 스킬, 응답 방식, 화면 디자인 보조)을 추천해 고르게 하고,
-  유형별 동의를 받아 적용한다. "템플릿으로 프로젝트 만들어줘", "새 프로젝트 시작", "프로킷 초기 셋팅", "init", "pro-kit 받고 AGENTS.md대로",
+  유형별 동의를 받아 적용한다. "템플릿으로 프로젝트 만들어줘", "새 프로젝트 시작", "프로킷 초기 셋팅", "init", "pro-kit-ui 받고 AGENTS.md대로",
   "이 PRD로 프로젝트 만들어줘", "이 프로젝트에 프로킷 적용해줘", "기존 프로젝트에 도입", "프로토타입을 프로킷으로 개발",
   "PHP(Django, Rails 등) 서비스를 Next.js로 옮기고 싶어"처럼 프로킷을 처음 들이는 요청에 쓴다. 이미 프로킷을 들인 프로젝트(.dev-cycle.json이 있음)의
   기능 개발(prokit-dev-cycle), 스킬 구성 변경(prokit-skills-manage), 템플릿 갱신 반영(AGENTS.md 절차)에는 쓰지 않는다.
@@ -17,7 +17,7 @@ argument-hint: "[PRD 파일 경로나 PRD 내용, 또는 기존 프로젝트 경
 프로젝트 유형을 정한 뒤, 새 프로젝트는 PRD로 추천을 만들어 루트 `AGENTS.md`의 "템플릿으로 새 프로젝트 만들기" 1\~10을 실행한다(0\~6절). 절차의 정본은 `AGENTS.md`다. 카탈로그, 선택지 설명, 추천 기준의 정본은 `templates/<템플릿>/files/.agents/skills/prokit-dev-cycle/references/brains/README.md`다. 그 파일을 먼저 읽고, 표를 이 스킬에 다시 옮겨 적지 않는다.
 
 ## 먼저: 프로젝트 유형
-작업 폴더에서 시작했으면 pro-kit 받기(아래 0절의 예외)를 먼저 한다. 그다음 유형을 정한다. 다른 질문과 실행보다 먼저다.
+작업 폴더에서 시작했으면 pro-kit-ui 받기(아래 0절의 예외)를 먼저 한다. 그다음 유형을 정한다. 다른 질문과 실행보다 먼저다.
 
 | 유형 | 언제 | 이어지는 절 |
 |---|---|---|
@@ -27,14 +27,14 @@ argument-hint: "[PRD 파일 경로나 PRD 내용, 또는 기존 프로젝트 경
 
 ## 0. PRD 받기 (새 프로젝트: 첫 단계, 필수)
 
-prokit은 PRD를 바탕으로 두뇌와 스킬을 추천하고, PRD에 맞춰 개발 환경을 만든다. 대부분의 사용자는 두뇌와 스킬의 차이를 몰라서 고르라고만 하면 고르지 못한다. 그래서 PRD 없이는 init하지 않는다. 이 단계는 다른 질문과 실행보다 먼저 한다. 다만 작업 폴더에서 시작했으면 pro-kit 받기(`AGENTS.md` "작업 폴더에서 시작했을 때"의 clone이나 `pull --ff-only`)를 이 단계보다 먼저 한다. 이 스킬과 절차가 받은 pro-kit 안에 있어서, 최신판을 받아야 그 판의 규칙으로 PRD를 받는다.
+prokit은 PRD를 바탕으로 두뇌와 스킬을 추천하고, PRD에 맞춰 개발 환경을 만든다. 대부분의 사용자는 두뇌와 스킬의 차이를 몰라서 고르라고만 하면 고르지 못한다. 그래서 PRD 없이는 init하지 않는다. 이 단계는 다른 질문과 실행보다 먼저 한다. 다만 작업 폴더에서 시작했으면 pro-kit-ui 받기(`AGENTS.md` "작업 폴더에서 시작했을 때"의 clone이나 `pull --ff-only`)를 이 단계보다 먼저 한다. 이 스킬과 절차가 받은 pro-kit-ui 안에 있어서, 최신판을 받아야 그 판의 규칙으로 PRD를 받는다.
 
 1. **인자와 요청에서 찾는다.** `/prokit-init <PRD 파일 경로나 내용>`(Codex는 `$prokit-init …`)으로 불렀으면 인자를 먼저 본다. Claude Code는 인자를 이 문서 끝의 `ARGUMENTS:` 줄로 넘긴다. 인자가 없거나 요청으로 시작했으면 요청 글에서 찾는다.
    - 파일 경로: 그 파일을 읽어 PRD로 쓴다. 상대 경로는 지금 작업 디렉터리 기준이다. 없거나 읽을 수 없으면 그 경로를 알리고 2로 간다.
    - 글: 누가 쓰는지와 무엇을 할 수 있는지(핵심 기능)가 드러나면 PRD다. "todo 앱 만들어줘"처럼 이름만 있으면 PRD가 아니다.
    - 그 밖에 대화에 붙여 넣은 글, 같은 대화에서 앞서 받은 PRD, `docs/first-request.md`로 갈 첫 요청의 서비스 설명, 요청에 적힌 프리셋 팩(`packs/<이름>`. 팩의 `README.md`, `PRODUCT.md`, `features.md`, `screens.md` 중 있는 것을 읽는다)도 PRD다.
 2. **없으면 PRD부터 받는다.** 다른 것을 묻거나 실행하지 않고 이 안내 하나만 보내 답을 기다린다: "PRD를 먼저 받을게요. prokit은 PRD를 바탕으로 두뇌와 스킬을 추천하고 PRD에 맞춰 개발 환경을 만들어요. PRD 파일 경로를 주거나 내용을 붙여 넣어 주세요. 짧아도 돼요: 누가 쓰는지, 무엇을 할 수 있는지(핵심 기능)." 템플릿·이름 질문도 PRD를 받은 뒤로 미룬다. PRD가 화면만인지, DB가 필요한지, 서비스 이름을 함께 알려 줄 때가 많아서다. 요청에 이미 있는 값(템플릿, 이름, 두뇌 등)은 적어 두고 다시 묻지 않는다. 요청에 "PRD는 없어", "그냥 만들어줘"가 있어도 이 안내는 한 번 보낸다. 짧은 서비스 설명도 PRD가 된다는 것을 모르는 사용자가 많아서다. 답은 1과 같은 기준으로 본다.
-3. **그래도 없으면 끝낸다.** 2의 안내 뒤에 온 답에 PRD가 없으면(건너뜀, "없어", "알아서 해줘", 이름만 있는 설명, 읽을 수 없는 파일) 프로젝트를 만들지 않고 다시 묻지도 않는다. 이 안내로 init을 끝낸다: "PRD 입력은 필수예요. prokit은 PRD를 바탕으로 스킬을 추천하고 PRD에 맞춰 개발 환경을 만들기 때문에 PRD 없이는 시작할 수 없어요. PRD를 준비해 `/prokit-init <PRD 파일 경로나 내용>`으로 다시 시작해 주세요." 다시 시작하는 방법은 지금 세션에서 실제로 되는 것을 적는다. pro-kit 폴더에서 연 세션이면 Claude Code는 `/prokit-init <…>`, Codex는 `$prokit-init <…>`이다. 작업 폴더에서 연 세션은 이 스킬이 등록되지 않으므로, 처음 요청에 PRD를 붙여 다시 보내라고 적는다(예: "…AGENTS.md대로 … 만들어줘. PRD: <누가 쓰는지, 핵심 기능>"). 스킬을 직접 부를 수 없는 도구도 같다. 읽지 못한 파일 경로가 있으면 함께 알린다. 질문에 답할 수 없는 실행(비대화 실행)이면 2를 건너뛰고 바로 이 안내로 끝낸다.
+3. **그래도 없으면 끝낸다.** 2의 안내 뒤에 온 답에 PRD가 없으면(건너뜀, "없어", "알아서 해줘", 이름만 있는 설명, 읽을 수 없는 파일) 프로젝트를 만들지 않고 다시 묻지도 않는다. 이 안내로 init을 끝낸다: "PRD 입력은 필수예요. prokit은 PRD를 바탕으로 스킬을 추천하고 PRD에 맞춰 개발 환경을 만들기 때문에 PRD 없이는 시작할 수 없어요. PRD를 준비해 `/prokit-init <PRD 파일 경로나 내용>`으로 다시 시작해 주세요." 다시 시작하는 방법은 지금 세션에서 실제로 되는 것을 적는다. pro-kit-ui 폴더에서 연 세션이면 Claude Code는 `/prokit-init <…>`, Codex는 `$prokit-init <…>`이다. 작업 폴더에서 연 세션은 이 스킬이 등록되지 않으므로, 처음 요청에 PRD를 붙여 다시 보내라고 적는다(예: "…AGENTS.md대로 … 만들어줘. PRD: <누가 쓰는지, 핵심 기능>"). 스킬을 직접 부를 수 없는 도구도 같다. 읽지 못한 파일 경로가 있으면 함께 알린다. 질문에 답할 수 없는 실행(비대화 실행)이면 2를 건너뛰고 바로 이 안내로 끝낸다.
 
 ## 1. 값
 | 값 | 기본 | 언제 묻나 |
@@ -100,7 +100,7 @@ Claude Code는 AskUserQuestion으로 묻는다. 한 번에 질문 4개, 질문�
 ## 5. 실행
 1. 설치 전에 이 기기 전역의 두뇌·과설계 방지 스킬을 확인해 보고 목록을 만든다. `~/.claude/settings.json`의 `enabledPlugins`에서 켜진 두뇌·과설계 방지 플러그인(superpowers, agent-skills, pstack, oh-my-claudecode, ponytail)과 frontend-design 플러그인, `~/.claude/skills/gstack`, `~/.claude/CLAUDE.md`의 `<!-- OMC:START -->` 블록을 본다. 지우거나 고치지 않는다. 고르지 않은 것은 설치기가 새 프로젝트의 `.claude/settings.local.json`으로 끈다.
 2. `AGENTS.md` 3번 준비물에 고른 두뇌의 준비물을 더해 확인한다. gstack은 Bun, Spec Kit은 uv(설치할 때만)가 필요하다. oh-my는 Codex를 쓰면 OMX CLI(`omx`)가 필요하고, OMX `team`은 tmux가 필요하다(tmux가 없으면 멈추지 않고 보고에 적는다). gstack, OMX CLI, OpenSpec CLI(npm)는 그 두뇌를 고르면 설치기가 전역에 설치한다(`--brain`을 명시하므로). 설치 전에 그 사실을 알린다. 그 밖의 전역 설치는 사용자가 요청할 때만 한다.
-3. `AGENTS.md` 1\~10을 그대로 하되, 5번 설치 명령에 고른 값을 붙인다: `bash <pro-kit>/templates/<템플릿>/install.sh <경로> --brain <값> --simplicity <값>`. `none`도 명시한다. 두뇌가 여럿이면 주 두뇌를 앞에 둔 쉼표 목록이다(`--brain openspec,superpowers`). 새 프로젝트는 `--project-type new`를 붙여도 되고 빼도 된다. 선택지 이름이 아니라 설치 값을 쓴다: `agent-skills (addyosmani)`는 `agent-skills`, `andrej-karpathy-skills`는 `karpathy`, `SKIP(기본 AI)`·`없음(기본 AI)`은 `none`이고, 응답 방식 `SKIP`은 `--optional i-have-adhd`를, 화면 디자인 `SKIP`은 `--optional taste`를 빼는 것이다. 추가 스킬은 `--matt <스킬>[,<스킬>]`, i-have-adhd는 `--optional i-have-adhd`, taste-skill은 `--optional taste`를 더한다(둘 다면 `--optional i-have-adhd,taste`). mattpocock 두뇌는 `--brain mattpocock`과 고른 `--matt`를 함께 준다. exit 0이 아니면 `AGENTS.md` 5번대로 출력을 보고하고 멈춘다.
+3. `AGENTS.md` 1\~10을 그대로 하되, 5번 설치 명령에 고른 값을 붙인다: `bash <pro-kit-ui>/templates/<템플릿>/install.sh <경로> --brain <값> --simplicity <값>`. `none`도 명시한다. 두뇌가 여럿이면 주 두뇌를 앞에 둔 쉼표 목록이다(`--brain openspec,superpowers`). 선택지 이름이 아니라 설치 값을 쓴다: `agent-skills (addyosmani)`는 `agent-skills`, `andrej-karpathy-skills`는 `karpathy`, `SKIP(기본 AI)`·`없음(기본 AI)`은 `none`이고, 응답 방식 `SKIP`은 `--optional i-have-adhd`를, 화면 디자인 `SKIP`은 `--optional taste`를 빼는 것이다. 추가 스킬은 `--matt <스킬>[,<스킬>]`, i-have-adhd는 `--optional i-have-adhd`, taste-skill은 `--optional taste`를 더한다(둘 다면 `--optional i-have-adhd,taste`). mattpocock 두뇌는 `--brain mattpocock`과 고른 `--matt`를 함께 준다. exit 0이 아니면 `AGENTS.md` 5번대로 출력을 보고하고 멈춘다.
 4. PRD를 새 프로젝트에 남겨 9번 커밋에 넣는다. 추천의 근거이고, 나중에 두뇌를 바꿀 때도 읽는다. 작업 폴더 흐름에서 첫 요청을 `docs/first-request.md`에 적었고 PRD가 그 요청 안에 있으면 그 파일로 충분하다(문장은 바꾸지 않는다). 그 밖에는 `docs/prd.md`에 둔다: 파일이면 내용을 옮기고 원래 경로를 첫 줄에 적고, 요청 속 설명이면 그 문장을 그대로, 프리셋 팩이면 팩 이름과 경로를 적는다.
 5. 8번 확인에서 `pnpm skills:check`가 exit 0이고 `두뇌:`·`과설계 방지:`·`mattpocock 추가:` 줄이 고른 값인지 본다. i-have-adhd나 taste-skill을 골랐으면 `선택 스킬:` 줄에 `i-have-adhd 있음`, `taste 있음`이 보여야 한다.
 

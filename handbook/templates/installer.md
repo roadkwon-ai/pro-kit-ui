@@ -1,0 +1,77 @@
+# 설치기와 옵션
+
+> 한눈에: 템플릿은 명령 하나로 새 프로젝트에 설치돼요. 이미 있는 파일은 건드리지 않고, 여러 번 실행해도 결과가 같아요. 설치한 뒤에는 코드 정리와 저장(커밋), 새 대화 열기 순서로 마무리해요.
+
+## 직접 실행할 일은 거의 없어요
+
+새 프로젝트를 만들 때는 에이전트(`prokit-init` 스킬)가 이 설치기를 알아서 실행하고 옵션도 골라요. 이 쪽은 그 명령이 무엇을 하는지 알고 싶거나, 설치기를 직접 실행해야 할 때(팀원이 클론한 뒤, 에러가 났을 때, 옵션을 바꿔 다시 실행할 때) 찾아보는 참고 쪽이에요. 처음이라면 [빠른 시작: 화면만 만들기](../start/quickstart-screens.md)부터 따라 하세요.
+
+> [!TIP]
+> 설치기는 이미 있는 파일을 건드리지 않고 여러 번 실행해도 결과가 같아서, 실행해 보고 틀리면 다시 실행해도 안전해요.
+
+## 실행하기
+
+```bash
+bash <pro-kit-ui>/templates/prokit-next-neon/install.sh my-app
+```
+
+
+| 옵션 | 동작 |
+|---|---|
+| (없음) | 파일 복사, `package.json` 스크립트 추가, Claude Code 키 훅(`.claude/settings.json`) 추가, 이 프로젝트에 스킬·플러그인 설치(두뇌·과설계 방지 스킬은 없음), agent-browser CLI(없거나 npm 최신판보다 낮으면 기본으로 최신판을 설치) |
+| `--diff` | 미리 보기예요. 템플릿과 다른 기존 파일의 차이, 복사할 파일, `package.json`·`.gitignore`·`biome.json`·`turbo.json`·`.claude/settings.json`에 더할 항목을 보여 주고, 파일은 쓰지 않아요. 스킬·플러그인도 설치하지 않아요 |
+| `--skip-skills` | 스킬·플러그인·OMX 설치와 agent-browser CLI 자동 설치를 건너뛰어요. 고른 두뇌·과설계 방지 스킬은 `.dev-cycle.json`에 기록만 하고, 나중에 `pnpm skills:setup`이 설치해요 |
+| `--brain <이름>[,…]` | 두뇌를 골라요. 여러 개는 쉼표로 잇고 첫 번째가 주 두뇌예요(superpowers, agent-skills, pstack, gstack, oh-my, mattpocock, openspec, spec-kit, compound-engineering). 기본은 `none`이에요 |
+| `--simplicity <이름>` | 과설계 방지 스킬을 하나 골라요(ponytail, caveman, karpathy). 기본은 `none`이에요 |
+| `--matt <스킬>`, `--optional <묶음>` | mattpocock 추가 스킬과 선택 스킬 묶음(i-have-adhd, taste 포함)을 설치해요. 여러 개는 쉼표로 이어요 |
+| `--with-global` | 전역 도구(agent-browser CLI, Vercel CLI, 고른 두뇌의 gstack·OMX·OpenSpec CLI) 중 없는 것을 설치한 뒤 프로젝트 설치를 이어 가요. ponytail을 골랐으면 네이티브 플러그인을 지원하는 Codex CLI에서 공식 Ponytail marketplace와 플러그인도 선택 설치해요 |
+
+- `AGENTS.md`, `CLAUDE.md`가 이미 있으면 템플릿 블록을 끝에 한 번만 덧붙여요.
+- 무엇을 고를지는 [두뇌와 선택 스킬](../skills/brains.md)에 있어요. 모르는 이름을 주면 아무것도 쓰지 않고 멈춰요.
+- Windows의 PowerShell이나 Git Bash에서 실행하면 WSL2를 안내하고 멈춰요.
+
+> [!WARNING]
+> `--with-global`은 전역 설정과 훅을 바꾸므로 사용자가 전역 도구 설치를 요청할 때만 붙여요. 두뇌 gstack은 bun이 필요하고, 설치하면서 `~/.claude/settings.json`에 전역 훅을 등록해요. Codex Ponytail은 플러그인을 지원하는 CLI에만 설치하고, 이미 비활성화했거나 다른 출처로 설치한 플러그인은 바꾸지 않아요. 설치 성공은 훅 신뢰나 자동 실행을 뜻하지 않아요. 
+
+
+## 설치한 뒤 할 일
+
+> [!IMPORTANT]
+> 첫 라운드를 열기 전에 설치 결과를 먼저 커밋해요. 이유는 [첫 커밋이 중요한 이유](#첫-커밋이-중요한-이유)에 있어요.
+
+에이전트가 따르는 규칙의 원문은 [AGENTS.md의 "템플릿으로 새 프로젝트 만들기"](../../AGENTS.md#템플릿으로-새-프로젝트-만들기)예요.
+
+1. **DB 준비는 건너뛰어요**: 화면만 프로젝트는 DB를 쓰지 않아요.
+2. **포맷 정리와 커밋**: `pnpm check`로 Better-T-Stack이 만든 코드의 포맷과 정렬을 한 번 정리하고 `pnpm exec biome check .`가 exit 0인지 봐요. 설치 결과, 포맷 정리를 기본 브랜치에 커밋해요.
+3. **새 세션 열기**: 스킬과 에이전트는 새 세션부터 보여요. 첫 실행 때 묻는 신뢰 질문에 동의해야 프로젝트 설정이 켜져요. Claude Code는 플러그인, Codex는 에이전트와 프로젝트 스킬, Grok Build는 규칙과 스킬이에요(`grok --trust`로 열면 묻지 않고 신뢰해요). `--with-global`로 Codex Ponytail을 선택 설치했다면 `/hooks`에서 별도로 신뢰한 뒤 새 세션을 열어요. Antigravity는 `AGENTS.md`, `.agents/skills`, `.agents/agents`를 그대로 읽어요([지원하는 에이전트](../start/supported-agents.md#신뢰-질문)).
+4. **화면 디자인 검사 켜기**: 개발자마다 한 번, 프로젝트 루트에서 `.agents/skills/impeccable/scripts/impeccable hooks on`을 실행해요. 켠 뒤 `.claude/settings.local.json`의 훅 명령이 `…/scripts/impeccable" hook`인지 확인해요.
+5. **프로젝트 소개 채우기**: `GLOSSARY.md`와 `docs/domain/project.md`를 채워요.
+6. **첫 요청**: "…을 만들어줘"처럼 요청하면 `prokit-dev-cycle`이 라운드를 열어요([dev-cycle 라운드](../concepts/dev-cycle.md)). 
+
+## 자세히
+
+### 설치기가 하는 일
+
+- `templates/<템플릿>/files/` 아래 파일(스킬, 에이전트, dev-cycle, 문서 골격, 스크립트)을 프로젝트에 복사해요.
+- `package.json`에 스크립트(`dev-cycle`, `skills:*`, `agents:*`, `export:html` 등)를 더해요.
+- 다시 생성되는 파일(varlock의 `src/env.ts`)과 `pnpm export:html`이 만든 `html/`을 `biome.json` 검사 대상에서 빼요.
+- 설치된 turbo가 2.11.5 이상이면 `turbo.json`에 `"agentGuidance": false`를 넣어요. turbo가 AI 에이전트를 감지하면 루트 `AGENTS.md`에 규칙 블록을 쓰고 커밋하라고 지시하기 때문이에요.
+- `scripts/skills-setup.mjs`로 `skills.manifest.json`의 스킬과 플러그인을 이 프로젝트에 설치해요([설치와 업데이트 구조](../skills/install-and-update.md)). 두뇌는 여럿을 고를 수 있고, openspec·spec-kit·compound-engineering은 그 두뇌를 골랐을 때만 필요한 도구를 받아요.
+
+### 첫 커밋이 중요한 이유
+
+커밋하지 않고 첫 라운드를 열면 설치한 파일 전체가 라운드 diff에 섞여 `audit`이 더 무거운 케이스(템플릿 README의 예는 F)로 올리라고 요구해요. 라운드 기준이 기본 브랜치와의 merge-base라서 기능 브랜치에 커밋해도 마찬가지예요.
+
+### 화면 디자인 검사를 스킬로 켜지 않는 이유
+
+개인(전역) impeccable 스킬이 있을 때 스킬 호출(`$impeccable hooks on`, Claude Code의 `impeccable` 스킬 인자)로 켜면 Claude Code가 그쪽을 불러와 이 프로젝트에 없는 `scripts/hook.mjs`를 훅 명령으로 적어요. 그러면 Stop 훅이 매번 `MODULE_NOT_FOUND`로 실패해요.
+
+### 팀원이 클론했을 때
+
+`pnpm install` 뒤 `pnpm skills:setup`을 한 번 실행해요. 스킬 파일은 이미 커밋돼 있어서 빠진 것만 받아요. 전역 도구까지 맞추려면 `pnpm skills:setup --with-global`, 상태만 보려면 `pnpm skills:check`예요.
+
+## 관련 문서
+
+- [기존 프로젝트에 갱신 반영](update-existing.md)
+- [설치와 업데이트 구조](../skills/install-and-update.md)
+- [명령 모음](../reference/commands.md)

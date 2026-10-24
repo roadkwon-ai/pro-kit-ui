@@ -1,0 +1,81 @@
+# 화면만 프로젝트와 HTML 내보내기
+
+> 한눈에: 화면만 프로젝트는 DB 없이 예시 데이터로 모든 화면을 만드는 프로젝트예요. 버튼과 링크는 실제로 반응하고, 다 만들면 HTML 파일로 내보내거나 GitHub Pages나 Vercel에 올릴 수 있어요. 실제 서비스로는 나중에 바꿔도 돼요.
+
+## 무엇이 다른가요
+
+| | 화면만 프로젝트 | 서비스 프로젝트 |
+|---|---|---|
+| 만들 때 | 로컬 DB와 첫 마이그레이션 없이 만들어요. 템플릿은 `prokit-next-neon`이에요 | 로컬 DB를 띄우고 첫 마이그레이션까지 해요 |
+| 표시 | 루트 `AGENTS.md` 맨 위에 "화면만 프로젝트" 한 줄 | 없음 |
+| 데이터 | 예시 데이터(`apps/web/src/lib/`의 `demo.ts` 등) | DB |
+| 작업 방식 | dev-cycle 라운드(대개 케이스 B). `prokit-ui`의 단계와 규칙을 모두 따라요 | dev-cycle 라운드(케이스 A\~F·H) |
+| 결과물 | `pnpm export:html`로 정적 HTML | Vercel 배포 |
+
+새 프로젝트 `AGENTS.md` 맨 위에 들어가는 한 줄이에요.
+
+```markdown
+> 화면만 프로젝트: DB 없이 예시 데이터로 화면만 만든다. 규칙은 `prokit-ui`의 "화면만 프로젝트" 절이다.
+```
+
+작업 폴더에서 시작한 프로젝트는 `docs/first-request.md`의 요청으로 첫 라운드를 열어요([빠른 시작: 화면만 만들기](../start/quickstart-screens.md)).
+
+## 화면 규칙
+
+- **예시 데이터로 채워요**: 로그인이 필요한 화면은 예시 사용자로 로그인한 상태로 보여 주고, 로그인·가입 화면은 제출하면 예시 사용자로 들어가는 예시 화면으로 만들어요.
+- **버튼이 실제로 반응해요**: 체크, 상태 바꾸기, 추가 같은 동작은 화면 상태나 브라우저 저장소(`localStorage`)로 흉내 내요.
+- **서버를 부르는 부품은 빼요**: 헤더의 사용자 메뉴와 `/dashboard` 링크, 로그인·가입 폼의 `authClient`, `orpc` 호출은 화면에 쓰지 않아요. 첫 화면을 만들 때 Better-T-Stack 기본 헤더와 로그인 화면을 제품 화면으로 바꿔요.
+- **인증 파일은 그대로 둬요**: `auth-client.ts`, `packages/auth/` 같은 인증 경로 파일은 고치지 않아요. 실제 서비스로 바꿀 때 그대로 써요.
+- **설치된 Next 판을 따라요**: Next 기능을 쓰기 전에 프로젝트에 설치된 판의 문서(`apps/web/node_modules/next/dist/docs/`)를 먼저 읽어요. 에이전트가 아는 Next와 판이 다를 수 있어서예요. 컴포넌트는 Server Component가 기본이고, `"use client"`는 상태나 이벤트가 필요한 가장 작은 부분에만 붙여요.
+- **HTML로 내보낼 수 있게 지어요**: 동적 경로는 `generateStaticParams`로 값을 모두 내고, 쿼리 값은 클라이언트 컴포넌트에서 읽어요. `headers`, `cookies`, `redirect`, route handler, server action은 쓰지 않아요. 이미지는 `apps/web/public/` 아래에 두고 `next/image`로 불러요.
+- **제작 표시는 선택 사항이에요**: 출처를 알리고 싶으면 사이트 푸터에 `<ProkitCredit />`를 넣어요. 프로킷 심볼과 홈페이지·GitHub 링크를 제공해요. 템플릿이 `apps/web/src/components/prokit-credit.tsx`를 설치해 둬요. 표시 여부·문구·배치는 조정할 수 있어요. MIT의 저작권·허가문 보존 조건은 이 홍보 표시와 별개예요.
+- **모드와 언어도 화면 기능이에요**: 프리셋처럼 만들 때는 시스템·라이트·다크와 한국어·영어 전환을 넣어요. 문구는 같은 키의 두 사전에 두고, 전환 뒤 현재 페이지·입력 상태가 남아야 해요. 실전 서비스의 요구가 다르면 그 요구를 따라요.
+
+> [!IMPORTANT]
+> 마감 전에는 개발 서버와 `pnpm export:html` 결과 양쪽에서 모든 링크·버튼과 모드·언어 전환을 확인해요. 개발 서버에서는 `/dashboard`와 `/api`가 살아 있어 남은 Better-T-Stack 부품이 드러나지 않기 때문이에요.
+
+프로킷 제작 창에서 선택한 서체·색상은 새 프로젝트의 디자인 토큰으로 고정해요. 프로젝트 안에 프리셋 제작용 선택 팔레트, 설정 견본, 프로킷 미리보기 수신기를 넣지는 않아요. 선택값 기록과 실제 서체·색상 검사는 [DESIGN.md](design-md.md#선택한-디자인을-기록하고-확인하기)를 따라요.
+
+## HTML로 내보내기
+
+"HTML로 내보내줘"라고 하면 `pnpm export:html`을 실행해요. 프로젝트 파일은 바꾸지 않고, 임시 복사본에서 `/api`와 `/dashboard`를 빼고 빌드해 결과를 `html/`(git이 무시해요)에 둬요.
+
+```bash
+pnpm export:html                 # html/에 정적 HTML을 만든다
+pnpm dlx serve html              # 만든 HTML을 브라우저로 본다
+pnpm export:html --base /living  # GitHub Pages처럼 하위 경로에 올릴 때
+```
+
+**이렇게 되면 성공**
+
+- `pnpm export:html`이 exit 0으로 끝나요.
+- `html/`에 정적 HTML이 생기고 `pnpm dlx serve html`로 열려요.
+
+| 결과 | 뜻 |
+|---|---|
+| exit 0 | 내보내기 성공 |
+| exit 1 | 사용법 오류나 설치·빌드 실패. 빌드 실패면 출력 끝을 보고 화면 규칙을 어긴 곳을 고쳐요 |
+| exit 2 | `.env`의 서버 전용 값이 결과물에 들어갔어요. 아래 주의를 따라요 |
+
+> [!WARNING]
+> exit 2가 나오면 출력에 나온 변수를 화면 코드에서 쓰지 않게 고쳐요. 값은 출력되지 않아요.
+
+"지운 서버 경로를 부르는 부품이 화면에 남아 있다" 경고가 나오면 화면 규칙대로 그 부품을 빼요.
+
+## 자세히
+
+### 배포
+
+배포는 "GitHub Pages에 배포해줘", "Vercel에 배포해줘"처럼 요청할 때만 해요. 화면 라운드가 닫힌 뒤(`[confirm]` 뒤) 메인 세션에서 하고, 원격 저장소나 Vercel 프로젝트를 만드는 것까지 요청한 것으로 봐요. 풀스택 배포(`pnpm vercel:deploy`)는 쓰지 않아요. 순서는 [GitHub Pages 배포](../deploy/github-pages.md)에 있어요.
+
+### 실제 서비스로 바꾸기
+
+"실제 서비스로 바꿀 거야"라고 하면 먼저 프로젝트에 서버 스킬(API, DB, 배포)이 있는지 봐요. UI 스킬셋으로 만든 프로젝트에는 없어서, Pro 스킬셋이 필요하다고 알리고 멈춰요([프로킷 UI 스킬셋](ui-skillset.md)).
+
+
+## 관련 문서
+
+- [빠른 시작: 화면만 만들기](../start/quickstart-screens.md)
+- [UI/UX 흐름](ui-flow.md)
+- [GitHub Pages 배포](../deploy/github-pages.md)
+- [튜토리얼: 컨셉으로 화면 만들기](../../tutorials/samples/README.md)
