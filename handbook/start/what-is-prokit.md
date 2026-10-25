@@ -149,7 +149,7 @@ PRD는 누가 쓰는지와 무엇을 할 수 있는지 몇 줄이면 돼요. 적
 
 - **지원하는 에이전트**: Claude Code, Codex, Antigravity, Grok Build예요. 도구마다 읽는 파일과 여는 명령은 [지원하는 에이전트](supported-agents.md), Claude Code와 Codex의 조작 차이는 [Claude Code와 Codex](../../tutorials/reference/claude-code-and-codex.md)에 있어요.
 - **스킬이 결과를 바꾸나요**: 같은 요청을 스킬이 있을 때와 없을 때로 나눠 비교했어요. 규칙을 지킨 비율이 작업 진행(`prokit-dev-cycle`)은 27%에서 93%로, 화면 설계(`prokit-ui`)는 12%에서 100%로 올랐어요. 골라 둔 `DESIGN.md`가 있으면 목표 디자인과 팔레트가 맞는 비율이 71%에서 99%로 올랐어요. 
-- **만든 것**: 프로킷으로 만든 프리셋 11개(랜딩페이지 8개, 앱 화면 5개)를 [프로킷 사이트](https://prokit-web.vercel.app/)에서 모든 페이지까지 열어 볼 수 있어요.
+- **만든 것**: 프로킷으로 만든 프리셋 11개(랜딩페이지 9개, 앱 화면 5개)를 [프로킷 사이트](https://prokit-web.vercel.app/)에서 모든 페이지까지 열어 볼 수 있어요.
 - **라이선스**: [MIT](../../LICENSE)예요. 상업 이용·유료 고객 개발·수정·재판매를 허용하며 저작권 표시와 허가문을 보존해야 해요. 사이트의 홍보용 제작 표시는 선택 사항이고, [외부 구성 요소](../../THIRD_PARTY_NOTICES.md)에는 원래 조건을 적용해요.
 
 ## 관련 문서
