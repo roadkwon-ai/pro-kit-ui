@@ -1,16 +1,4 @@
 {
-  "nextflix": {
-    "release": "pack-nextflix",
-    "url": "https://github.com/roadkwon-ai/pro-kit-premium-packs/releases/download/pack-nextflix/nextflix-pack.zip",
-    "sha256": "12c4f5b482d01531c7d801bf05581869c69189c00cd7da368274a7552044fbf1",
-    "bytes": 7516780
-  },
-  "claudle": {
-    "release": "pack-claudle",
-    "url": "https://github.com/roadkwon-ai/pro-kit-premium-packs/releases/download/pack-claudle/claudle-pack.zip",
-    "sha256": "505669d6535fb2be3b7a3d08b81e52f9daae98300643c923d27180da019d97bd",
-    "bytes": 1066567
-  },
   "goru": {
     "release": "pack-goru",
     "url": "https://github.com/roadkwon-ai/pro-kit-packs/releases/download/pack-goru/goru-pack.zip",

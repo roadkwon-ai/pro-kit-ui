@@ -365,8 +365,17 @@ export function ensureGitignore(target, { dryRun = false, adopt = false } = {}) 
 
 // Claude Code SessionStart 훅: 이미지 생성 키와 배포 토큰을 .env에서 세션 셸 환경으로 불러온다(scripts/load-keys.mjs).
 // 다른 키와 훅은 그대로 두고 없을 때만 더한다. 반환: 더했으면 true, 이미 있으면 false, settings.json을 읽지 못하거나
-// 모양이 예상과 다르면(객체가 아님, hooks가 객체가 아님, SessionStart가 배열이 아님) null.
+// 모양이 예상과 다르면(객체가 아님, hooks가 객체가 아님, 훅 이벤트 값이 배열이 아님) null.
 const KEY_HOOK = 'node "$CLAUDE_PROJECT_DIR/scripts/load-keys.mjs"';
+// PostToolUse 훅: Skill 호출과 SKILL.md Read를 .prokit/skills-used.jsonl에 남긴다. audit이 단계 행 증거의 스킬 이름과 대조한다.
+const LOG_HOOK = 'node "$CLAUDE_PROJECT_DIR/scripts/dev-cycle.mjs" skill-log';
+// PreToolUse 훅: 열린 dev-cycle 라운드 없이 코드·하네스 파일을 Edit·Write로 고치려 하면 막는다.
+const EDIT_HOOK = 'node "$CLAUDE_PROJECT_DIR/scripts/dev-cycle.mjs" edit-guard';
+const HOOKS = [
+  { event: "SessionStart", mark: "scripts/load-keys.mjs", entry: { hooks: [{ type: "command", command: KEY_HOOK }] } },
+  { event: "PostToolUse", mark: "dev-cycle.mjs\" skill-log", entry: { matcher: "Skill|Read", hooks: [{ type: "command", command: LOG_HOOK }] } },
+  { event: "PreToolUse", mark: "dev-cycle.mjs\" edit-guard", entry: { matcher: "Edit|Write|MultiEdit|NotebookEdit", hooks: [{ type: "command", command: EDIT_HOOK }] } },
+];
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 export function ensureClaudeHook(target, { dryRun = false } = {}) {
   const p = join(target, ".claude/settings.json");
@@ -377,18 +386,23 @@ export function ensureClaudeHook(target, { dryRun = false } = {}) {
     return null;
   }
   if (!isObject(cur) || !(cur.hooks === undefined || isObject(cur.hooks))) return null;
-  if (!(cur.hooks?.SessionStart === undefined || Array.isArray(cur.hooks.SessionStart))) return null;
+  if (!HOOKS.every(({ event }) => cur.hooks?.[event] === undefined || Array.isArray(cur.hooks[event]))) return null;
   cur.hooks ??= {};
-  cur.hooks.SessionStart ??= [];
-  if (cur.hooks.SessionStart.some((g) => g.hooks?.some((h) => h.command?.includes("scripts/load-keys.mjs")))) return false;
-  cur.hooks.SessionStart.push({ hooks: [{ type: "command", command: KEY_HOOK }] });
+  let added = false;
+  for (const { event, mark, entry } of HOOKS) {
+    cur.hooks[event] ??= [];
+    if (cur.hooks[event].some((g) => g.hooks?.some((h) => h.command?.includes(mark)))) continue;
+    cur.hooks[event].push(entry);
+    added = true;
+  }
+  if (!added) return false;
   if (!dryRun) {
     mkdirSync(dirname(p), { recursive: true });
     writeFileSync(p, `${JSON.stringify(cur, null, 2)}\n`);
   }
   return true;
 }
-const HOOK_MANUAL = `.claude/settings.json을 읽지 못했다. hooks.SessionStart에 ${KEY_HOOK} 명령을 직접 더하세요`;
+const HOOK_MANUAL = `.claude/settings.json을 읽지 못했다. hooks.SessionStart에 ${KEY_HOOK}, hooks.PostToolUse(matcher "Skill|Read")에 ${LOG_HOOK}, hooks.PreToolUse(matcher "Edit|Write|MultiEdit|NotebookEdit")에 ${EDIT_HOOK} 명령을 직접 더하세요`;
 
 // git pre-commit 훅: 열린 dev-cycle 라운드나 닫은 라운드 기록 없이 코드·하네스를 커밋하지 못하게 한다(scripts/dev-cycle.mjs guard).
 // 어느 세션·도구가 커밋해도 돈다. 훅은 .git 안에 있어 이 사본에만 있고, 새로 clone한 사본은 release.mjs의 검사가 뒤를 받친다.
@@ -669,7 +683,7 @@ export function main(argv) {
       `turbo.json 추가 예정: ${turbo === "added" ? '"agentGuidance": false' : "없음"}`,
       ...(Array.isArray(eslint) ? [`ESLint 무시 추가 예정: ${eslint.join(", ") || "없음"}`] : []),
       ...(eslint === "manual" ? [`경고: ${ESLINT_MANUAL}`] : []),
-      `.claude/settings.json 추가 예정: ${hook ? "SessionStart 훅(scripts/load-keys.mjs)" : "없음"}`,
+      `.claude/settings.json 추가 예정: ${hook ? "SessionStart 훅(scripts/load-keys.mjs), PostToolUse 훅(부른 스킬 기록), PreToolUse 훅(라운드 없는 편집 막기)" : "없음"}`,
       ...(hook === null ? [`경고: ${HOOK_MANUAL}`] : []),
       ...gitHookLines(gitHook, true),
       ...(turbo === "manual" ? [`경고: ${TURBO_MANUAL}`] : []),
@@ -732,7 +746,7 @@ export function main(argv) {
     ...(turbo === "manual" ? [`경고: ${TURBO_MANUAL}`] : []),
     ...(Array.isArray(eslint) && eslint.length ? [`ESLint 무시 추가: ${eslint.join(", ")} (벤더 스킬과 하네스 스크립트는 프로젝트 lint에서 뺀다)`] : []),
     ...(eslint === "manual" ? [`경고: ${ESLINT_MANUAL}`] : []),
-    ...(hook ? [".claude/settings.json: SessionStart 훅(scripts/load-keys.mjs) 추가 (.env의 이미지 키와 배포 토큰을 세션에 불러온다)"] : []),
+    ...(hook ? [".claude/settings.json: SessionStart 훅(scripts/load-keys.mjs: .env의 이미지 키와 배포 토큰을 세션에 불러온다)과 PostToolUse 훅(dev-cycle skill-log: 부른 스킬을 .prokit/skills-used.jsonl에 남겨 audit이 단계 행 증거와 대조한다), PreToolUse 훅(dev-cycle edit-guard: 열린 라운드 없이 코드·하네스 파일을 고치지 못하게 한다) 중 없는 것을 더함"] : []),
     ...(hook === null ? [`경고: ${HOOK_MANUAL}`] : []),
     ...gitHookLines(gitHook, false),
     ...legacyWarning(target),
@@ -753,7 +767,7 @@ export function main(argv) {
         ]
       : [
           "  1. 첫 마이그레이션(README 설치한 뒤 1번)까지 마치고, pnpm check로 Better-T-Stack이 만든 코드의 포맷을 한 번 정리해 pnpm exec biome check .가 exit 0인지 본 뒤 기본 브랜치에 커밋한다 (커밋 전에 연 dev-cycle 라운드는 설치 파일이 diff에 섞여 audit이 F 상향을 요구한다)",
-          "  2. 새 에이전트 세션을 열어 스킬과 에이전트를 불러온다 (Claude는 프로젝트를 신뢰해야 project 플러그인을 켜고, Codex는 신뢰해야 .codex/agents를 읽는다. Antigravity는 .agents/agents와 .agents/skills를 읽는다. Grok Build는 폴더를 신뢰해야 AGENTS.md와 프로젝트 스킬을 읽는다: 처음 열 때 신뢰하거나 grok --trust)",
+          "  2. 새 에이전트 세션을 열어 스킬과 에이전트를 불러온다 (Claude는 프로젝트를 신뢰해야 project 플러그인을 켜고, Codex는 신뢰해야 .codex/agents를 읽는다. Antigravity는 .agents/agents와 .agents/skills를 읽는다. Grok Build는 폴더를 신뢰해야 AGENTS.md와 프로젝트 스킬을 읽는다: 처음 열 때 신뢰하거나 grok --trust. 라운드 없는 편집 막기와 스킬 기록 훅은 Codex는 /hooks에서 .codex/hooks.json을, Antigravity는 폴더를 신뢰해야 돈다)",
           "  3. 개발자마다 한 번 프로젝트 루트에서 .agents/skills/impeccable/scripts/impeccable hooks on (스킬 호출로 켜지 않는다. Codex는 /hooks에서 신뢰 확인. Antigravity에서는 돌지 않고 Grok Build에서 도는지는 확인하지 않았다)",
           "  4. GLOSSARY.md와 docs/domain/project.md에 서비스 이름과 요약을 채운다",
           "  5. 첫 UI 라운드에서 impeccable init으로 PRODUCT.md를 만든다",

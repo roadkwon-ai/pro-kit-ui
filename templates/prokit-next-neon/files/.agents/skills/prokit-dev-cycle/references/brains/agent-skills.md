@@ -15,6 +15,18 @@ addyosmani/agent-skills. 스펙부터 출시까지 보안·성능·접근성 기
 - 맡지 않는 단계(검증)는 기본 칸이다. 용어·설계 질문은 `grilling`·`domain-modeling`이다.
 - `/ship`·`shipping-and-launch`가 배포·커밋을 안내해도 커밋·push는 `prokit-dev-cycle` 5절로 한다.
 - `git-workflow-and-versioning`의 커밋 규칙, `documentation-and-adrs`의 ADR 형식이 프로킷 규칙(Conventional Commits 접두어, `domain-modeling` 형식)과 다르면 프로킷 규칙을 따른다.
+- `/build` 명령은 부르지 않고 `incremental-implementation` 스킬만 쓴다. 태스크마다 커밋하는 단계와 `/build auto` 자율 실행은 쓰지 않는다(라우팅 규칙 3).
+- `spec-driven-development`(`/spec`)의 `SPEC.md`는 루트 대신 `docs/specs/<날짜>-<주제>.md`에 쓰고 커밋하지 않는다.
+- 공식 문서를 확인할 때는 `source-driven-development`, 되돌리기 어려운 결정을 검토할 때는 `doubt-driven-development`를 보조로 쓴다. `frontend-ui-engineering`은 `prokit-ui`와 겹쳐 쓰지 않는다.
 - `code-simplification`(`/code-simplify`)은 간결성 보완 검토와 겹친다. 과설계 방지 스킬을 골랐으면 규칙 6 역할 표의 검토를 먼저 쓴다.
 - `/plan`(`planning-and-task-breakdown`)은 기본으로 `tasks/plan.md`와 `tasks/todo.md`에 쓴다. 프로킷에서 두 파일은 dev-cycle의 진행 계획 Task 표와 대조표다. 계획 문서는 `docs/plans/<날짜>-<주제>.md`에, 할 일은 그 문서의 Task 목록에 쓰게 한다(그 스킬은 프로젝트 규칙이 정한 위치를 따른다). 이미 썼다면 내용을 `docs/plans/`로 옮기고 `tasks/plan.md`는 진행 계획 블록만 남긴다.
 - 같은 이름의 `test-driven-development`가 superpowers에도 있다. 두뇌를 바꿀 때 설치기는 `skills-lock.json` 출처로 구분해 지운다.
+
+## 에이전트
+- Claude Code 플러그인이 에이전트 4개를 준다: `agent-skills:code-reviewer`, `agent-skills:security-auditor`, `agent-skills:test-engineer`, `agent-skills:web-performance-auditor`. 앞머리에 `tools:`가 없어 모든 도구를 받으므로 아래 쓰는 방법을 꼭 지킨다.
+- Codex·Antigravity·Grok Build: 에이전트 없음. 같은 관점의 스킬(`code-review-and-quality`, `security-and-hardening`, `test-driven-development`, `performance-optimization`)을 읽어 적용한다.
+- `agent-skills:security-auditor`: `prokit-reviewer(security)` 행의 보완 관점이다.
+- `agent-skills:test-engineer`: 테스트 먼저 단계의 테스트 설계 메모만 맡는다. 테스트 파일은 `prokit-implementer`가 쓴다.
+- `agent-skills:web-performance-auditor`: 성능 확인 행의 보완 관점이다.
+- `agent-skills:code-reviewer`: 과설계 방지 스킬의 검토와 겹친다. 둘 중 하나만 쓴다.
+- 쓰는 방법은 `process-routing.md`의 두뇌 에이전트 규칙을 따른다.

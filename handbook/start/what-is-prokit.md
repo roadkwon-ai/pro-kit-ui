@@ -73,7 +73,7 @@ my-app/
 ├── .dev-cycle.json                dev-cycle 설정(두뇌·과설계 방지 스킬 기록 포함)
 ├── skills.manifest.json           설치할 스킬과 플러그인 목록
 ├── .agents/skills/prokit-*        프로젝트 전용 스킬
-├── .claude/agents/                prokit-implementer · prokit-reviewer · specialist-reviewer · prokit-analyzer
+├── .claude/agents/                prokit-implementer · prokit-reviewer · specialist-reviewer
 ├── scripts/                       dev-cycle, 자원 보호, 배포(vercel-deploy), 릴리스, HTML 내보내기 같은 도구
 ├── docs/                          dev-workflow.md(케이스별 절차), domain/project.md, adr/
 └── tasks/                         todo.md(백로그), archive/(끝난 라운드 기록)
