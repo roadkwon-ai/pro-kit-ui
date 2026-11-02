@@ -19,7 +19,7 @@ my-app/
 │   └── config/                 공유 tsconfig                                          (Better-T-Stack)
 ├── bts.jsonc, turbo.json, biome.json, pnpm-workspace.yaml                             (Better-T-Stack)
 ├── AGENTS.md, CLAUDE.md, GLOSSARY.md                                                   (템플릿)
-├── .agents/skills/             prokit-* 스킬, 공식 도메인 스킬, mattpocock·skill-creator, 고른 두뇌·과설계 방지 스킬(Codex·Antigravity·Grok Build)
+├── .agents/skills/             prokit-* 스킬, 공식 도메인 스킬, mattpocock·skill-creator, 고른 두뇌·과설계 방지·UI 스킬(Codex·Antigravity·Grok Build)
 ├── .agents/agents/             에이전트 생성물(Antigravity)
 ├── .claude/                    agents/(정본), skills/(링크), settings.json(플러그인, 키 훅)
 ├── .codex/                     agents/(생성물), skills·prompts(OMX)
@@ -27,12 +27,13 @@ my-app/
 │                               vercel-deploy.mjs, release.mjs, export-html.mjs, load-keys.mjs
 ├── release/                    production 배포마다 릴리스 노트 (pnpm release)
 ├── skills.manifest.json, skills-lock.json, .dev-cycle.json, .vercelignore
-├── .impeccable/                impeccable 기록(critique/*.md 등. 화면을 리뷰하면 생기고 커밋해요)
+├── .impeccable/                impeccable 기록(critique/*.md 등. impeccable을 골랐을 때 화면을 리뷰하면 생기고 커밋해요)
+├── .hallmark/                  hallmark 기록(log.json은 커밋하고, shots/·preflight.json은 git이 무시해요. hallmark를 골랐을 때)
 ├── licenses/                   PROKIT-SCOPE.md, PROKIT-LICENSE.txt: 템플릿이 전한 파일의 MIT 범위 안내   (템플릿)
 ├── docs/                       dev-workflow.md, adr/, domain/project.md, plans/(진행 계획), briefs/(화면 설계),
 │                               prokit/(기존 프로젝트를 들였을 때: intake.md 도입 기록, analysis.md 정밀 분석)
 └── tasks/                      todo.md(남은 할 일·진행 중 대조표), plan.md(진행 계획의 Task 표, 있으면),
-                                archive/(날짜별 완료 기록·README 색인), evidence/(스크린샷·화면 audit 보고서. git이 무시해요)
+                                archive/(날짜별 완료 기록·README 색인), evidence/(스크린샷·화면 리뷰·감사 보고서. git이 무시해요)
 ```
 <!-- /b -->
 
@@ -55,7 +56,7 @@ my-app/
 | `openspec/`, `specs/`, `.specify/` | openspec·spec-kit 두뇌를 골랐을 때만 생기는 명세 문서. 두뇌를 바꿔도 문서는 남겨요 | [두뇌와 선택 스킬](../skills/brains.md) |
 | `tasks/todo.md`, `tasks/archive/`, `tasks/evidence/` | 남은 일반 할 일·백로그와 진행 중 대조표, 날짜별 완료 기록과 색인, 스크린샷과 `ui-audit-*.md` 같은 증거(`tasks/evidence/`는 git이 무시해요) | [증거와 audit, 사용자 확인](../concepts/audit-and-confirm.md) |
 | `skills.manifest.json`, `skills-lock.json` | 설치할 스킬 목록과 설치한 판 | [설치와 업데이트 구조](../skills/install-and-update.md) |
-| `.claude/agents/`, `.codex/agents/`, `.agents/agents/` | 구현 수행자, 전문 리뷰어, 최종 리뷰어의 정본과 생성물(Codex용, Antigravity용) | [위임 에이전트와 리뷰 에이전트](../concepts/agent-roles.md) |
+| `.claude/agents/`, `.codex/agents/`, `.agents/agents/` | 전문 수행 에이전트(화면 수행자, 실행 확인, 구현 수행자), 전문 리뷰어, 최종 리뷰어의 정본과 생성물(Codex용, Antigravity용) | [위임 에이전트와 리뷰 에이전트](../concepts/agent-roles.md) |
 | `scripts/delegation.mjs`, `scripts/resource-guard.mjs`, `.prokit/` | 위임 패킷의 실제 변경 검증과 자원 보호. `.prokit/` 실행 상태는 Git과 Biome에서 제외해요 | [위임과 자원 관리](../concepts/delegation-and-resources.md) |
 | `licenses/` | `PROKIT-SCOPE.md`는 템플릿이 전달한 파일(스킬, 스크립트, 문서)과 외부 구성 요소를 구분하는 안내예요. `PROKIT-LICENSE.txt`는 프로킷 자체 코드·스킬·문서의 MIT 라이선스 사본이에요. 이 파일들이 내 앱 전체의 라이선스를 정하지는 않고, 내가 쓴 코드의 권리를 프로킷에 넘기지도 않아요. 지우지 않고 그대로 둬요 | [프로킷의 사용 조건](../../README.md) |
 | `.vercelignore` | 배포에서 비밀값 파일을 빼요 | [비밀값 지키기](../deploy/secrets.md) |
@@ -68,13 +69,16 @@ my-app/
 .agents/skills/
 ├── prokit-dev-cycle/         라운드 절차
 ├── prokit-pack-use/          완성 프리셋 팩 복원과 활용
+├── prokit-skills-assign/     공식 스킬을 맡을 에이전트 배치
 ├── prokit-skills-manage/     스킬 구성 바꾸기
 ├── prokit-skills-update/     외부 스킬의 새 버전 확인과 갱신
 ├── prokit-ui/                화면 모양과 사용자 경험
 └── prokit-verify/            검사 선택과 증거 기록
 .claude/agents/
-├── prokit-implementer.md     구현 수행자
+├── prokit-implementer.md     하네스·계층 밖 구현 수행자(공통 규칙)
 ├── prokit-reviewer.md        최종 리뷰어(읽기 전용)
+├── prokit-runtime-checker.md 실행 확인
+├── prokit-ui-builder.md      화면 수행자
 └── specialist-reviewer.md    전문 리뷰어(읽기 전용)
 ```
 
@@ -84,7 +88,7 @@ my-app/
 
 | 파일 | 하는 일 |
 |---|---|
-| `PRODUCT.md` | 제품 맥락(impeccable `init` 인터뷰 결과) |
+| `PRODUCT.md` | 제품 맥락(주 UI 스킬의 기획 인터뷰 결과) |
 | `DESIGN.md` | 디자인 값(토큰)과 이유 |
 | `docs/preset-design.json` | 프리셋에서 받은 디자인 설정이나 요청한 변경을 기록해요. 서체 파일·굵기·라이선스, 모드별 토큰, 처음 언어와 모드를 `DESIGN.md`와 맞춰요 |
 | `docs/briefs/site-map.md`, `docs/briefs/<화면>.md` | 사이트맵과 화면 설계 |

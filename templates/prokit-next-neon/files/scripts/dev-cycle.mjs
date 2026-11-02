@@ -190,8 +190,10 @@ export function classify(files, config) {
 	// case F 규칙: 계층을 알 수 없는 코드(adopt 프로젝트의 규칙 밖 코드)는 무거운 F로 본다.
 	let wide = false;
 	for (const file of files) {
-		const rule = rules.find((r) => r.re.test(file));
+		let rule = rules.find((r) => r.re.test(file));
 		const isAuth = authRe ? authRe.test(file) : false;
+		// 인증 파일은 서버(D) 몫이다. 화면 규칙(apps/web/src/)에 걸려도 화면 계층으로 세지 않는다
+		if (isAuth && rule?.case === "B") rule = undefined;
 		if (isAuth) auth = true;
 		if (!rule && !isAuth) continue;
 		if (rule?.case === "H") harness = true;
@@ -475,16 +477,51 @@ function planConfirmProblem(root, config, evidence, needPlan = false) {
 const isConfirm = (text) => /^\[confirm\]/i.test(text);
 const isPlanRound = (active) =>
 	active.rows.some((r) => r.text === PLAN_DOC_ROW);
-// 화면 리뷰 점수는 실행 기록이 있어야 받는다. critique는 impeccable이 .impeccable/critique/<시각>__<대상>.md를
-// 남기고, audit과 web-design-guidelines는 기록을 남기지 않아 보고서를 tasks/evidence/에 저장해 둔다.
+// 화면 리뷰 점수는 실행 기록이 있어야 받는다. 기록 꼴은 주 UI 스킬이 정한다(prokit-ui의 references/<스킬>-map.md).
+// impeccable critique는 .impeccable/critique/<시각>__<대상>.md를 남긴다. 기록을 남기지 않는 리뷰(impeccable audit,
+// hallmark의 sloplint와 마감 리뷰, web-design-guidelines)는 보고서를 tasks/evidence/에 저장해 둔다.
+// 행 이름은 판마다 다르다(옛 판: "[review] impeccable critique"). 두 꼴을 모두 본다.
 const N_OF_M = /(\d+)\s*\/\s*(\d+)/g;
+// sloplint 요약 줄: "sloplint: 0 FAIL, 1 REFLEX, 2 WARN across …"
+const N_FAIL = /(?<!\d)(\d+)\s*FAIL\b/;
+const CRITIQUE_FILE = /\.impeccable\/critique\/[\w.-]+\.md/;
+const EVIDENCE_FILE = /tasks\/evidence\/[\w.-]+\.md/;
+// 저장한 보고서의 결과: 증거의 sloplint FAIL 수, web-design-guidelines 위반 수(UI 스킬이 없을 때), 점수(N/M) 중
+// 먼저 나온 것이 보고서에도 있어야 한다.
+function reportScore(pairs, text, value, what) {
+	const fail = value.match(N_FAIL)?.[1];
+	if (fail !== undefined)
+		return new RegExp(`(?<!\\d)${fail}\\s*FAIL\\b`).test(text)
+			? null
+			: `보고서에 증거의 ${fail} FAIL이 없다(sloplint 출력을 저장한다)`;
+	const found = value.match(/위반\s*(\d+)/)?.[1];
+	if (found !== undefined && !pairs.length)
+		return new RegExp(`위반\\s*${found}(?!\\d)`).test(text)
+			? null
+			: `보고서에 증거의 위반 수(${found})가 없다`;
+	if (!pairs.length) return `증거에 ${what}가 없다`;
+	return pairs.some((p) =>
+		new RegExp(`(?<!\\d)${p[1]}[*\\s]*/[*\\s]*${p[2]}(?!\\d)`).test(text),
+	)
+		? null
+		: `보고서에 증거의 점수 ${pairs[0][1]}/${pairs[0][2]}이 없다`;
+}
 const UI_RECORDS = [
 	{
-		row: "[review] impeccable critique",
-		re: /\.impeccable\/critique\/[\w.-]+\.md/,
-		what: "critique가 남긴 기록 파일(.impeccable/critique/….md)",
-		// 머리의 total_score/max_score와 같은 쌍이 하나라도 있어야 한다(날짜 10/22 같은 다른 N/M은 섞여도 된다).
-		score: (pairs, text) => {
+		rows: ["[review] 디자인 리뷰", "[review] impeccable critique"],
+		// impeccable 기록 파일이 있으면 그것을 본다(증거에 다른 보고서 경로가 앞에 있어도)
+		prefer: CRITIQUE_FILE,
+		re: EVIDENCE_FILE,
+		what: "리뷰 기록 파일(impeccable은 .impeccable/critique/….md, 기록을 남기지 않는 UI 스킬은 tasks/evidence/ui-review-<시각>.md)",
+		score: (pairs, text, value, file) => {
+			if (!CRITIQUE_FILE.test(file))
+				return reportScore(
+					pairs,
+					text,
+					value,
+					"리뷰 결과(점수 N/M, sloplint의 N FAIL, 기본 AI면 게슈탈트 위반 N)",
+				);
+			// 머리의 total_score/max_score와 같은 쌍이 하나라도 있어야 한다(날짜 10/22 같은 다른 N/M은 섞여도 된다).
 			const front = text.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "";
 			const total = front.match(/^total_score:\s*(\d+)/m)?.[1];
 			const max = front.match(/^max_score:\s*(\d+)/m)?.[1];
@@ -498,13 +535,19 @@ const UI_RECORDS = [
 		},
 	},
 	{
-		row: "[review] impeccable audit",
-		re: /tasks\/evidence\/[\w.-]+\.md/,
-		what: "audit·web-design-guidelines 보고서를 저장한 파일(tasks/evidence/ui-audit-<시각>.md)",
-		// 증거의 총점(N/20)이 보고서에도 있어야 한다. 보고서는 **17/20**처럼 굵게 쓰기도 한다.
-		score: (pairs, text) => {
+		rows: ["[review] 디자인 감사", "[review] impeccable audit"],
+		re: EVIDENCE_FILE,
+		what: "감사·web-design-guidelines 보고서를 저장한 파일(tasks/evidence/ui-audit-<시각>.md)",
+		// impeccable audit은 총점(N/20)이 보고서에도 있어야 한다. 보고서는 **17/20**처럼 굵게 쓰기도 한다.
+		score: (pairs, text, value) => {
 			const totals = pairs.filter((p) => p[2] === "20");
-			if (!totals.length) return "증거에 audit 총점(N/20)이 없다";
+			if (!totals.length)
+				return reportScore(
+					[],
+					text,
+					value,
+					"감사 결과(impeccable 총점 N/20, sloplint의 N FAIL, UI 스킬이 없으면 web-design-guidelines 위반 N)",
+				);
 			return totals.some((p) =>
 				new RegExp(`(?<!\\d)${p[1]}[*\\s]*/[*\\s]*20(?!\\d)`).test(text),
 			)
@@ -528,11 +571,14 @@ function roundStart(root, meta) {
 }
 
 function uiRecordProblem(root, meta, r) {
-	const kind = UI_RECORDS.find((k) => r.text.startsWith(k.row));
+	const kind = UI_RECORDS.find((k) =>
+		k.rows.some((row) => r.text.startsWith(row)),
+	);
 	if (!kind) return null;
 	const value = bare(r.evidence);
 	if (/^(blocked|미실행|n\/a)\s*:/i.test(value)) return null;
-	const file = value.match(kind.re)?.[0];
+	const file =
+		(kind.prefer && value.match(kind.prefer)?.[0]) ?? value.match(kind.re)?.[0];
 	if (!file)
 		return `증거에 ${kind.what} 경로를 적는다. 실행하지 않은 리뷰의 점수는 받지 않는다`;
 	const path = join(root, file);
@@ -542,6 +588,8 @@ function uiRecordProblem(root, meta, r) {
 	const problem = kind.score(
 		[...value.replace(file, "").matchAll(N_OF_M)],
 		readFileSync(path, "utf8"),
+		value.replace(file, ""),
+		file,
 	);
 	return problem && `${problem} (${file})`;
 }
@@ -709,7 +757,7 @@ function installerNames(root) {
 	const groups = [
 		...(m.skills ?? []),
 		...Object.values(m.optional ?? {}).flatMap((o) => o.skills ?? []),
-		...[m.brains, m.simplicity].flatMap((c) =>
+		...[m.brains, m.simplicity, m.uiSkills].flatMap((c) =>
 			Object.values(c ?? {}).flatMap((i) => i.skills ?? []),
 		),
 	];
@@ -737,7 +785,7 @@ function installerNames(root) {
 		plugins,
 		markets,
 		initPrefixes,
-		omx: Boolean(m.brains?.["oh-my"]?.omx),
+		omx: Object.values(m.brains ?? {}).some((b) => b.omx),
 	};
 }
 function installerFile(root, base, file, names) {
@@ -757,7 +805,7 @@ function installerFile(root, base, file, names) {
 		return names.omx;
 	const keys = {
 		".claude/settings.json": ["enabledPlugins", "extraKnownMarketplaces"],
-		".dev-cycle.json": ["brain", "simplicity"],
+		".dev-cycle.json": ["brain", "simplicity", "uiSkill"],
 	}[file];
 	if (!keys || !base) return false;
 	try {
@@ -810,6 +858,9 @@ export function noteSkillsChange(root, config, { before, after }) {
 			`두뇌 ${label(before.brain)} → ${label(after.brain)}`,
 		(before.simplicity ?? "none") !== (after.simplicity ?? "none") &&
 			`과설계 방지 ${before.simplicity ?? "none"} → ${after.simplicity ?? "none"}`,
+		label(before.uiSkill ?? "impeccable") !==
+			label(after.uiSkill ?? "impeccable") &&
+			`UI 스킬 ${label(before.uiSkill ?? "impeccable")} → ${label(after.uiSkill ?? "impeccable")}`,
 	].filter(Boolean);
 	const note = `스킬 구성 변경(${archiveDay(new Date())}): ${change.join(", ") || "추가 스킬·선택 묶음"}. 이 라운드의 남은 단계 행은 새 구성으로 한다(Claude Code는 /reload-plugins로 다시 불러온다)`;
 	const head = md
@@ -842,17 +893,135 @@ export const SKILL_LOG = ".prokit/skills-used.jsonl";
 // 지난 라운드 기록을 감사용으로 남겨 두는 기간(일)
 const SKILL_LOG_DAYS = 30;
 // 훅 입력: Claude Code·Codex는 tool_name·tool_input, Antigravity는 toolCall.name·args다.
-// Claude Code는 서브에이전트 안의 호출에 agent_id를 붙인다. 리뷰어가 읽은 스킬을 Main이 읽은 것으로 세지 않게 남긴다.
-const hookCall = (e) => ({
-	name: e?.tool_name ?? e?.toolCall?.name,
-	t: e?.tool_input ?? e?.toolCall?.args ?? {},
-	agent: e?.agent_id,
-});
+// Claude Code·Codex는 서브에이전트 안의 호출에 agent_id·agent_type을 붙인다. Antigravity는 붙이지 않아서
+// 서브에이전트 대화(conversationId)를 부른 에이전트 이름에 묶어 둔 기록(AG_SESSIONS)으로 찾는다. 수행자와 Main의 기록을 나눠 남긴다.
+// seen: 이 호출이 Main인지 서브에이전트인지 호스트가 알려 준 기록이다(Codex는 turn_id, Antigravity는 conversationId가 늘 있다)
+const hookCall = (e, root) => {
+	const conv = e?.conversationId ? String(e.conversationId) : undefined;
+	// 세션 시작 훅이 call보다 먼저 돌면 묶지 못하므로, 아직 묶지 않은 대화는 도구 호출마다 다시 묶는다.
+	// 사용자 요청(lastUserInput)이 있는 호출은 Main이다. 세션 시작에서 잘못 묶였어도 서브에이전트로 보지 않는다
+	const bound =
+		conv && root && !e.lastUserInput
+			? (agSession(root, conv) ?? bindSession(root, e))
+			: undefined;
+	return {
+		name: e?.tool_name ?? e?.toolCall?.name,
+		t: e?.tool_input ?? e?.toolCall?.args ?? {},
+		agent: e?.agent_id ?? (bound ? conv : undefined),
+		agentType: e?.agent_type ?? bound,
+		cwd: e?.cwd,
+		seen: Boolean(e?.turn_id || conv),
+	};
+};
+// Antigravity 서브에이전트 대화 묶기: Main이 invoke_subagent(TypeName)를 부르면 call을 남기고(skill-log),
+// 처음 보는 대화가 SessionStart(agent-start)나 첫 도구 호출로 오면 아직 묶지 않은 가장 오래된 call에 묶는다.
+// Main 대화는 묶지 않는다: call을 남긴 대화와, 사용자 요청(lastUserInput)이 있는 대화다(CLI 1.4.8 실측에서 서브에이전트 대화는 비어 있었다).
+// 묶지 못한 서브에이전트는 Main으로 보여 계층 편집이 막히고, 읽기는 남기지 않는다(logSkill. 통과 쪽으로 틀리지 않는다).
+// shortcut: 동시에 부른 서브에이전트는 부른 순서대로 묶고, AG_BIND_MS 안에 온 대화만 묶는다. 호스트가 서브에이전트 이름을 주면 그 값으로 바꾼다
+const AG_SESSIONS = ".prokit/agent-sessions.jsonl";
+const AG_BIND_MS = 120_000;
+// 동시에 시작한 대화가 같은 call을 함께 잡지 않게 읽고 쓰는 동안 잠근다. 이 시간보다 오래된 잠금은 죽은 훅이 남긴 것이다
+const AG_LOCK = ".prokit/agent-sessions.lock";
+const AG_LOCK_STALE_MS = 10_000;
+function agLines(root) {
+	try {
+		return readFileSync(join(root, AG_SESSIONS), "utf8")
+			.split("\n")
+			.flatMap((l) => {
+				try {
+					return [JSON.parse(l)];
+				} catch {
+					return [];
+				}
+			});
+	} catch {
+		return [];
+	}
+}
+function agSession(root, conv) {
+	return agLines(root).findLast((x) => x.conv === conv)?.agent;
+}
+// 묶은 에이전트 이름을 돌려준다(묶지 않으면 undefined)
+export function bindSession(root, input, now = Date.now()) {
+	const conv = input?.conversationId ? String(input.conversationId) : "";
+	if (!conv || input.lastUserInput) return;
+	const lock = join(root, AG_LOCK);
+	mkdirSync(join(root, ".prokit"), { recursive: true });
+	try {
+		mkdirSync(lock);
+	} catch {
+		// 다른 대화가 묶는 중이면 이번에는 묶지 않는다(다음 도구 호출에서 다시 묶는다)
+		try {
+			if (Date.now() - statSync(lock).mtimeMs > AG_LOCK_STALE_MS)
+				rmSync(lock, { recursive: true, force: true });
+		} catch {}
+		return;
+	}
+	try {
+		const lines = agLines(root);
+		// 이미 아는 대화(묶은 대화, call을 남긴 Main 대화)는 다시 묶지 않는다
+		if (lines.some((x) => x.conv === conv || x.from === conv)) return;
+		const taken = new Set(lines.filter((x) => x.conv).map((x) => x.n));
+		const n = lines.findIndex(
+			(x, i) => x.call && !taken.has(i) && now - Date.parse(x.t) <= AG_BIND_MS,
+		);
+		if (n < 0) return;
+		appendFileSync(
+			join(root, AG_SESSIONS),
+			`${JSON.stringify({ t: new Date(now).toISOString(), conv, agent: lines[n].call, n })}\n`,
+		);
+		return lines[n].call;
+	} finally {
+		rmSync(lock, { recursive: true, force: true });
+	}
+}
+// Claude Code 읽기 도구. 이 도구와 seen 기록만 Main과 서브에이전트를 구별한다(구별 값이 없는 기록은 자기 신고)
+const CC_TOOLS = new Set(["Skill", "Read"]);
+// Claude Code 편집 도구. edit-guard 훅(PreToolUse)이 막지 않은 편집을 같은 기록 파일에 남긴다(누가 고쳤는지)
+const CC_EDIT_TOOLS = new Set(["Edit", "Write", "MultiEdit", "NotebookEdit"]);
+// 계층 코드를 고치는 전문 에이전트. 열린 라운드에서 Main이 이 계층 파일을 고치려 하면 edit-guard가 막는다
+const LAYER_AGENTS = {
+	B: "prokit-ui-builder",
+	D: "prokit-api-builder",
+	E: "prokit-db-builder",
+};
+// 프로젝트 판(.agents/skills·.claude/skills)을 읽었는지. Skill 호출은 이름이 같은 개인 스킬(~/.claude/skills)이 먼저 불려 판을 알 수 없다
+// 셸 명령은 프로젝트 절대 경로, 상대 경로(./, ../), $PWD로 시작한 경로만 프로젝트 판이다. ~/.agents/skills(개인 판)는 아니다.
+// shortcut: 셸을 해석하지 않고 cwd를 프로젝트 루트로 본다. 하위 폴더에서 ../로 올라간 경로도 프로젝트로 센다
+function projectSkillRead(root, name, path, cmd, skill, cwd) {
+	if (name === "Bash") {
+		const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		return new RegExp(
+			`(?:^|[\\s'"=])(?:${esc(root)}/|(?:\\.\\.?/)+|\\$\\{?PWD\\}?/|\\$\\(pwd\\)/)?\\.(?:agents|claude)/skills/${esc(skill)}/`,
+		).test(cmd);
+	}
+	if (name === "Skill" || !path) return false;
+	const abs = resolve(cwd ? resolve(root, cwd) : root, path);
+	return [".agents/skills", ".claude/skills"].some((d) =>
+		abs.startsWith(join(root, d, skill) + sep),
+	);
+}
 const NEXT_DOC_RE = /next[/\\]dist[/\\]docs[/\\][^\s'"*;|&]+\.mdx?/g;
 export function logSkill(root, input) {
-	const { name, t, agent } = hookCall(JSON.parse(input));
+	const e = JSON.parse(input);
+	const { name, t, agent, agentType, cwd, seen } = hookCall(e, root);
+	// Antigravity Main이 서브에이전트를 불렀다: 곧 시작할 서브에이전트 대화를 이 이름에 묶는다(bindSession)
+	if (name === "invoke_subagent" && t.TypeName && e.conversationId) {
+		mkdirSync(join(root, ".prokit"), { recursive: true });
+		appendFileSync(
+			join(root, AG_SESSIONS),
+			`${JSON.stringify({ t: new Date().toISOString(), call: String(t.TypeName), from: String(e.conversationId) })}\n`,
+		);
+		return;
+	}
+	// 묶지 못한 Antigravity 서브에이전트(요청 없는 대화)의 읽기는 Main 몫으로 세지 않게 남기지 않는다
+	if (e.conversationId && !agent && !e.lastUserInput) return;
 	const path = String(t.file_path ?? t.Path ?? t.AbsolutePath ?? "");
-	const cmd = String(t.command ?? "");
+	// 출력을 버린 명령 조각(cat …/SKILL.md > /dev/null)은 읽은 것이 아니다. stderr만 버린 2>/dev/null은 센다
+	const cmd = String(t.command ?? "")
+		.split(/&&|\|\||[;\n]/)
+		.filter((s) => !/(?<![2>])(?:&|1)?>>?\s*\/dev\/null/.test(s))
+		.join("\n");
 	const read = ["Read", "read_file", "view_file"].includes(name);
 	const names =
 		name === "Skill"
@@ -890,62 +1059,200 @@ export function logSkill(root, input) {
 				.replaceAll("\\", "/")
 				.match(/(?:^|\/)\.(?:agents|claude)\/skills\/[^/]+\/(.+)$/)?.[1]
 		: undefined;
+	// Read의 limit이나 Antigravity read_file의 EndLine이 파일 끝에 닿지 않은 SKILL.md 읽기는 앞부분만 읽은 것이다(audit이 알린다).
+	// shortcut: 도구가 받은 줄 범위만 본다. 셸의 head·sed -n은 보지 않는다
+	const end =
+		Number(t.limit) > 0
+			? (Number(t.offset) || 1) + Number(t.limit) - 1
+			: Number(t.EndLine);
+	let part = false;
+	if (read && /SKILL\.md$/.test(path) && end > 0)
+		try {
+			const lines = readFileSync(
+				resolve(cwd ? resolve(root, cwd) : root, path),
+				"utf8",
+			)
+				.replace(/\n$/, "")
+				.split("\n").length;
+			part = end < lines;
+		} catch {}
 	const extra = {
 		...(ref && ref !== "SKILL.md" ? { ref } : {}),
+		...(part ? { part: true } : {}),
 		...(agent ? { agent: String(agent) } : {}),
+		...(agentType ? { agentType: String(agentType) } : {}),
+		...(name ? { tool: String(name) } : {}),
+		...(seen ? { seen: true } : {}),
 	};
+	// 증거 폴더의 스크린샷을 이미지로 연 기록. audit이 증거에 적은 스크린샷과 대조한다
+	const shot =
+		read && /\.(?:png|jpe?g|webp)$/i.test(path)
+			? relative(root, resolve(cwd ? resolve(root, cwd) : root, path))
+					.split(sep)
+					.join("/")
+			: "";
 	const at = new Date().toISOString();
 	const lines = [
-		...names
-			.filter(Boolean)
-			.map((skill) =>
-				JSON.stringify({ t: at, skill: String(skill), ...extra }),
-			),
+		...(shot.startsWith("tasks/evidence/")
+			? [JSON.stringify({ t: at, shot, ...extra })]
+			: []),
+		...names.filter(Boolean).map((skill) =>
+			JSON.stringify({
+				t: at,
+				skill: String(skill),
+				...extra,
+				...(projectSkillRead(root, name, path, cmd, String(skill), cwd)
+					? { project: true }
+					: {}),
+			}),
+		),
 		...docs.map((doc) => JSON.stringify({ t: at, doc, ...extra })),
 	].map((l) => `${l}\n`);
 	if (!lines.length) return;
 	mkdirSync(join(root, ".prokit"), { recursive: true });
 	appendFileSync(join(root, SKILL_LOG), lines.join(""));
 }
-// 이 라운드(마지막 라운드 시작 줄, 없으면 연 날 KST 이후) Main의 기록: 읽은 것(uses: 스킬 이름(접두어·`/` 없이)이나
-// Next 문서 경로 next/dist/docs/…, 참조 경로 ref, 시각)과 evidence가 행을 채운 시각(fills). 서브에이전트(agent) 줄은 세지 않는다.
+// edit-guard가 허락한 편집: 고친 파일(프로젝트 상대 경로)과 고친 쪽(서브에이전트면 agentType)을 남긴다.
+// shortcut: PreToolUse에서 남기므로 다른 훅이나 사용자가 그 편집을 거절해도 남는다. 일한 기록 대조에만 쓴다
+export function logEdit(root, input) {
+	const { name, agent, agentType, seen } = hookCall(input, root);
+	const files = editFiles(root, input);
+	if (!files.length) return;
+	const at = new Date().toISOString();
+	const extra = {
+		...(agent ? { agent: String(agent) } : {}),
+		...(agentType ? { agentType: String(agentType) } : {}),
+		...(name ? { tool: String(name) } : {}),
+		...(seen ? { seen: true } : {}),
+	};
+	mkdirSync(join(root, ".prokit"), { recursive: true });
+	appendFileSync(
+		join(root, SKILL_LOG),
+		files
+			.map((f) => `${JSON.stringify({ t: at, edit: f, ...extra })}\n`)
+			.join(""),
+	);
+}
+// 이 라운드(마지막 라운드 시작 줄, 없으면 연 날 KST 이후)의 기록: Main이 읽은 것(uses: 스킬 이름(접두어·`/` 없이)이나
+// Next 문서 경로 next/dist/docs/…, 참조 경로 ref, 시각, 도구 tool, 프로젝트 판 project), 서브에이전트가 읽은 것(agentUses: 같은 꼴에 agentType),
+// evidence가 행을 채운 시각(fills), edit-guard가 허락한 편집(edits: 파일, 도구, agentType, main). 단계·과설계 방지 대조는 uses만 쓴다.
 // 기록 파일이 없거나 이 라운드에 읽은 기록이 하나도 없으면(훅이 없거나 아직 신뢰하지 않은 도구로 진행한 라운드) null이라 자기 신고다.
+// 호스트가 Main과 서브에이전트를 구별한 기록인지(seen 칸이 없는 옛 기록은 Claude Code 도구 이름으로 본다)
+const knows = (e) =>
+	e.seen === true || CC_TOOLS.has(e.tool) || CC_EDIT_TOOLS.has(e.tool);
 function skillLog(root, active) {
+	const log = roundLog(root, active);
+	return log && (log.uses.length || log.agentUses.length || log.edits.length)
+		? log
+		: null;
+}
+// 이 라운드 기록 전부(훅 기록 없이 행을 채운 시각만 있어도). 기록 파일이 없으면 null
+function roundLog(root, active) {
 	const p = join(root, SKILL_LOG);
 	if (!existsSync(p)) return null;
 	const since = Date.parse(
 		`${active?.meta.opened ?? "1970-01-01"}T00:00:00+09:00`,
 	);
 	let uses = [];
+	let agentUses = [];
 	let fills = [];
+	let edits = [];
+	let shots = [];
 	for (const line of readFileSync(p, "utf8").split("\n")) {
 		try {
 			const e = JSON.parse(line);
 			const t = Date.parse(e.t);
 			if ("round" in e) {
 				uses = [];
+				agentUses = [];
 				fills = [];
-			} else if (t >= since && !e.agent) {
-				if ("row" in e) fills.push({ t, row: e.row, text: e.text });
+				edits = [];
+				shots = [];
+			} else if (t >= since) {
+				if ("shot" in e) shots.push({ t, file: e.shot });
+				else if ("row" in e) {
+					if (!e.agent) fills.push({ t, row: e.row, text: e.text });
+				} else if ("edit" in e)
+					edits.push({
+						t,
+						file: e.edit,
+						tool: e.tool,
+						agentType: e.agentType,
+						main: !e.agent,
+						seen: knows(e),
+					});
 				else
-					uses.push({
+					(e.agent ? agentUses : uses).push({
 						t,
 						name: e.doc ?? skillName(String(e.skill)),
+						// `<플러그인>:<이름>` Skill 호출의 플러그인 이름
+						plugin: String(e.skill).includes(":")
+							? String(e.skill)
+									.replace(/^[/$]+/, "")
+									.split(":")[0]
+							: undefined,
 						ref: e.ref,
+						part: e.part === true,
+						tool: e.tool,
+						project: e.project === true,
+						agentType: e.agentType,
+						seen: knows(e),
 					});
 			}
 		} catch {}
 	}
-	return uses.length ? { uses, fills } : null;
+	return { uses, agentUses, fills, edits, shots };
 }
 function skillsLogged(root, active) {
 	const log = skillLog(root, active);
-	return log && new Set(log.uses.map((u) => u.name));
+	return log?.uses.length ? new Set(log.uses.map((u) => u.name)) : null;
 }
 const LOG_HINT =
-	"Claude Code는 Skill 도구로 부르거나(사용자 호출 전용이면 그 SKILL.md를 Read로 읽는다. Bash cat은 기록되지 않는다), Codex는 그 SKILL.md 경로를 그대로 cat으로, Antigravity는 read_file로 읽어 다시 진행한 뒤 적는다";
+	"Claude Code는 Skill 도구로 부르거나(사용자 호출 전용이면 그 SKILL.md를 Read로 읽는다. 공식 스킬은 Read로만 읽는다. Bash cat은 기록되지 않는다), Codex는 그 SKILL.md 경로를 그대로 cat으로(출력을 /dev/null로 버리면 세지 않는다), Antigravity는 read_file로 끝까지 읽어 다시 진행한 뒤 적는다";
 
-// 증거의 `사용:` 목록: `사용:` 뒤에 쉼표로 이어 적은 이름(뒤에 괄호 설명 가능)이다. →·;·|·문장 끝 마침표에서 끝난다.
+// 공식 스킬과 그 스킬로 일하는 에이전트의 정본은 skills.manifest.json이다(바꾸는 일은 prokit-skills-assign).
+// - skills: 기본 설치 스킬(공식 스킬). 프로젝트 판을 읽은 기록만 센다
+// - performers.agents: 일을 맡는 전문 에이전트. 대조표 행 문구에 이름이 있거나 구현 단계 행이면 증거에 `위임: <에이전트>`가 있어야 한다
+// - performers.skills: 공식 스킬마다 그 스킬로 일하는 에이전트. 이 에이전트가 읽은 기록만 그 스킬을 쓴 것으로 센다(Main이 읽으면 위임하지 않은 것이다).
+//   여기에 없는 공식 스킬(사용자에게 묻는 domain-modeling·grilling, 외부에 적용하는 neon-postgres-branches·배포, 기록 파일을 쓰는 impeccable 등)은 Main이 읽는다.
+// manifest가 없거나 performers가 없는 옛 판은 위임과 에이전트 대조를 하지 않는다.
+export function performers(root) {
+	try {
+		const m = JSON.parse(
+			readFileSync(join(root, "skills.manifest.json"), "utf8"),
+		);
+		return {
+			// 고르는 UI 스킬(impeccable, hallmark)도 공식 스킬이다. 기본 설치 목록에서 옮겨 왔다
+			official: new Set(
+				[
+					...m.skills,
+					...Object.values(m.uiSkills ?? {}).flatMap((i) => i.skills ?? []),
+				].flatMap((s) => s.skills),
+			),
+			agents: m.performers?.agents ?? [],
+			skills: m.performers?.skills ?? {},
+			// 매니페스트가 Claude 플러그인으로도 설치하는 스킬(skill-creator)은 `<플러그인>:<이름>` Skill 호출도 그 스킬을 쓴 것이다
+			plugins: new Set((m.claude?.plugins ?? []).map((x) => x.split("@")[0])),
+		};
+	} catch {
+		return { official: new Set(), agents: [], skills: {}, plugins: new Set() };
+	}
+}
+// 스킬 머리의 `parent: <이름>`(neon-postgres-branches → neon 등). 하위 스킬은 상위 스킬부터 읽는다
+function parentSkill(root, n) {
+	for (const d of [".agents/skills", ".claude/skills"]) {
+		try {
+			const head = readFileSync(join(root, d, n, "SKILL.md"), "utf8").split(
+				/^---\s*$/m,
+			)[1];
+			const p = head?.match(/^\s*parent:\s*["']?([a-z0-9-]+)["']?\s*$/m)?.[1];
+			if (p && p !== n) return p;
+		} catch {}
+	}
+	return null;
+}
+
+// 증거의 `사용:` 목록: `사용:` 뒤에 쉼표나 가운뎃점으로 이어 적은 이름(뒤에 괄호 설명 가능)이다. →·;·|·문장 끝 마침표에서 끝난다.
 // 이름 꼴이 아닌 항목(내장(계획), 파일 경로, "shadcn은 …" 같은 문장)은 뺀다.
 export function usedSkills(value) {
 	return usedItems(value).map((x) => x.name);
@@ -967,7 +1274,7 @@ function usedItems(value) {
 				(depth === 0 &&
 					(/[;→|]/.test(c) ||
 						(c === "." && /^\s|^$/.test(value[i + 1] ?? ""))));
-			if (depth === 0 && (c === "," || end)) {
+			if (depth === 0 && (c === "," || c === "·" || end)) {
 				items.push(item);
 				item = "";
 				if (end) break;
@@ -1005,6 +1312,38 @@ function rowSkills(text, layers) {
 		: [];
 	return [...new Set([...rowNamedSkills(text), ...named])];
 }
+// 첫 괄호 앞(행의 일 이름)에 나온 공식 스킬은 그 행의 일 자체다("[review] impeccable audit과 web-design-guidelines 코드 검사", "[verify] next-dev-loop …").
+// 괄호 안 "…는 shadcn", "(없으면 agent-browser)"처럼 조건이 붙은 이름은 보지 않는다
+function titleSkills(text, official) {
+	return [...text.split("(")[0].matchAll(/[a-z][a-z0-9-]*/g)]
+		.map((m) => m[0])
+		.filter((n) => official.has(n));
+}
+// 디자인 단계 행("주 UI 스킬의 … 단계")은 고른 주 UI 스킬(.dev-cycle.json uiSkill의 첫 값. 기록이 없으면 impeccable)의 일이다.
+// 카탈로그 항목의 스킬을 본다. none이면 카탈로그 none 항목의 스킬(기본 AI가 참고하는 frontend-design)이고, 그 항목이 없으면 없다
+const UI_STAGE_RE = /주 UI 스킬/;
+export const mainUiSkill = (config, catalog = {}) => {
+	const main = [config.uiSkill ?? "impeccable"].flat()[0];
+	if (!main) return [];
+	const names = (catalog[main]?.skills ?? []).flatMap((e) => e.skills);
+	return names.length ? names : main === "none" ? [] : [main];
+};
+// prokit-reviewer focus마다 리뷰어가 그 행을 하면서 읽는 공식 스킬(에이전트 정의 focus 표에서 조건이 붙지 않은 것).
+// 설치되어 있고 performers에서 리뷰어가 맡은 것만 본다. plan·code focus의 스킬은 모두 조건이 붙어 있어 보지 않는다
+export const REVIEW_FOCUS_SKILLS = {
+	ui: ["web-design-guidelines", "shadcn"],
+	security: [
+		"better-auth-best-practices",
+		"better-auth-security-best-practices",
+	],
+	db: [
+		"supabase-postgres-best-practices",
+		"supabase",
+		"neon",
+		"neon-postgres",
+		"neon-postgres-egress-optimizer",
+	],
+};
 function rowNamedSkills(text) {
 	const open = text.indexOf("(");
 	if (open < 0) return [];
@@ -1021,21 +1360,133 @@ function rowNamedSkills(text) {
 		.filter((s) => /^[a-z][a-z0-9-]*$/.test(s));
 }
 // 모든 행: 행 문구의 스킬은 `사용:`에 있어야 하고, prokit-web을 썼으면 읽은 Next 번들 문서를 적는다.
+// 행 문구에 전문 에이전트가 있거나 구현 단계 행이면 증거에 `위임: <에이전트>`가 있어야 한다(Main은 직접 하지 않는다).
 // 이 라운드의 기록이 있으면 `사용:`의 스킬(프로젝트 스킬이나 플러그인 접두어)·괄호에 적은 그 스킬의 참조 파일·적은 Next 문서를
-// 읽은 기록이 있어야 하고, 행 문구의 스킬은 앞 행(다른 행)을 마지막으로 채운 뒤 읽은 기록이어야 한다("그 행을 할 때 부른다").
+// 읽은 기록이 있어야 하고, 행 문구의 스킬은 앞 행(다른 행)을 처음 채운 뒤 읽은 기록이어야 한다("그 행을 할 때 부른다").
+// 공식 스킬은 프로젝트 판을 읽은 기록만, performers.skills의 스킬은 맡은 에이전트가 읽은 기록만 센다. 상위 스킬(parent)도 같은 쪽이 읽어야 한다.
 function usageProblem(root, config, active) {
 	const log = skillLog(root, active);
-	const logged = log && new Set(log.uses.map((u) => u.name));
-	const { layers } = classify(roundFiles(root, active), config);
+	const all = log
+		? [
+				...log.uses.map((u) => ({ ...u, main: true })),
+				...log.agentUses.map((u) => ({ ...u, main: false })),
+			]
+		: [];
+	const logged = log && new Set(all.map((u) => u.name));
+	const {
+		official,
+		agents: performerAgents,
+		skills: skillAgents,
+		plugins,
+	} = performers(root);
+	const { layers, auth } = classify(roundFiles(root, active), config);
+	const uiMain = mainUiSkill(
+		config,
+		readJson(join(root, "skills.manifest.json"))?.uiSkills,
+	);
+	// 계층 에이전트가 맡는 계층: 인증 파일은 서버(D) 몫이다(editGuard와 같다)
+	const agentLayers = [...new Set([...layers, ...(auth ? ["D"] : [])])].filter(
+		(c) => LAYER_AGENTS[c],
+	);
+	// 행 문구에 이름이 있는 계층 에이전트의 계층. 없으면(H·F 구현 방식 밖의 일반 행) 모든 계층이다
+	const namedLayers = (text) =>
+		Object.keys(LAYER_AGENTS).filter((c) => text.includes(LAYER_AGENTS[c]));
+	// 호스트 훅이 Main과 서브에이전트를 구별한 기록이 있는 라운드인지
+	const seenHost = Boolean(log) && [...all, ...log.edits].some((u) => u.seen);
+	// 훅 기록(스킬 읽기·편집)이 하나라도 있는 라운드. 훅을 설치한 호스트(Claude Code·Codex·Antigravity)는 모두 서브에이전트를 구별한다
+	const hooked = Boolean(log);
+	// 이 라운드의 코드·DB 리뷰 행(B·D·F는 code, E는 db, H는 하네스 변경 리뷰의 code)
+	const codeReview = active.rows.find((x) =>
+		/^\[review\].*prokit-reviewer\((code|db)\)/.test(x.text),
+	);
+	// 배치에 없는 상위 스킬(parent)은 하위 스킬을 맡은 에이전트도 읽는다(neon-postgres를 맡은 쪽이 neon도). Main도 읽을 수 있다
+	const parentAgents = {};
+	for (const [c, a] of Object.entries(skillAgents)) {
+		const p = parentSkill(root, c);
+		if (p && !skillAgents[p])
+			parentAgents[p] = [...new Set([...(parentAgents[p] ?? []), ...a])];
+	}
+	// agents: 읽은 기록을 세는 에이전트, main: Main이 읽은 기록을 세는지(배치에 없는 스킬).
+	// Main 기록은 호스트가 구별한 기록(seen: Claude Code·Codex·Antigravity 훅)이면 Main이 읽은 것이고, 구별 값이 없는 기록이면 자기 신고로 받는다
+	const counts = (
+		n,
+		u,
+		agents = skillAgents[n] ?? parentAgents[n],
+		main = !skillAgents[n],
+	) =>
+		u.name === n &&
+		(!official.has(n) || u.project || plugins.has(u.plugin)) &&
+		(u.main ? main || !u.seen : Boolean(agents?.includes(u.agentType)));
+	const read = (n, after, agents, main) =>
+		all.some(
+			(u) =>
+				u.t > (after ?? Number.NEGATIVE_INFINITY) && counts(n, u, agents, main),
+		);
+	// 공식 스킬을 맡지만 수행 에이전트가 아닌 쪽(prokit-reviewer). 행 문구에 이름이 있거나 증거에 위임: 으로 적은 행에서 맡긴 쪽으로 본다
+	// (구현 행에 "리뷰어 지적 반영"처럼 이름만 나온 것은 아니다)
+	const reviewers = [...new Set(Object.values(skillAgents).flat())].filter(
+		(a) => !performerAgents.includes(a),
+	);
+	// 이 행에서 맡긴 쪽(delegated)이 있으면 맡은 공식 스킬은 그쪽이 읽은 기록만 센다.
+	// 배치에 없는 prokit-* 스킬은 Main과 이 행에서 맡긴 쪽이 읽은 기록을 센다(에이전트도 위임 지시의 prokit-*를 읽는다)
+	const scoped = (n, delegated) => {
+		if (!delegated.length) return undefined;
+		const a = skillAgents[n] ?? parentAgents[n];
+		if (!a) return official.has(n) ? undefined : delegated;
+		return a.filter((x) => delegated.includes(x));
+	};
+	const why = (n, delegated = []) => {
+		const agents = skillAgents[n];
+		const own = scoped(n, delegated) ?? agents;
+		const seen = all.filter((u) => u.name === n);
+		const hints = [];
+		if (agents && delegated.length && !own.length)
+			hints.push(
+				`${n}는 이 행에서 위임한 ${delegated.join("·")}가 맡는 스킬이 아니다(맡는 에이전트: ${agents.join("·")}). 맡는 에이전트에 위임하거나 prokit-skills-assign으로 배치를 바꾼다.`,
+			);
+		if (agents && seen.some((u) => u.main && u.seen))
+			hints.push(
+				`${n}는 ${agents.join("·")}가 읽고 따르는 공식 스킬이라 Main이 읽은 기록은 세지 않는다. 위임 지시에 .agents/skills/${n}/SKILL.md를 넣어 맡긴다.`,
+			);
+		if (own?.length && seen.some((u) => !u.main && !own.includes(u.agentType)))
+			hints.push(
+				`${n}를 맡지 않았거나 이 행에서 위임하지 않은 에이전트가 읽은 기록은 세지 않는다.`,
+			);
+		if (official.has(n) && seen.some((u) => !u.project))
+			hints.push(
+				`${n}는 프로젝트 판(.agents/skills/${n}/SKILL.md)을 읽은 기록만 센다. Claude Code는 Skill 도구가 아니라 Read로 읽는다(Skill 호출은 이름이 같은 개인 스킬을 불러올 수 있다).`,
+			);
+		return hints.join(" ");
+	};
 	return (r) => {
 		const value = bare(r.evidence);
-		if (!value || /^(blocked|미실행|n\/a)\s*:/i.test(value)) return null;
+		if (!value) return null;
+		const skip = value.match(/^(blocked|미실행|n\/a)\s*:/i)?.[1];
+		if (skip) {
+			// 구현 행을 건너뛰었는데 그 행의 계층 코드가 바뀌었으면 누군가(대개 Main) 직접 고친 것이다.
+			// F의 계층별 구현 행(B·D·E)은 그 계층만 본다: 화면만 바꾼 F에서 DB 구현 행은 N/A로 둔다
+			const own = namedLayers(r.text);
+			const code =
+				performerAgents.length && /구현 단계/.test(r.text)
+					? agentLayers.filter((c) => !own.length || own.includes(c))
+					: [];
+			return code.length
+				? `구현 행인데 이 라운드 diff에 계층 코드(케이스 ${code.join("·")})가 있어 ${skip}로 둘 수 없다. 그 계층 에이전트가 구현했으면 위임: <에이전트>(사용: …)로 적고, 맡길 에이전트가 없어 blocked로 남기려면 바꾼 계층 코드를 되돌린다`
+				: null;
+		}
 		const used = usedSkills(value);
 		const names = new Set(used.map(skillName));
 		const rowNeed = rowSkills(r.text, layers).filter((n) =>
 			isProjectSkill(root, n),
 		);
-		const need = rowNeed.filter((n) => !names.has(n));
+		const titleNeed = [
+			...titleSkills(r.text, official),
+			...(UI_STAGE_RE.test(r.text) ? uiMain : []),
+		].filter((n) => !rowNeed.includes(n) && isProjectSkill(root, n));
+		// 행 일 이름의 스킬은 훅 기록이 있으면 읽은 기록으로 보고, 기록이 없는 호스트면 사용:에 적은 자기 신고로 본다
+		const need = [...rowNeed, ...(log ? [] : titleNeed)].filter(
+			(n) => !names.has(n),
+		);
 		if (need.length)
 			return `행 문구의 ${need.join(", ")}를 읽고 따른 뒤 증거에 사용: ${need.join(", ")}처럼 적는다`;
 		if (
@@ -1043,7 +1494,101 @@ function usageProblem(root, config, active) {
 			!/next\/dist\/docs\/|Next 문서:\s*N\/A:\s*\S/.test(value)
 		)
 			return "prokit-web을 썼으면 읽은 Next 번들 문서 경로(apps/web/node_modules/next/dist/docs/…)를 적는다. 쓰거나 바꾼 Next API가 없으면 Next 문서: N/A: 사유로 적는다";
-		if (!logged) return null;
+		const named = performerAgents.filter((a) => r.text.includes(a));
+		const want =
+			named.length || !/구현 단계/.test(r.text) ? named : performerAgents;
+		const delegated = [
+			...new Set([
+				...[...value.matchAll(/위임:\s*`?([a-z][a-z0-9-]*)/g)]
+					.map((m) => m[1])
+					.filter((a) => performerAgents.includes(a)),
+				...reviewers.filter(
+					(a) =>
+						r.text.includes(a) ||
+						new RegExp(`위임:\\s*\`?${a}(?![a-z0-9-])`).test(value),
+				),
+			]),
+		];
+		const said = delegated.filter((a) => want.includes(a));
+		// 서브에이전트를 구별하지 못하는 호스트(훅 기록에 구별 값이 없다)에서는 Main이 직접 하고 자기 신고로 적는다
+		if (/^degraded\s*:/i.test(value)) {
+			if (hooked)
+				return "이 라운드는 훅 기록이 있다(훅을 설치한 Claude Code·Codex·Antigravity는 서브에이전트를 구별한다). degraded로 Main이 직접 하지 않고 위임: <에이전트>로 맡긴다";
+			if (
+				!codeReview ||
+				/^(blocked|미실행|n\/a|degraded)\s*:/i.test(bare(codeReview.evidence))
+			)
+				return "degraded(Main 직접)는 fresh prokit-reviewer(code·db) 리뷰를 받은 라운드에서만 받는다. 대조표에 그 리뷰 행이 있고 실제로 리뷰해야 한다";
+		} else {
+			// 안내 예시는 이 라운드 diff의 계층 에이전트, 계층 파일이 없으면 prokit-implementer(하네스·계층 밖)
+			const eg =
+				[...agentLayers.map((c) => LAYER_AGENTS[c]), "prokit-implementer"].find(
+					(a) => want.includes(a),
+				) ?? want[0];
+			if (want.length && !said.length)
+				return `이 행은 ${want.join("·")}에 맡긴다. 증거에 위임: ${eg}(사용: <그 에이전트가 읽은 공식 스킬>) → 결과처럼 적는다. 맡길 에이전트가 없으면 Main이 직접 하지 않고 blocked: 사유로 남긴다. 호스트가 서브에이전트를 구별하지 못하면 degraded: Main 직접(<호스트>)으로 적는다`;
+			// 계층 에이전트 여럿을 적은 행(F 구현 방식)은 이 라운드 diff의 계층마다 그 에이전트에 맡긴다
+			const lack =
+				namedLayers(r.text).length > 1
+					? agentLayers
+							.map((c) => LAYER_AGENTS[c])
+							.filter((a) => performerAgents.includes(a) && !said.includes(a))
+					: [];
+			if (lack.length)
+				return `이 라운드 diff의 계층은 계층마다 그 에이전트에 맡긴다. ${lack.join("·")}의 위임: <에이전트>(사용: …)도 적는다(DB, 서버, 화면 순서로 맡기고 앞 계층이 바꾼 계약을 다음 지시에 넣는다)`;
+		}
+		if (!log) return null;
+		// 이 행을 처음 채운 기록과 그보다 앞서 처음 채운 다른 행. 증거를 고쳐 다시 채운 기록은 순서에 넣지 않는다
+		// (앞 행을 다시 채워도 뒤 행의 기준이 바뀌지 않는다). 채운 기록은 행 문구로 짝짓는다(--upgrade가 번호를 바꾼다. 문구가 없는 옛 줄만 번호로)
+		const row = active.rows.indexOf(r) + 1;
+		const own = (x) => (x.text ? x.text === r.text : x.row === row);
+		const key = (x) => x.text ?? `#${x.row}`;
+		const first = log.fills.filter(
+			(x, i, a) => a.findIndex((y) => key(y) === key(x)) === i,
+		);
+		const mine = first.find(own)?.t;
+		const before =
+			mine === undefined ? [] : first.filter((x) => !own(x) && x.t < mine);
+		const rowOf = (x) =>
+			active.rows.find((y, i) =>
+				x.text ? y.text === x.text : i + 1 === x.row,
+			);
+		// 호스트가 Main과 서브에이전트를 구별한 기록(seen)이 있는 라운드는 위임한 에이전트가 이 행을 하며 일했는지 본다.
+		// 같은 에이전트에 맡기지 않은 앞 행을 처음 채운 뒤의 기록(스킬 읽기나 편집)이어야 한다. 한 번 맡겨 이어진 행 여럿을 채운 것은 센다
+		const work = [...all, ...log.edits];
+		const cc = seenHost;
+		const since = (a) =>
+			before
+				.filter(
+					(x) =>
+						!new RegExp(`위임:\\s*\`?${a}(?![a-z0-9-])`).test(
+							bare(rowOf(x)?.evidence ?? ""),
+						),
+				)
+				.at(-1)?.t;
+		// 계층 에이전트 여럿을 적은 행(F 구현 방식)은 계층 행에서 맡긴 일을 모아 적는다. 다른 행에서 위임한 에이전트는 그 행에서 일한 기록을 본다
+		const elsewhere = (a) =>
+			namedLayers(r.text).length > 1 &&
+			active.rows.some(
+				(y) =>
+					y !== r &&
+					new RegExp(`위임:\\s*\`?${a}(?![a-z0-9-])`).test(bare(y.evidence)),
+			);
+		const idle = cc
+			? said.filter(
+					(a) =>
+						!elsewhere(a) &&
+						!work.some(
+							(u) =>
+								u.agentType === a &&
+								u.t > (since(a) ?? Number.NEGATIVE_INFINITY),
+						),
+				)
+			: [];
+		if (idle.length)
+			return idle.some((a) => since(a) !== undefined)
+				? `${idle.join(", ")}가 이 행을 하면서 일한 기록이 없다(앞 행을 채운 뒤 ${SKILL_LOG}의 agentType). 앞 행 때 한 일은 세지 않는다. Agent 도구로 ${idle.join(", ")}에 이 행을 맡겨 그 에이전트가 스킬을 읽고 일한 뒤 적는다`
+				: `${idle.join(", ")}가 이 라운드에서 일한 기록이 없다(${SKILL_LOG}의 agentType). Agent 도구로 ${idle.join(", ")}에 맡겨 그 에이전트가 스킬을 읽고 일한 뒤 적는다`;
 		const docs = [
 			...value.matchAll(/next\/dist\/docs\/(?:[^\s,;)|`'"]*[^\s,;)|`'".])?/g),
 		]
@@ -1061,7 +1606,7 @@ function usageProblem(root, config, active) {
 		const miss = used.filter(
 			(u) =>
 				(u.includes(":") || isProjectSkill(root, skillName(u))) &&
-				!logged.has(skillName(u)),
+				!read(skillName(u), undefined, scoped(skillName(u), delegated)),
 		);
 		// `impeccable(reference/craft-floor.md)`처럼 괄호에 그 스킬 폴더의 파일을 적었으면 그 파일을 읽은 기록이 있어야 한다
 		const refs = usedItems(value).flatMap(({ name: u, note }) => {
@@ -1074,26 +1619,57 @@ function usageProblem(root, config, active) {
 						[".agents/skills", ".claude/skills"].some((d) =>
 							existsSync(join(root, d, n, f)),
 						) &&
-						!log.uses.some(
+						!all.some(
 							(x) => x.name === n && (x.ref === f || x.ref?.endsWith(`/${f}`)),
 						),
 				)
 				.map((f) => `${u}(${f})`);
 		});
 		if (miss.length || docs.length || refs.length)
-			return `증거의 ${[...miss, ...refs, ...docs].join(", ")}를 이 라운드에서 부르거나 읽은 기록이 없다(${SKILL_LOG}). ${LOG_HINT}`;
-		// 행 문구의 스킬: 다른 행을 마지막으로 채운 시각(이 행을 채운 시각 전) 뒤에 읽어야 한다. 채운 기록이 없으면 보지 않는다.
+			return `증거의 ${[...miss, ...refs, ...docs].join(", ")}를 이 라운드에서 부르거나 읽은 기록이 없다(${SKILL_LOG}). ${[
+				...new Set(
+					miss.map((u) => why(skillName(u), delegated)).filter(Boolean),
+				),
+			].join(" ")} ${LOG_HINT}`.replace(/\s+(?=Claude Code는)/, " ");
+		// 행 일 이름의 스킬과 리뷰 focus의 공식 스킬은 맡는 쪽이 이 라운드에서 읽은 기록이 있어야 한다.
+		// 한 번 맡긴 일로 행 여럿을 채우거나 행을 늦게 채울 수 있어 채운 순서는 보지 않는다
+		const titleUnread = titleNeed.filter(
+			(n) => !read(n, undefined, scoped(n, delegated)),
+		);
+		if (titleUnread.length)
+			return `행 문구의 ${titleUnread.map((n) => `${n}(${skillAgents[n]?.join("·") ?? "Main"})`).join(", ")}를 이 라운드에서 맡는 쪽(괄호)이 읽은 기록이 없다(${SKILL_LOG}). 맡는 쪽이 읽고 따른 뒤 적는다. ${[...new Set(titleUnread.map((n) => why(n, delegated)).filter(Boolean))].join(" ")} ${LOG_HINT}`;
+		const focus = r.text.match(/prokit-reviewer\((ui|security|db)\)/)?.[1];
+		const lensUnread = (REVIEW_FOCUS_SKILLS[focus] ?? []).filter(
+			(n) =>
+				isProjectSkill(root, n) &&
+				(skillAgents[n] ?? parentAgents[n])?.includes("prokit-reviewer") &&
+				!read(n, undefined, ["prokit-reviewer"], false),
+		);
+		if (lensUnread.length)
+			return `prokit-reviewer(${focus})가 읽는 ${lensUnread.join(", ")}를 이 라운드에서 리뷰어가 읽은 기록이 없다(${SKILL_LOG}). 리뷰 지시에 .agents/skills/<이름>/SKILL.md 경로를 넣어 다시 맡긴 뒤 적는다. ${LOG_HINT}`;
+		// 하위 스킬(`parent:`가 있는 스킬)을 읽었으면 그 쪽(Main이나 맡은 에이전트)이 상위 스킬도 읽어야 한다
+		const orphan = [...names]
+			.map((n) => [n, parentSkill(root, n)])
+			.filter(
+				([n, p]) =>
+					p &&
+					isProjectSkill(root, p) &&
+					!read(p, undefined, skillAgents[n] ?? null, !skillAgents[n]),
+			);
+		if (orphan.length)
+			return orphan
+				.map(
+					([n, p]) =>
+						`${n}는 상위 스킬 ${p}부터 읽는다(SKILL.md의 parent). ${skillAgents[n] ? `${skillAgents[n].join("·")}가` : "Main이"} ${p} 스킬을 읽은 기록이 없다`,
+				)
+				.join(". ");
+		// 행 문구의 스킬: 앞서 처음 채운 다른 행 가운데 마지막 행의 시각(이 행을 처음 채운 시각 전) 뒤에 읽어야 한다. 채운 기록이 없으면 보지 않는다.
 		// 채운 기록은 행 문구로 짝짓는다(--upgrade가 번호를 바꾼다. 문구가 없는 옛 줄만 번호로).
 		// 상한은 두지 않는다: audit이 거부한 뒤 다시 읽으면 다시 채우지 않아도 통과한다(행을 채울 때 evidence가 바로 알린다)
-		const row = active.rows.indexOf(r) + 1;
-		const own = (x) => (x.text ? x.text === r.text : x.row === row);
-		const mine = log.fills.filter(own).at(-1)?.t;
 		if (mine === undefined) return null;
-		const prev = log.fills.filter((x) => !own(x) && x.t < mine).at(-1);
+		const prev = before.at(-1);
 		if (!prev) return null;
-		const stale = rowNeed.filter(
-			(n) => !log.uses.some((u) => u.name === n && u.t > prev.t),
-		);
+		const stale = rowNeed.filter((n) => !read(n, prev.t));
 		return stale.length
 			? `행 문구의 ${stale.join(", ")}를 이 행을 하면서 읽은 기록이 없다(#${active.rows.findIndex((x) => x.text === prev.text) + 1 || prev.row}을 채운 뒤). 앞 행 때 읽은 기록은 세지 않는다. 다시 읽고 따른 뒤 적는다. ${LOG_HINT}`
 			: null;
@@ -1376,11 +1952,53 @@ export function writeTable(
 	const extra = [...(active?.extra ?? [])];
 	if (active && upgrade) {
 		const old = new Map(active.rows.map((r) => [r.text, r.evidence]));
-		for (const r of rows) r.evidence = old.get(r.text) ?? "";
 		const kept = new Set(rows.map((r) => r.text));
+		// 템플릿 판이 바뀌어 문구만 달라진 행: 단계 이름(괄호·화살표 앞)이 옛 표와 새 표에 하나씩뿐이면 같은 행으로 보고 증거를 옮긴다.
+		// 채운 시각 기록도 새 문구로 하나 더 남겨 audit의 순서 확인이 그 행을 그대로 본다.
+		const stepOf = (t) => t.split(/\s[(→]/)[0].trim();
+		const only = (list) => {
+			const n = new Map();
+			for (const r of list)
+				n.set(stepOf(r.text), (n.get(stepOf(r.text)) ?? 0) + 1);
+			return (r) => n.get(stepOf(r.text)) === 1;
+		};
+		const oldOnly = only(active.rows);
+		const newOnly = only(rows);
+		const moved = new Set();
+		const fills = roundLog(root, active)?.fills ?? [];
+		const refill = [];
+		for (const r of rows) {
+			if (old.has(r.text)) {
+				r.evidence = old.get(r.text);
+				continue;
+			}
+			const i = active.rows.findIndex(
+				(o) =>
+					!kept.has(o.text) &&
+					oldOnly(o) &&
+					newOnly(r) &&
+					stepOf(o.text) === stepOf(r.text),
+			);
+			const o = active.rows[i];
+			r.evidence = o?.evidence ?? "";
+			if (!o) continue;
+			moved.add(o.text);
+			// audit은 행을 처음 채운 시각을 보므로 그 시각을 옮긴다
+			const t = fills.find((x) =>
+				x.text ? x.text === o.text : x.row === i + 1,
+			)?.t;
+			if (t !== undefined)
+				refill.push(
+					`${JSON.stringify({ t: new Date(t).toISOString(), row: i + 1, text: r.text })}\n`,
+				);
+		}
+		if (write && refill.length) {
+			mkdirSync(join(root, ".prokit"), { recursive: true });
+			appendFileSync(join(root, SKILL_LOG), refill.join(""));
+		}
 		// 새 케이스에 없는 이전 행(직접 추가한 행 포함)은 끝의 사용자 확인 행 앞에 둔다.
 		const carried = active.rows
-			.filter((r) => !kept.has(r.text))
+			.filter((r) => !kept.has(r.text) && !moved.has(r.text))
 			.filter((r) => {
 				if (
 					rows.some((row) => row.text.includes("prokit-reviewer(plan)")) &&
@@ -1648,6 +2266,8 @@ export function evidenceProblem(e) {
 		return /^(blocked|미실행)\s*:\s*\S/i.test(v)
 			? null
 			: "blocked·미실행에 사유가 없다 (blocked: 사유)";
+	if (/^degraded(?![a-z])/i.test(v) && !/^degraded\s*:\s*\S/i.test(v))
+		return "degraded에 사유가 없다 (degraded: Main 직접(<호스트>))";
 	if (PLACEHOLDERS.has(v.toLowerCase()) || v.replace(/\s/g, "").length < 4)
 		return "형식만 채운 증거다";
 	return null;
@@ -1727,7 +2347,13 @@ export function audit(
 			);
 	});
 	const X = active.meta.case;
-	const cls = classify(roundFiles(root, active), config);
+	const files = roundFiles(root, active);
+	const cls = classify(files, config);
+	const warnings = [
+		...shellEdits(root, config, active, files),
+		...skillWarnings(root, active),
+		...shotWarnings(root, active),
+	];
 	if (!["C", "F"].includes(X) && ![X, "A"].includes(cls.pathCase)) {
 		problems.push(
 			`케이스 상향 필요: 현재 diff 판정은 ${cls.pathCase} → pnpm dev-cycle table ${cls.pathCase} --write --upgrade`,
@@ -1804,9 +2430,169 @@ export function audit(
 	return {
 		ok: problems.length === 0,
 		problems,
+		...(warnings.length ? { warnings } : {}),
 		case: X,
 		pathCase: cls.pathCase,
 	};
+}
+// 편집 훅은 셸 편집(리다이렉션, cp, sed)을 보지 못한다. 훅이 편집을 기록한 라운드에서 기준 커밋에 있던 계층 파일인데
+// 편집 기록이 없으면 알린다. 사용자가 직접 고쳤을 수 있어 막지 않는다. 생성 명령이 새로 만든 파일과 마이그레이션 폴더는 보지 않는다
+function shellEdits(root, config, active, files) {
+	const edits = skillLog(root, active)?.edits ?? [];
+	if (!active.meta.base || !edits.some((e) => e.seen)) return [];
+	const edited = new Set(edits.map((e) => e.file));
+	const loose = files.filter((f) => {
+		// 생성 명령 결과(마이그레이션)와 편집 도구로 고칠 수 없는 바이너리 자산은 보지 않는다
+		if (
+			edited.has(f) ||
+			/(^|\/)migrations\//.test(f) ||
+			/\.(woff2?|ttf|otf|eot|png|jpe?g|gif|webp|avif|ico|bmp|tiff?|mp[34]|webm|mov|wav|ogg|pdf)$/i.test(
+				f,
+			)
+		)
+			return false;
+		const c = classify([f], config);
+		if (!c.layers.some((l) => LAYER_AGENTS[l]) && !c.auth) return false;
+		return (
+			spawnSync("git", ["cat-file", "-e", `${active.meta.base}:${f}`], {
+				cwd: root,
+			}).status === 0
+		);
+	});
+	return loose.length
+		? [
+				`편집 기록이 없는 계층 파일: ${loose.join(", ")}. 셸로 고쳤으면 편집 훅의 계층 확인을 건너뛴 것이다. 그 계층 에이전트가 편집 도구(Edit·Write, Codex apply_patch)로 다시 고치게 한다. 사용자가 직접 고친 파일이나 생성 명령(shadcn add 등) 결과면 그대로 둔다`,
+			]
+		: [];
+}
+
+const NEXT_FLAG_SKILLS = {
+	cacheComponents: [
+		"next-cache-components-adoption",
+		"next-cache-components-optimizer",
+	],
+	partialPrefetching: [
+		"next-partial-prefetching-adoption",
+		"next-partial-prefetching-optimizer",
+	],
+};
+// 막지 않는 알림 세 가지. Main이 에이전트에 맡긴 공식 스킬을 직접 읽은 기록, 이 라운드에서 일한 에이전트가 읽지 않은 맡은 공식 스킬,
+// 공식 스킬의 SKILL.md를 앞부분만 읽은 기록이다. 맡은 스킬은 상황이 맞을 때만 읽으므로(에이전트 정의의 "맡는 공식 스킬" 표) 막지 않고 Main이 상황을 확인하게 한다
+function skillWarnings(root, active) {
+	const log = skillLog(root, active);
+	if (!log) return [];
+	const {
+		skills: skillAgents,
+		official,
+		agents: performerAgents,
+	} = performers(root);
+	const out = [];
+	const mainRead = [
+		...new Set(
+			log.uses.filter((u) => u.seen && skillAgents[u.name]).map((u) => u.name),
+		),
+	];
+	if (mainRead.length)
+		out.push(
+			`Main이 에이전트에 맡긴 공식 스킬을 직접 읽었다: ${mainRead.map((n) => `${n}(${skillAgents[n].join("·")} 몫)`).join(", ")}. 위임 지시에는 경로만 넣고 읽기와 적용은 맡은 에이전트가 한다`,
+		);
+	const worked = [
+		...new Set(
+			[...log.agentUses, ...log.edits].map((u) => u.agentType).filter(Boolean),
+		),
+		// 리뷰어는 focus마다 읽는 스킬이 달라 알리지 않는다(필수 스킬은 리뷰 행 검사가 본다)
+	].filter((a) => performerAgents.includes(a));
+	// Next 설정을 켜야 상황이 생기는 스킬은 그 설정이 없으면 알리지 않는다(켜는 일은 사용자 요청으로 한다)
+	const nextConfig = ["ts", "mjs", "js"]
+		.map((x) => join(root, `apps/web/next.config.${x}`))
+		.filter((p) => existsSync(p))
+		.map((p) => readFileSync(p, "utf8"))
+		.join("\n");
+	const off = new Set(
+		Object.entries(NEXT_FLAG_SKILLS)
+			.filter(([f]) => !new RegExp(`\\b${f}\\s*:\\s*true\\b`).test(nextConfig))
+			.flatMap(([, s]) => s),
+	);
+	const unread = worked
+		.map((a) => [
+			a,
+			Object.keys(skillAgents).filter(
+				(n) =>
+					skillAgents[n].includes(a) &&
+					!off.has(n) &&
+					isProjectSkill(root, n) &&
+					!log.agentUses.some(
+						(u) => u.agentType === a && u.name === n && u.project,
+					),
+			),
+		])
+		.filter(([, l]) => l.length);
+	if (unread.length)
+		out.push(
+			`이 라운드에서 일한 에이전트가 읽지 않은 맡은 공식 스킬: ${unread.map(([a, l]) => `${a}: ${l.join(", ")}`).join("; ")}. 에이전트 정의의 "맡는 공식 스킬" 표에서 그 상황이 이번 일에 있었으면 그 에이전트에 다시 맡기고, 없었으면 그대로 둔다`,
+		);
+	// 나눠 읽어 끝까지 읽은 기록이 같은 쪽에 있으면 알리지 않는다
+	const all = [...log.uses, ...log.agentUses];
+	const who = (u) => `${u.name}(${u.agentType ?? "Main"})`;
+	const partial = [
+		...new Set(all.filter((u) => u.part && official.has(u.name)).map(who)),
+	].filter(
+		(k) => !all.some((u) => u.project && !u.part && !u.ref && who(u) === k),
+	);
+	if (partial.length)
+		out.push(
+			`공식 스킬의 SKILL.md를 앞부분만 읽었다(Read limit, read_file EndLine): ${partial.join(", ")}. 그 스킬로 한 일이면 끝까지 읽고 다시 확인하게 한다`,
+		);
+	return out;
+}
+
+// 증거에 적은 스크린샷 가운데 이 라운드에서 아무도 이미지로 열지 않은 것(browser.md: 보지 않은 스크린샷은 증거가 아니다).
+// 이미지 읽기를 기록하는 호스트(Claude Code Read, Antigravity read_file·view_file)의 라운드만 본다. 막지 않는다.
+// shortcut: tasks/evidence/로 시작하는 경로만 본다. {a,b} 묶음과 *는 펼치고, 앞 경로를 빼고 이어 쓴 파일 이름은 보지 않는다
+function shotWarnings(root, active) {
+	const log = roundLog(root, active);
+	if (
+		!log ||
+		![...log.uses, ...log.agentUses].some((u) =>
+			["Read", "read_file", "view_file"].includes(u.tool),
+		)
+	)
+		return [];
+	const expand = (s) => {
+		const m = s.match(/\{([^{}]*)\}/);
+		return m ? m[1].split(",").flatMap((x) => expand(s.replace(m[0], x))) : [s];
+	};
+	const cited = new Set();
+	for (const r of active.rows)
+		for (const m of String(r.evidence ?? "").matchAll(
+			/tasks\/evidence\/(?:[^\s,;|)`'"{}]|\{[^{}\s]*\})+?\.(?:png|jpe?g|webp)(?![\w])/gi,
+		))
+			for (const p of expand(m[0])) {
+				if (!p.includes("*")) {
+					cited.add(p);
+					continue;
+				}
+				const dir = p.slice(0, p.lastIndexOf("/"));
+				const re = new RegExp(
+					`^${p
+						.slice(dir.length + 1)
+						.replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+						.replaceAll("*", "[^/]*")}$`,
+				);
+				try {
+					for (const f of readdirSync(join(root, dir)))
+						if (re.test(f)) cited.add(`${dir}/${f}`);
+				} catch {}
+			}
+	const opened = new Set(log.shots.map((x) => x.file));
+	const unseen = [...cited].filter(
+		(p) => existsSync(join(root, p)) && !opened.has(p),
+	);
+	return unseen.length
+		? [
+				`증거에 적은 스크린샷 가운데 이 라운드에서 이미지로 열어 본 기록이 없는 것: ${unseen.slice(0, 10).join(", ")}${unseen.length > 10 ? ` 외 ${unseen.length - 10}개` : ""}. 보지 않은 스크린샷은 증거가 아니다(prokit-verify의 references/browser.md). 찍은 에이전트나 Main이 열어 보고 확인한 뒤 적는다`,
+			]
+		: [];
 }
 
 export function delegationCompletionProblem(result, runtime) {
@@ -2405,7 +3191,61 @@ export function guard(root, config, since) {
 // 편집 전 확인(PreToolUse 훅): 열린 라운드 없이 코드·하네스 파일을 고치려 하면 막을 사유, 아니면 null.
 // pre-commit guard는 커밋할 때에야 알려서, 라운드를 건너뛰고 다 고친 뒤에 알게 된다. 셸로 고치는 것은 보지 않는다.
 // 고칠 파일: Claude Code는 file_path·notebook_path, Antigravity는 Path·TargetFile, Codex apply_patch는 패치 본문의 파일 줄이다.
+// 열린 라운드에서는 Main(호스트가 서브에이전트가 아니라고 알려 준 호출)이 계층 코드를 고치려 하면 막는다.
+// 계층 코드는 그 계층 전문 에이전트가 고친다. performers가 없는 옛 판과 구별 값이 없는 입력은 막지 않는다.
 export function editGuard(root, config, input) {
+	const { name, agent, agentType, seen } = hookCall(input, root);
+	const rels = editFiles(root, input);
+	if (!rels.length) return null;
+	// 실행 확인 에이전트는 코드를 고치지 않고 확인 기록과 스크린샷만 tasks/evidence/에 쓴다
+	const outside =
+		agent && agentType === "prokit-runtime-checker"
+			? rels.filter((f) => !f.startsWith("tasks/evidence/"))
+			: [];
+	if (outside.length)
+		return `dev-cycle: prokit-runtime-checker는 tasks/evidence/에 확인 기록과 스크린샷만 쓴다(${outside.join(", ")}). 고칠 일은 보고에 적어 Main이 그 파일을 맡는 에이전트에 맡기게 한다.`;
+	const cls = classify(rels, config);
+	if (cls.pathCase === "A" && !cls.auth) return null;
+	const md = readTodo(root, config);
+	if (md && parseActive(md)) {
+		if (!(CC_EDIT_TOOLS.has(name) || seen)) return null;
+		const { agents } = performers(root);
+		const owners = (c) =>
+			[
+				...new Set([
+					...c.layers.map((l) => LAYER_AGENTS[l]),
+					...(c.auth ? [LAYER_AGENTS.D] : []),
+				]),
+			].filter((a) => a && agents.includes(a));
+		if (agent) {
+			// 계층 파일은 그 계층 에이전트만 고친다(prokit-implementer 등 다른 서브에이전트도). 병렬로 맡겨도 누가 어느 파일을 고쳤는지 계층으로 나뉜다
+			const foreign = rels.filter((f) => {
+				const own = owners(classify([f], config));
+				return own.length && !own.includes(agentType);
+			});
+			return foreign.length
+				? `dev-cycle: ${agentType}는 다른 계층 에이전트가 맡는 파일(${foreign.join(", ")})을 고치지 않는다. 고칠 일이 있으면 보고에 적어 Main이 그 계층 에이전트(${owners(classify(foreign, config)).join("·")})에 맡기게 한다.`
+				: null;
+		}
+		const who = owners(cls);
+		return who.length
+			? `dev-cycle: Main은 계층 코드(${rels.join(", ")})를 직접 고치지 않는다. 서브에이전트 도구(Claude Code Agent, Codex spawn_agent, Antigravity invoke_subagent)로 ${who.join("·")}에 맡긴다. 위임 지시에 바꿀 파일, 읽을 공식 스킬(.agents/skills/<이름>/SKILL.md), 돌릴 검사를 넣는다(prokit-dev-cycle의 references/delegation.md "공식 스킬 위임").`
+			: null;
+	}
+	return `dev-cycle: 열린 라운드 없이 ${rels.join(", ")}(케이스 ${cls.pathCase} 경로)를 고치려 한다. prokit-dev-cycle대로 pnpm dev-cycle status를 보고 pnpm dev-cycle table <케이스> --write --title "<요약>"로 라운드를 연 뒤 고친다. 코드를 바꾸지 않는 요청이면 이 파일을 고치지 않는다.`;
+}
+// 이름이나 포트로 골라 끄는 명령: 같은 기기의 다른 프로젝트 서버까지 끈다(2026-11-02 실측: 실행 확인 에이전트의 pkill -f next-server가 다른 저장소 개발 서버를 모두 껐다).
+// shortcut: 셸을 해석하지 않고 명령 첫머리의 pkill·killall과 pgrep·lsof 결과를 kill에 넘기는 꼴만 본다. 다른 우회가 실측되면 더한다
+const KILL_BY_NAME_RE =
+	/(?:^|[;&|(\n]|\$\()\s*(?:sudo\s+)?(?:pkill|killall)\b|\b(?:pgrep|lsof)\b[^;&\n]*\|\s*xargs\s+(?:-\S+\s+)*kill\b|(?:^|[;&|(\n])\s*kill\b[^;&|\n]*\$\(\s*(?:pgrep|lsof)\b/;
+// 셸 실행 전 확인(PreToolUse 훅, Claude Code·Codex Bash): 이름·포트로 골라 끄는 명령이면 막을 사유, 아니면 null
+export function shellGuard(input) {
+	return KILL_BY_NAME_RE.test(String(hookCall(input).t.command ?? ""))
+		? "dev-cycle: 이름이나 포트로 골라 끄는 명령(pkill, killall, pgrep·lsof 결과를 넘긴 kill)은 쓰지 않는다. 같은 기기의 다른 프로젝트 서버까지 꺼진다. 띄울 때 적어 둔 PID와 그 프로세스 그룹만 끈다(kill -- -<PGID>). 다른 프로세스가 포트를 쓰면 끄지 않고 보고한다."
+		: null;
+}
+// 편집 도구 입력에서 고칠 프로젝트 안 파일(상대 경로)
+function editFiles(root, input) {
 	const { name, t } = hookCall(input);
 	const one =
 		t.file_path ?? t.notebook_path ?? t.TargetFile ?? t.Path ?? t.AbsolutePath;
@@ -2419,15 +3259,7 @@ export function editGuard(root, config, input) {
 						),
 					].map((m) => m[1].trim())
 				: [];
-	const rels = files
-		.map((f) => projectPath(root, input?.cwd, f))
-		.filter(Boolean);
-	if (!rels.length) return null;
-	const cls = classify(rels, config);
-	if (cls.pathCase === "A" && !cls.auth) return null;
-	const md = readTodo(root, config);
-	if (md && parseActive(md)) return null;
-	return `dev-cycle: 열린 라운드 없이 ${rels.join(", ")}(케이스 ${cls.pathCase} 경로)를 고치려 한다. prokit-dev-cycle대로 pnpm dev-cycle status를 보고 pnpm dev-cycle table <케이스> --write --title "<요약>"로 라운드를 연 뒤 고친다. 코드를 바꾸지 않는 요청이면 이 파일을 고치지 않는다.`;
+	return files.map((f) => projectPath(root, input?.cwd, f)).filter(Boolean);
 }
 // 프로젝트 안 파일이면 /로 나눈 상대 경로, 밖이면 null.
 function projectPath(root, cwd, file) {
@@ -3266,7 +4098,7 @@ export function main(argv, root = process.cwd()) {
 	const hookRoot =
 		process.env.CLAUDE_PROJECT_DIR ||
 		dirname(dirname(fileURLToPath(import.meta.url)));
-	// PostToolUse 훅(Claude Code Skill|Read, Codex Bash, Antigravity read_file|view_file). 어떤 오류도 세션을 막지 않게 조용히 끝낸다.
+	// PostToolUse 훅(Claude Code Skill|Read, Codex Bash, Antigravity read_file|view_file|invoke_subagent). 어떤 오류도 세션을 막지 않게 조용히 끝낸다.
 	// Antigravity는 PostToolUse 출력으로 JSON 객체를 기대한다.
 	if (cmd === "skill-log") {
 		let input = "";
@@ -3275,6 +4107,14 @@ export function main(argv, root = process.cwd()) {
 			logSkill(hookRoot, input);
 		} catch {}
 		if (input.includes('"toolCall"')) console.log("{}");
+		return 0;
+	}
+	// SessionStart 훅(Antigravity): 서브에이전트 대화를 부른 에이전트 이름에 묶는다. 오류는 세션을 막지 않는다
+	if (cmd === "agent-start") {
+		try {
+			bindSession(hookRoot, JSON.parse(readFileSync(0, "utf8")));
+		} catch {}
+		console.log("{}");
 		return 0;
 	}
 	// PreToolUse 훅(Claude Code Edit|Write|MultiEdit|NotebookEdit, Codex apply_patch, Antigravity 편집 도구).
@@ -3288,6 +4128,7 @@ export function main(argv, root = process.cwd()) {
 			raw = readFileSync(0, "utf8");
 			input = JSON.parse(raw);
 			why = editGuard(hookRoot, loadConfig(hookRoot), input);
+			if (!why) logEdit(hookRoot, input);
 		} catch {}
 		// 문자열 검사는 깨진 입력에만 쓴다. 읽힌 Claude 입력의 편집 글에 "toolCall"이 있어도 Antigravity로 보지 않는다.
 		if (input ? input.toolCall : raw.includes('"toolCall"')) {
@@ -3298,6 +4139,15 @@ export function main(argv, root = process.cwd()) {
 			);
 			return 0;
 		}
+		if (why) console.error(why);
+		return why ? 2 : 0;
+	}
+	// PreToolUse 훅(Claude Code·Codex Bash): exit 2가 그 명령을 막고 stderr를 에이전트에게 보인다. 깨진 입력은 막지 않는다
+	if (cmd === "shell-guard") {
+		let why = null;
+		try {
+			why = shellGuard(JSON.parse(readFileSync(0, "utf8")));
+		} catch {}
 		if (why) console.error(why);
 		return why ? 2 : 0;
 	}
@@ -3426,6 +4276,7 @@ export function main(argv, root = process.cwd()) {
 					? "audit 통과"
 					: ["audit 실패:", ...r.problems.map((p) => `  ❌ ${p}`)].join("\n"),
 			);
+			if (!json) for (const w of r.warnings ?? []) console.log(`  ⚠️ ${w}`);
 			return r.ok ? 0 : 1;
 		}
 		case "resource":

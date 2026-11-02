@@ -28,8 +28,8 @@ AI 에이전트는 똑똑하지만 부탁한 대로만 움직여서, 바쁘면 �
 | 부분 | 파일 | 하는 일 |
 |---|---|---|
 | 규칙 문서 | `AGENTS.md`, `CLAUDE.md`, `GLOSSARY.md`, `docs/domain/project.md` | 에이전트가 시작할 때 읽는 개발 원칙과 공통 규칙, 용어집, 프로젝트 소개. `CLAUDE.md`는 `@AGENTS.md`로 같은 지침을 읽어요 |
-| 스킬 | `.agents/skills/prokit-*` 6개와 공식 스킬 | 분야마다 일하는 법을 알려 줘요. 대조표의 행마다 그 단계에서 읽을 공식 스킬이 정해져 있어요 |
-| 역할 나누기 | `.claude/agents/prokit-implementer.md`, `specialist-reviewer.md`, `prokit-reviewer.md` | 코디네이터가 수행자와 읽기 전용 분석·리뷰를 나눠 맡겨요. `prokit-reviewer(...)` 통합 리뷰 행은 최종 리뷰어만 채울 수 있어요 |
+| 스킬 | `.agents/skills/prokit-*` 7개와 공식 스킬 | 분야마다 일하는 법을 알려 줘요. `prokit-*`는 일을 나누고 맡기고 검수하고, 공식 스킬은 그 일을 맡은 전문 에이전트가 읽고 따라요. 대조표의 행마다 그 단계에서 읽을 공식 스킬과 맡는 에이전트가 정해져 있어요 |
+| 역할 나누기 | `.claude/agents/`의 전문 수행 에이전트(`prokit-ui-builder.md`, `prokit-runtime-checker.md`, `prokit-implementer.md`), `specialist-reviewer.md`, `prokit-reviewer.md` | 코디네이터는 직접 구현하지 않고 계층별 수행자와 읽기 전용 분석·리뷰에 나눠 맡겨요. `prokit-reviewer(...)` 통합 리뷰 행은 최종 리뷰어만 채울 수 있어요 |
 | 대조표와 audit | `scripts/dev-cycle.mjs`, `.dev-cycle.json`, `docs/dev-workflow.md`, `tasks/` | 작업을 케이스로 나누고 케이스별 대조표를 연 뒤 빈칸이 없는지 검사해요. |
 | 자동 검사 | `.dev-cycle.json`의 `commands`, `pnpm skills:check`, `pnpm agents:check`, `pnpm dev-cycle secrets`, `pnpm vercel:deploy … --check` | 타입, 린트, 빌드, 테스트, 스킬과 에이전트 상태, 비밀값, 배포 준비를 명령으로 확인해요. 실행한 결과가 곧 증거예요 |
 
@@ -37,7 +37,7 @@ AI 에이전트는 똑똑하지만 부탁한 대로만 움직여서, 바쁘면 �
 
 코드를 바꾸는 작업은 `prokit-dev-cycle`에서 시작해요. 요청이 어떤 케이스인지 정하고 대조표를 연 다음, 행마다 분야별 스킬과 프로세스 스킬을 불러 써요.
 
-- **전문 공급자 연결**: 코디네이터는 실제 출처와 범위를 확인한 전문 공급자를 `prokit-implementer`에 연결해요.
+- **전문 공급자 연결**: 코디네이터는 실제 출처와 범위를 확인한 전문 공급자와 공식 스킬을 그 계층의 전문 수행 에이전트에 연결해요.
 - **보완 검토**: 공급자 자체의 내장 리뷰가 없을 때만 `specialist-reviewer`에 맡겨요.
 - **최종 통합 리뷰**: `prokit-reviewer`가 매번 해요.
 - **두뇌 연결**: 두뇌를 골랐다면 단계 행(요구 명확화·계획·구현·디버깅)에서 그 두뇌의 스킬을 쓰고, 증거 칸에 쓴 스킬 이름을 적어요. 구현을 맡길 때는 그 스킬 이름을 위임 지시에 넣어요. 라운드가 열려 있을 때의 `pnpm dev-cycle status`와 `table --write`가 `두뇌:` 줄로 고른 두뇌를 알려 줘요. 두뇌가 주는 에이전트는 읽기 전용 보완 검토로만 쓰고 최종 통합 리뷰는 그대로 `prokit-reviewer`가 해요([두뇌와 선택 스킬](../skills/brains.md)).

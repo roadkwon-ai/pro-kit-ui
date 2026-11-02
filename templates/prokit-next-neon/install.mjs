@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // pro-kit 템플릿 설치기. install.sh가 이 파일을 실행한다. prokit-next-neon과 prokit-next-supabase에서 내용이 같다(tests/shared-files.test.mjs).
 // 사용법: install.sh <project-dir> [--diff] [--skip-skills] [--with-global]
-//          [--brain <이름|none>] [--simplicity <이름|none>] [--matt <스킬>[,…]] [--optional <묶음>[,…]]
+//          [--brain <이름|none>] [--simplicity <이름|none>] [--ui-skill <이름|none>] [--matt <스킬>[,…]] [--optional <묶음>[,…]]
 import { spawnSync } from "node:child_process";
 import {
   appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, statSync, symlinkSync, writeFileSync,
@@ -19,8 +19,10 @@ const MERGE_MD = new Set(["AGENTS.md", "CLAUDE.md"]);
 const IGNORE = new Set([".DS_Store", ".omc"]);
 // 설치기가 첫 복사 뒤 프로젝트 값으로 채우는 파일. 템플릿과 늘 다르므로 "유지(템플릿과 다름)"·--diff에서 뺀다.
 const FILLED = new Set([".dev-cycle.json"]);
+// 프로젝트가 채워 가는 파일(용어집, 서비스 문서, 할 일과 기록 목록). 템플릿은 빈 틀이라 다르면 프로젝트 쪽이 맞다. --diff에서 diff를 보이지 않는다.
+const OWNED = new Set(["GLOSSARY.md", "docs/domain/project.md", "tasks/todo.md", "tasks/archive/README.md"]);
 // 값을 받는 인자. 그대로 skills-setup.mjs에 넘긴다.
-const VALUE_FLAGS = new Set(["--brain", "--simplicity", "--matt", "--optional"]);
+const VALUE_FLAGS = new Set(["--brain", "--simplicity", "--ui-skill", "--matt", "--optional"]);
 // 설치기만 쓰는 값 인자. .dev-cycle.json에 기록한다(projectType, legacy.path).
 // --default-branch: 도입 브랜치(prokit/setup)에서 계속 작업할 때 dev-cycle의 기준 브랜치로 기록한다.
 const OWN_VALUE_FLAGS = new Set(["--project-type", "--legacy", "--default-branch"]);
@@ -28,7 +30,7 @@ const BOOL_FLAGS = new Set(["--diff", "--skip-skills", "--with-global", "--adopt
 export const PROJECT_TYPES = ["new", "early", "operating", "migration"];
 // --adopt: Better-T-Stack 구조가 아닌 Next.js 프로젝트에는 하네스만 복사한다. AGENTS.md·CLAUDE.md 블록은 adopt/에서 가져온다.
 const ADOPT_DIR = join(TEMPLATE_DIR, "adopt");
-const ADOPT_SKILLS = ["prokit-dev-cycle", "prokit-verify", "prokit-web", "prokit-ui", "prokit-skills-update", "prokit-skills-manage"];
+const ADOPT_SKILLS = ["prokit-dev-cycle", "prokit-verify", "prokit-web", "prokit-ui", "prokit-skills-update", "prokit-skills-manage", "prokit-skills-assign"];
 const ADOPT_SCRIPTS = ["dev-cycle", "delegation", "resource-guard", "skills-setup", "sync-agents", "load-keys"];
 const ADOPT_ONLY = new Set(["AGENTS.md", "CLAUDE.md", ".dev-cycle.json", "skills.manifest.json", "GLOSSARY.md", "docs/dev-workflow.md", "docs/domain/project.md"]);
 export function adoptFile(rel) {
@@ -51,8 +53,8 @@ export const adoptRules = (rules) => [...rules.filter((r) => r.case === "H" && r
 // auth.config.ts·lib/auth-client.ts·lib/next-auth.ts·app/(auth)/·app/(protected)/도 인증 경로다(보안 리뷰 행이 붙는다).
 export const ADOPT_AUTH = "(^|/)(auth|middleware|proxy)(/|\\.[cm]?[jt]sx?$)|(^|/)(next-)?auth([.-][\\w.-]*)?\\.[cm]?[jt]sx?$|(^|/)\\((auth[\\w-]*|protected)\\)/|(^|/)\\.env\\.schema$";
 const OLD_SETUP =
-  "이 프로젝트의 scripts/skills-setup.mjs는 --brain·--simplicity·--matt(또는 두뇌 여러 개)를 모르는 옛 판이다 → 템플릿의 scripts/skills-setup.mjs와 skills.manifest.json을 먼저 옮긴 뒤 pnpm skills:setup을 다시 실행한다";
-const USAGE = "사용법: install.sh <project-dir> [--diff] [--skip-skills] [--with-global] [--brain <이름>[,…]|none] [--simplicity <이름|none>] [--matt <스킬>[,…]] [--optional <묶음>[,…]] [--project-type new|early|operating|migration] [--legacy <기존 코드 경로>] [--adopt] [--default-branch <브랜치>]";
+  "이 프로젝트의 scripts/skills-setup.mjs는 --brain·--simplicity·--ui-skill·--matt(또는 두뇌 여러 개)를 모르는 옛 판이다 → 템플릿의 scripts/skills-setup.mjs와 skills.manifest.json을 먼저 옮긴 뒤 pnpm skills:setup을 다시 실행한다";
+const USAGE = "사용법: install.sh <project-dir> [--diff] [--skip-skills] [--with-global] [--brain <이름>[,…]|none] [--simplicity <이름|none>] [--ui-skill <이름>[,…]|none] [--matt <스킬>[,…]] [--optional <묶음>[,…]] [--project-type new|early|operating|migration] [--legacy <기존 코드 경로>] [--adopt] [--default-branch <브랜치>]";
 
 const run = (cmd, args, opts = {}) => spawnSync(cmd, args, { encoding: "utf8", ...opts });
 
@@ -128,7 +130,7 @@ function walk(dir, base = dir) {
 // 운영 중인 프로젝트에는 앱 폴더에 파일을 더하지 않는다(쓰지 않는 제작 표시 컴포넌트).
 const APP_CREDIT = "apps/web/src/components/prokit-credit.tsx";
 export function copyFiles(target, { diff = false, adopt = false, operating = false } = {}) {
-  const r = { copied: [], appended: [], same: [], kept: [], filled: [] };
+  const r = { copied: [], appended: [], same: [], kept: [], filled: [], owned: [] };
   for (const rel of walk(FILES_DIR).filter((f) => (!adopt || adoptFile(f)) && !(operating && f === APP_CREDIT))) {
     const src = adopt && MERGE_MD.has(rel) ? join(ADOPT_DIR, rel) : join(FILES_DIR, rel);
     const dest = join(target, rel);
@@ -148,6 +150,10 @@ export function copyFiles(target, { diff = false, adopt = false, operating = fal
     }
     if (FILLED.has(rel)) {
       r.filled.push(rel);
+      continue;
+    }
+    if (OWNED.has(rel)) {
+      r.owned.push(rel);
       continue;
     }
     const text = cur.toString("utf8");
@@ -339,6 +345,8 @@ const GITIGNORE = [
     "**/.impeccable/questions/",
   ],
   ["# taste-skill 작업 파일(선택 묶음 taste: 방향 시트, 기록, 검사 화면)", "/.taste-skill/"],
+  // hallmark는 화면 찍기·전후 기록을 .hallmark/에 쓴다. log.json(테마 돌려 쓰기 기록)과 design.md는 공유 산출물이라 무시하지 않는다
+  ["# hallmark 작업 파일(UI 스킬 hallmark: 검사 화면, 사전 점검 캐시)", "**/.hallmark/shots/", "**/.hallmark/preflight.json"],
   // Better-T-Stack은 apps/web만 .env*를 무시한다. 루트와 packages/*의 .env.production 같은 파일도 막는다
   ["# 환경별 .env (비밀값). 배포 환경변수는 Vercel에 둔다", ".env.*", "!.env.schema", "!.env.example"],
   ["# pnpm export:html 결과(정적 HTML)", "/html/"],
@@ -371,10 +379,13 @@ const KEY_HOOK = 'node "$CLAUDE_PROJECT_DIR/scripts/load-keys.mjs"';
 const LOG_HOOK = 'node "$CLAUDE_PROJECT_DIR/scripts/dev-cycle.mjs" skill-log';
 // PreToolUse 훅: 열린 dev-cycle 라운드 없이 코드·하네스 파일을 Edit·Write로 고치려 하면 막는다.
 const EDIT_HOOK = 'node "$CLAUDE_PROJECT_DIR/scripts/dev-cycle.mjs" edit-guard';
+// PreToolUse 훅: 이름·포트로 골라 끄는 셸 명령(pkill 등)을 막는다. 같은 기기의 다른 프로젝트 서버까지 끄기 때문이다.
+const SHELL_HOOK = 'node "$CLAUDE_PROJECT_DIR/scripts/dev-cycle.mjs" shell-guard';
 const HOOKS = [
   { event: "SessionStart", mark: "scripts/load-keys.mjs", entry: { hooks: [{ type: "command", command: KEY_HOOK }] } },
   { event: "PostToolUse", mark: "dev-cycle.mjs\" skill-log", entry: { matcher: "Skill|Read", hooks: [{ type: "command", command: LOG_HOOK }] } },
   { event: "PreToolUse", mark: "dev-cycle.mjs\" edit-guard", entry: { matcher: "Edit|Write|MultiEdit|NotebookEdit", hooks: [{ type: "command", command: EDIT_HOOK }] } },
+  { event: "PreToolUse", mark: "dev-cycle.mjs\" shell-guard", entry: { matcher: "Bash", hooks: [{ type: "command", command: SHELL_HOOK }] } },
 ];
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 export function ensureClaudeHook(target, { dryRun = false } = {}) {
@@ -402,7 +413,7 @@ export function ensureClaudeHook(target, { dryRun = false } = {}) {
   }
   return true;
 }
-const HOOK_MANUAL = `.claude/settings.json을 읽지 못했다. hooks.SessionStart에 ${KEY_HOOK}, hooks.PostToolUse(matcher "Skill|Read")에 ${LOG_HOOK}, hooks.PreToolUse(matcher "Edit|Write|MultiEdit|NotebookEdit")에 ${EDIT_HOOK} 명령을 직접 더하세요`;
+const HOOK_MANUAL = `.claude/settings.json을 읽지 못했다. hooks.SessionStart에 ${KEY_HOOK}, hooks.PostToolUse(matcher "Skill|Read")에 ${LOG_HOOK}, hooks.PreToolUse(matcher "Edit|Write|MultiEdit|NotebookEdit")에 ${EDIT_HOOK}, hooks.PreToolUse(matcher "Bash")에 ${SHELL_HOOK} 명령을 직접 더하세요`;
 
 // git pre-commit 훅: 열린 dev-cycle 라운드나 닫은 라운드 기록 없이 코드·하네스를 커밋하지 못하게 한다(scripts/dev-cycle.mjs guard).
 // 어느 세션·도구가 커밋해도 돈다. 훅은 .git 안에 있어 이 사본에만 있고, 새로 clone한 사본은 release.mjs의 검사가 뒤를 받친다.
@@ -435,14 +446,14 @@ const gitHookLines = (h, dryRun) =>
       : [];
 
 // 벤더 스킬은 upstream 원본이다. `pnpm check`(biome check --write .)가 고쳐 쓰면 skills-lock.json의 contentHash와 어긋난다.
-// OMC·OMX·pro-kit·impeccable 상태 파일과 .claude/settings.json, .codex/(OMX 생성물)는 도구가 다시 쓰는 파일이다.
+// OMC·OMX·pro-kit·impeccable·hallmark 상태 파일과 .claude/settings.json, .codex/(OMX 생성물)는 도구가 다시 쓰는 파일이다.
 // .agents/agents/(agents:sync가 만드는 Antigravity 에이전트)는 Biome 2.6이 YAML 머리를 다시 맞추면 agents:check가 깨진다.
 // biome.json은 vcs.useIgnoreFile이 꺼져 있어 .gitignore만으로는 빠지지 않는다.
 // 마이그레이션(drizzle-kit), schema/auth.ts(`auth:generate`), src/env.ts(varlock이 설치·실행 때마다 다시 씀)는 생성물이라
 // 포맷해도 다시 생성하면 지적이 돌아온다. html/(pnpm export:html이 만든 정적 사이트)은 빌드 결과물이다.
 // 마크다운: Biome 2.6부터 표를 칸 너비로 맞추는데, dev-cycle이 tasks/todo.md에 쓰는 대조표와 AGENTS.md 표의 edition 주석 칸이 매번 다시 바뀌어 lint가 실패한다.
 const BIOME_IGNORES = [
-  "!.agents/skills", "!.agents/agents", "!skills-lock.json", "!**/.omc", "!**/.omx", "!**/.prokit", "!**/.impeccable", "!.claude", "!.codex",
+  "!.agents/skills", "!.agents/agents", "!skills-lock.json", "!**/.omc", "!**/.omx", "!**/.prokit", "!**/.impeccable", "!**/.hallmark", "!.claude", "!.codex",
   "!tasks/evidence",
   "!packages/db/src/migrations", "!packages/db/src/schema/auth.ts", "!apps/web/src/env.ts", "!packages/db/src/env.ts",
   "!html", "!**/*.md",
@@ -501,6 +512,32 @@ export function ensureTurboAgentGuidance(target, { dryRun = false } = {}) {
   return "added";
 }
 
+// turbo의 엄격 환경 변수 모드는 프록시 변수를 작업에 넘기지 않는다(2.11.7 실측: HTTPS_PROXY가 작업 안에서 비어 있음).
+// 프록시 뒤(회사망, Codex 샌드박스)에서 빌드의 next/font/google 받기가 실패하므로 globalPassThroughEnv에 넣는다. 통과 변수는 캐시 해시에 들어가지 않는다.
+// 이미 globalPassThroughEnv가 있으면 사용자 목록이라 고치지 않고, 프록시 변수가 빠졌으면 "manual"로 알린다. 반환은 ensureTurboAgentGuidance와 같다.
+export const TURBO_PROXY_ENV = ["HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "no_proxy"];
+export function ensureTurboProxyEnv(target, { dryRun = false } = {}) {
+  const p = join(target, "turbo.json");
+  if (!existsSync(p)) return null;
+  const text = readFileSync(p, "utf8");
+  let cfg;
+  try {
+    cfg = JSON.parse(text);
+  } catch {
+    return "manual";
+  }
+  if ("globalPassThroughEnv" in cfg) return TURBO_PROXY_ENV.every((v) => cfg.globalPassThroughEnv?.includes?.(v)) ? null : "manual";
+  const next = text.replace(/^([ \t]*)"\$schema"[^\r\n]*,(\r?\n)/m, `$&$1"globalPassThroughEnv": ${JSON.stringify(TURBO_PROXY_ENV)},$2`);
+  let top = false;
+  try {
+    top = JSON.stringify(JSON.parse(next).globalPassThroughEnv) === JSON.stringify(TURBO_PROXY_ENV);
+  } catch {}
+  if (!top) return "manual";
+  if (!dryRun) writeFileSync(p, next);
+  return "added";
+}
+
+const TURBO_PROXY_MANUAL = `turbo.json globalPassThroughEnv에 ${TURBO_PROXY_ENV.join(", ")}를 직접 더하세요 (프록시 뒤에서 빌드가 글꼴을 받게)`;
 const TURBO_MANUAL = 'turbo.json에 "agentGuidance": false를 직접 추가하세요 (turbo가 AGENTS.md에 규칙 블록을 쓰지 않게)';
 
 // adopt: 프로젝트의 ESLint가 벤더 스킬(upstream 원본)과 하네스 스크립트까지 검사하면 설치만으로 `lint`가 실패한다.
@@ -572,7 +609,7 @@ export function main(argv) {
     return 0;
   }
   // 모르는 플래그를 버리면 오타(--dif, --skip-skill)가 실제 설치가 된다. 값 플래그의 = 형식은 아래에서 따로 알린다.
-  const unknown = [...flags].filter((f) => !BOOL_FLAGS.has(f) && !/^--(brain|simplicity|matt|optional|project-type|legacy|default-branch)=/.test(f));
+  const unknown = [...flags].filter((f) => !BOOL_FLAGS.has(f) && !/^--(brain|simplicity|ui-skill|matt|optional|project-type|legacy|default-branch)=/.test(f));
   if (unknown.length) {
     console.error(`모르는 옵션: ${unknown.join(" ")}\n${USAGE}`);
     return 1;
@@ -585,10 +622,12 @@ export function main(argv) {
   // 이미 adopt로 설치한 프로젝트는 --adopt 없이 다시 실행해도 adopt로 본다(Better-T-Stack 파일이 섞이지 않게).
   let adopted = false;
   let recordedType;
+  let recordedUi;
   try {
     const cfg = JSON.parse(readFileSync(join(resolve(args[0]), ".dev-cycle.json"), "utf8"));
     adopted = cfg.adopt === true;
     recordedType = cfg.projectType;
+    recordedUi = cfg.uiSkill;
   } catch {}
   const adopt = flags.has("--adopt") || adopted;
   const projectType = own["project-type"] ?? (adopt ? "operating" : undefined);
@@ -612,7 +651,12 @@ export function main(argv) {
     console.error(picked.error);
     return 1;
   }
-  const choices = ["brain", "simplicity"].filter((k) => k in picked).map((k) => `${k} ${[].concat(picked[k]).join(",")}`);
+  const choices = ["brain", "simplicity", "uiSkill"].filter((k) => k in picked).map((k) => `${k} ${[].concat(picked[k]).join(",")}`);
+  // 고른 UI 스킬(기록이 없으면 impeccable. skills-setup의 unset). 다음 할 일 안내만 바꾼다
+  // 스킬마다 할 일은 매니페스트 uiSkills.<이름>.next에 둔다(새 UI 스킬을 더해도 이 파일은 그대로다)
+  const manifest = JSON.parse(readFileSync(join(FILES_DIR, "skills.manifest.json"), "utf8"));
+  const uiSkills = [].concat(picked.uiSkill ?? recordedUi ?? "impeccable").filter((n) => n !== "none");
+  const uiNext = uiSkills.flatMap((n) => manifest.uiSkills?.[n]?.next ?? []);
   // realpath: 대상이 심볼릭 링크로 연결된 경로(예: macOS의 /tmp)면 node가 하위 프로세스로 실행하는
   // 스크립트의 import.meta.url과 argv 경로가 달라져 CLI 진입점 판별이 어긋난다. 실재 경로로 고정한다.
   const abs = resolve(args[0]);
@@ -660,13 +704,15 @@ export function main(argv) {
   const oldSetup =
     setupText !== null &&
     (((choices.length > 0 || picked.matt.length > 0) && !setupText.includes('"--brain"')) ||
-      (Array.isArray(picked.brain) && !setupText.includes("multi: true")))
+      (Array.isArray(picked.brain) && !setupText.includes("multi: true")) ||
+      ("uiSkill" in picked && !setupText.includes('"--ui-skill"')))
       ? [`경고: ${OLD_SETUP}`]
       : [];
   if (diff) {
     // 미리 보기: 파일을 쓰지 않고 차이와 더할 항목만 보여 준다. 반영은 그 프로젝트의 dev-cycle 라운드에서 한다.
     const biome = ensureBiomeConfig(target, { dryRun: true, extra: adopt ? [] : biomeExtra, adopt });
     const turbo = adopt ? null : ensureTurboAgentGuidance(target, { dryRun: true });
+    const proxy = adopt ? null : ensureTurboProxyEnv(target, { dryRun: true });
     const eslint = adopt ? ensureEslintIgnores(target, { dryRun: true }) : null;
     const hook = ensureClaudeHook(target, { dryRun: true });
     const gitHook = ensureGitHook(target, { dryRun: true });
@@ -674,6 +720,7 @@ export function main(argv) {
       `파일: 복사 예정 ${files.copied.join(", ") || "없음"}, 덧붙임 예정 ${files.appended.join(", ") || "없음"}, 동일 ${files.same.length}, 유지(템플릿과 다름) ${kept}`,
       ...files.kept.map((k) => k.diff),
       ...files.filled.map((f) => `${f}: 설치기가 채움, 유지`),
+      ...files.owned.map((f) => `${f}: 프로젝트가 채우는 파일, 유지(옮기지 않는다)`),
       (() => {
         const scripts = addScripts(target, { dryRun: true, wrapResources: freshBts, adopt });
         return `package.json scripts 추가 예정: ${scripts.added.join(", ") || "없음"}${scripts.wrapped.length ? `, resource 래퍼 ${scripts.wrapped.join(", ")}` : ""}`;
@@ -681,13 +728,14 @@ export function main(argv) {
       `.gitignore 추가 예정: ${ensureGitignore(target, { dryRun: true, adopt }).join(", ") || "없음"}`,
       `biome.json 추가 예정: ${Array.isArray(biome) ? biome.join(", ") || "없음" : "없음"}`,
       ...(adopt ? adoptBiomeWarning(target, biome) : jsoncWarning(target, biome)),
-      `turbo.json 추가 예정: ${turbo === "added" ? '"agentGuidance": false' : "없음"}`,
+      `turbo.json 추가 예정: ${[turbo === "added" && '"agentGuidance": false', proxy === "added" && "globalPassThroughEnv(프록시 변수)"].filter(Boolean).join(", ") || "없음"}`,
       ...(Array.isArray(eslint) ? [`ESLint 무시 추가 예정: ${eslint.join(", ") || "없음"}`] : []),
       ...(eslint === "manual" ? [`경고: ${ESLINT_MANUAL}`] : []),
-      `.claude/settings.json 추가 예정: ${hook ? "SessionStart 훅(scripts/load-keys.mjs), PostToolUse 훅(부른 스킬 기록), PreToolUse 훅(라운드 없는 편집 막기)" : "없음"}`,
+      `.claude/settings.json 추가 예정: ${hook ? "SessionStart 훅(scripts/load-keys.mjs), PostToolUse 훅(부른 스킬 기록), PreToolUse 훅(라운드 없는 편집 막기, 이름으로 프로세스 끄기 막기)" : "없음"}`,
       ...(hook === null ? [`경고: ${HOOK_MANUAL}`] : []),
       ...gitHookLines(gitHook, true),
       ...(turbo === "manual" ? [`경고: ${TURBO_MANUAL}`] : []),
+      ...(proxy === "manual" ? [`경고: ${TURBO_PROXY_MANUAL}`] : []),
       ...legacyWarning(target),
       ...(choices.length ? [`.dev-cycle.json 기록 예정: ${choices.join(", ")} (고르지 않은 설치본 정리는 반영할 때 skills-setup이 한다)`] : []),
       ...(project.length ? [`.dev-cycle.json 기록 예정: ${project.join(", ")}`] : []),
@@ -706,6 +754,7 @@ export function main(argv) {
   const gitignore = ensureGitignore(target, { adopt });
   const biomeConfig = ensureBiomeConfig(target, { extra: adopt ? [] : biomeExtra, adopt });
   const turbo = adopt ? null : ensureTurboAgentGuidance(target);
+  const proxy = adopt ? null : ensureTurboProxyEnv(target);
   const eslint = adopt ? ensureEslintIgnores(target) : null;
   const hook = ensureClaudeHook(target);
   const gitHook = ensureGitHook(target);
@@ -728,6 +777,7 @@ export function main(argv) {
   const out = [
     `파일: 복사 ${files.copied.length}, 덧붙임 ${files.appended.join(", ") || "없음"}, 동일 ${files.same.length}, 유지(템플릿과 다름) ${kept}`,
     ...files.filled.map((f) => `${f}: 설치기가 채움, 유지`),
+    ...files.owned.map((f) => `${f}: 프로젝트가 채우는 파일, 유지(옮기지 않는다)`),
     `스킬 링크: 생성 ${links.created.join(", ") || "없음"}${links.conflicts.length ? `, 충돌 ${links.conflicts.join(", ")} (직접 확인)` : ""}`,
     ...(dc ? [`.dev-cycle.json: 기본 브랜치 ${dc.defaultBranch}, commands ${Object.keys(dc.commands).join(", ") || "없음"}`] : []),
     ...(choices.length ? [`.dev-cycle.json 기록: ${choices.join(", ")}`] : []),
@@ -745,9 +795,11 @@ export function main(argv) {
     ...(adopt ? adoptBiomeWarning(target, biomeConfig) : jsoncWarning(target, biomeConfig)),
     ...(turbo === "added" ? ['turbo.json: "agentGuidance": false 추가 (turbo가 AGENTS.md에 규칙 블록을 쓰지 않게)'] : []),
     ...(turbo === "manual" ? [`경고: ${TURBO_MANUAL}`] : []),
+    ...(proxy === "added" ? [`turbo.json: globalPassThroughEnv에 ${TURBO_PROXY_ENV.join(", ")} 추가 (프록시 뒤에서 빌드가 글꼴을 받게)`] : []),
+    ...(proxy === "manual" ? [`경고: ${TURBO_PROXY_MANUAL}`] : []),
     ...(Array.isArray(eslint) && eslint.length ? [`ESLint 무시 추가: ${eslint.join(", ")} (벤더 스킬과 하네스 스크립트는 프로젝트 lint에서 뺀다)`] : []),
     ...(eslint === "manual" ? [`경고: ${ESLINT_MANUAL}`] : []),
-    ...(hook ? [".claude/settings.json: SessionStart 훅(scripts/load-keys.mjs: .env의 이미지 키와 배포 토큰을 세션에 불러온다)과 PostToolUse 훅(dev-cycle skill-log: 부른 스킬을 .prokit/skills-used.jsonl에 남겨 audit이 단계 행 증거와 대조한다), PreToolUse 훅(dev-cycle edit-guard: 열린 라운드 없이 코드·하네스 파일을 고치지 못하게 한다) 중 없는 것을 더함"] : []),
+    ...(hook ? [".claude/settings.json: SessionStart 훅(scripts/load-keys.mjs: .env의 이미지 키와 배포 토큰을 세션에 불러온다)과 PostToolUse 훅(dev-cycle skill-log: 부른 스킬을 .prokit/skills-used.jsonl에 남겨 audit이 단계 행 증거와 대조한다), PreToolUse 훅(dev-cycle edit-guard: 열린 라운드 없이 코드·하네스 파일을 고치지 못하게 한다. dev-cycle shell-guard: pkill처럼 이름·포트로 골라 프로세스를 끄지 못하게 한다) 중 없는 것을 더함"] : []),
     ...(hook === null ? [`경고: ${HOOK_MANUAL}`] : []),
     ...gitHookLines(gitHook, false),
     ...legacyWarning(target),
@@ -769,10 +821,10 @@ export function main(argv) {
       : [
           "  1. 첫 마이그레이션(README 설치한 뒤 1번)까지 마치고, pnpm check로 Better-T-Stack이 만든 코드의 포맷을 한 번 정리해 pnpm exec biome check .가 exit 0인지 본 뒤 기본 브랜치에 커밋한다 (커밋 전에 연 dev-cycle 라운드는 설치 파일이 diff에 섞여 audit이 F 상향을 요구한다)",
           "  2. 새 에이전트 세션을 열어 스킬과 에이전트를 불러온다 (Claude는 프로젝트를 신뢰해야 project 플러그인을 켜고, Codex는 신뢰해야 .codex/agents를 읽는다. Antigravity는 .agents/agents와 .agents/skills를 읽는다. Grok Build는 폴더를 신뢰해야 AGENTS.md와 프로젝트 스킬을 읽는다: 처음 열 때 신뢰하거나 grok --trust. 라운드 없는 편집 막기와 스킬 기록 훅은 Codex는 /hooks에서 .codex/hooks.json을, Antigravity는 폴더를 신뢰해야 돈다)",
-          "  3. 개발자마다 한 번 프로젝트 루트에서 .agents/skills/impeccable/scripts/impeccable hooks on (스킬 호출로 켜지 않는다. Codex는 /hooks에서 신뢰 확인. Antigravity에서는 돌지 않고 Grok Build에서 도는지는 확인하지 않았다)",
+          ...uiNext.map((line) => `  3. ${line}`),
           "  4. GLOSSARY.md와 docs/domain/project.md에 서비스 이름과 요약을 채운다",
-          "  5. 첫 UI 라운드에서 impeccable init으로 PRODUCT.md를 만든다",
-        ]),
+          `  5. 첫 UI 라운드에서 prokit-ui의 기획 단계로 PRODUCT.md를 만든다 (UI 스킬: ${uiSkills.join(", ") || "없음(기본 AI: frontend-design과 게슈탈트 지침)"}. 단계마다 할 일은 prokit-ui references/${uiSkills.length ? "<이름>" : "none"}-map.md)`,
+        ].map((line, i) => line.replace(/^ {2}\d+\./, `  ${i + 1}.`))),
     ...(picked.simplicity === "caveman" ? ["  - caveman 응답 압축은 /caveman(Codex $caveman)으로 켜고 \"stop caveman\"으로 끈다. 대화 응답에만 쓴다"] : []),
     ...(picked.optional.includes("i-have-adhd") ? ["  - i-have-adhd는 /i-have-adhd(Codex $i-have-adhd)로 켜고 \"stop adhd mode\"로 끈다. 대화 응답에만 쓴다"] : []),
     ...(picked.optional.includes("taste") ? ["  - taste(design-taste-frontend)는 화면 작업에서 사용자가 고른 화면에만 쓴다(prokit-ui references/taste.md). 검사에는 Chrome·Edge·Chromium이 필요하다"] : []),

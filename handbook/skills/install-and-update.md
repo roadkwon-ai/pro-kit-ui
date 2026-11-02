@@ -85,7 +85,7 @@ flowchart TD
 
 ## 업데이트
 
-`pnpm skills:update`는 이미 고른 스킬만 최신으로 올려요. 두뇌나 추가 스킬을 바꾸고 더하고 빼는 일은 `prokit-skills-manage`가 받아요([두뇌와 선택 스킬](brains.md#바꾸기)).
+`pnpm skills:update`는 이미 고른 스킬만 최신으로 올려요. 두뇌나 추가 스킬을 바꾸고 더하고 빼는 일은 `prokit-skills-manage`가 받아요([두뇌와 선택 스킬](brains.md#바꾸기)). 업데이트로 공식 스킬이 새로 생기거나 없어지거나 하는 일이 바뀌면 `prokit-skills-update`가 `prokit-skills-assign`으로 넘겨 맡을 에이전트를 다시 정해요([공식 스킬과 연결](official-skills.md#누가-읽고-따르나)).
 
 설치한 외부 스킬은 프로젝트에 복사해 커밋하는 파일이에요. 그래서 원격 저장소가 바뀌어도 저절로 따라가지 않아요.
 

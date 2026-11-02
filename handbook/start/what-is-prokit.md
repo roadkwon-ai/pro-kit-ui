@@ -45,7 +45,7 @@ pro-kit-ui 저장소는 새 프로젝트를 만들어 주는 생성기예요. �
 
 - 프로젝트 전용 스킬 6개
 - 에이전트 두 종류
-  - 외부 전문 스킬을 연결해 구현을 맡는 수행 에이전트
+  - 화면 구현과 실행 확인을 맡는 전문 수행 에이전트
   - 구현에 참여하지 않은 독립 리뷰 에이전트
 - 빌드 캐시, 설치 패키지, Python 실행환경, 관리 임시 폴더를 감시하는 자원 보호 도구
 - 작업마다 확인 결과를 남기는 dev-cycle(작업을 한 번 돌리는 절차와 도구)
@@ -73,7 +73,8 @@ my-app/
 ├── .dev-cycle.json                dev-cycle 설정(두뇌·과설계 방지 스킬 기록 포함)
 ├── skills.manifest.json           설치할 스킬과 플러그인 목록
 ├── .agents/skills/prokit-*        프로젝트 전용 스킬
-├── .claude/agents/                prokit-implementer · prokit-reviewer · specialist-reviewer
+├── .claude/agents/                prokit-ui-builder · prokit-runtime-checker · prokit-implementer
+│                                  · prokit-reviewer · specialist-reviewer
 ├── scripts/                       dev-cycle, 자원 보호, 배포(vercel-deploy), 릴리스, HTML 내보내기 같은 도구
 ├── docs/                          dev-workflow.md(케이스별 절차), domain/project.md, adr/
 └── tasks/                         todo.md(백로그), archive/(끝난 라운드 기록)
@@ -89,6 +90,7 @@ my-app/
 |---|---|
 | 두뇌 | 요구 정리, 계획, 구현 진행의 방법을 주도하는 스킬이에요. superpowers, agent-skills, gstack, oh-my, pstack, mattpocock, openspec, spec-kit, compound-engineering 중 하나를 권하고 여럿도 고를 수 있어요. 고르지 않으면(`none`) 지금 에이전트가 내장 절차로 진행해요 |
 | 과설계 방지 스킬 | ponytail(추천), caveman, karpathy 중 하나. 고르지 않으면 내장 간결성 규칙을 따라요 |
+| UI 스킬 | impeccable(기본), hallmark. 화면 디자인 단계(맥락, 기획, 설계, 리뷰, 감사, 다듬기)를 맡아요. 여럿도 고를 수 있고 첫 값이 주 UI 스킬이에요 |
 | 더하는 것 | mattpocock 추가 스킬, 응답 방식(`i-have-adhd`), 화면 디자인 보조(`taste`) |
 
 두뇌와 과설계 방지 스킬은 일하는 방식만 바꿔요. 대조표, 리뷰 게이트, 배포 절차는 무엇을 골라도 같아요([두뇌와 선택 스킬](../skills/brains.md)).
@@ -104,7 +106,7 @@ my-app/
 
 ## 새 프로젝트는 PRD부터 정해요
 
-프로킷은 새 프로젝트를 만들기 전에 PRD를 읽어요. 진행을 이끄는 두뇌와 추가 스킬, 화면 디자인 보조를 PRD에 맞춰 추천한 뒤 고른 대로 설치해요.
+프로킷은 새 프로젝트를 만들기 전에 PRD를 읽어요. 진행을 이끄는 두뇌와 추가 스킬, UI 스킬, 화면 디자인 보조를 PRD에 맞춰 추천한 뒤 고른 대로 설치해요.
 
 > [!IMPORTANT]
 > 새 프로젝트는 PRD가 없으면 추천할 근거가 없어서 만들지 않아요.
@@ -149,7 +151,7 @@ PRD는 누가 쓰는지와 무엇을 할 수 있는지 몇 줄이면 돼요. 적
 
 - **지원하는 에이전트**: Claude Code, Codex, Antigravity, Grok Build예요. 도구마다 읽는 파일과 여는 명령은 [지원하는 에이전트](supported-agents.md), Claude Code와 Codex의 조작 차이는 [Claude Code와 Codex](../../tutorials/reference/claude-code-and-codex.md)에 있어요.
 - **스킬이 결과를 바꾸나요**: 같은 요청을 스킬이 있을 때와 없을 때로 나눠 비교했어요. 규칙을 지킨 비율이 작업 진행(`prokit-dev-cycle`)은 27%에서 93%로, 화면 설계(`prokit-ui`)는 12%에서 100%로 올랐어요. 골라 둔 `DESIGN.md`가 있으면 목표 디자인과 팔레트가 맞는 비율이 71%에서 99%로 올랐어요. 
-- **만든 것**: 프로킷으로 만든 프리셋 11개(랜딩페이지 9개, 앱 화면 5개)를 [프로킷 사이트](https://prokit-web.vercel.app/)에서 모든 페이지까지 열어 볼 수 있어요.
+- **만든 것**: 프로킷으로 만든 프리셋 11개(랜딩페이지 9개, 앱 화면 5개)를 [프로킷 사이트](https://prokit.highvalue.kr/)에서 모든 페이지까지 열어 볼 수 있어요.
 - **라이선스**: [MIT](../../LICENSE)예요. 상업 이용·유료 고객 개발·수정·재판매를 허용하며 저작권 표시와 허가문을 보존해야 해요. 사이트의 홍보용 제작 표시는 선택 사항이고, [외부 구성 요소](../../THIRD_PARTY_NOTICES.md)에는 원래 조건을 적용해요.
 
 ## 관련 문서

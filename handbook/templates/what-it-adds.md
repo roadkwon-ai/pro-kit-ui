@@ -11,9 +11,9 @@
 
 | 구성 | 내용 |
 |---|---|
-| 프로젝트 스킬 6개 | `prokit-dev-cycle`(작업 진행), `prokit-ui`(화면·UX), `prokit-verify`(검사·증거), `prokit-pack-use`(완성팩 활용), `prokit-skills-update`(외부 스킬 업데이트), `prokit-skills-manage`(진행 중 두뇌·스킬 구성 바꾸기) |
-| 에이전트 3개 | `prokit-implementer`(범위를 받은 수행), `specialist-reviewer`(부족한 전문 계약만 읽기 전용 검토), `prokit-reviewer`(증거·통합 수용을 보는 최종 읽기 전용 게이트). 프로킷은 외부 전문 수행자에게 일을 맡기고 범위·증거·재지시를 관리해요. `.claude/agents`가 원본이고, `.codex/agents`(Codex)와 `.agents/agents`(Antigravity)는 이 원본에서 자동으로 만들어요 |
-| 내부 스킬 (이 프로젝트에만, 자동 설치) | 공식 도메인 스킬(Next.js, React, Better Auth, shadcn, impeccable, turborepo, DB 스킬, Vercel 배포 스킬 등), mattpocock 필수 3개, skill-creator(Claude 플러그인과 Codex 스킬). 두뇌와 과설계 방지 스킬은 고른 것만 설치해요(기본은 없음. [두뇌와 선택 스킬](../skills/brains.md)). ponytail을 고르면 Codex 스킬 Ponytail 6종도 받고, Codex 네이티브 Ponytail은 `--with-global`일 때만 선택 설치해요 |
+| 프로젝트 스킬 7개 | `prokit-dev-cycle`(작업 진행), `prokit-ui`(화면·UX), `prokit-verify`(검사·증거), `prokit-pack-use`(완성팩 활용), `prokit-skills-update`(외부 스킬 업데이트), `prokit-skills-manage`(진행 중 두뇌·스킬 구성 바꾸기), `prokit-skills-assign`(공식 스킬을 맡을 에이전트 배치) |
+| 에이전트 5개 | 전문 수행 에이전트 `prokit-ui-builder`(화면)·`prokit-runtime-checker`(실행 확인)·`prokit-implementer`(하네스·계층 밖), `specialist-reviewer`(부족한 전문 계약만 읽기 전용 검토), `prokit-reviewer`(증거·통합 수용을 보는 최종 읽기 전용 게이트). 전문 수행 에이전트는 맡은 공식 스킬을 읽고 따르고, 메인 세션은 일을 맡기고 범위·증거·재지시를 관리해요. `.claude/agents`가 원본이고, `.codex/agents`(Codex)와 `.agents/agents`(Antigravity)는 이 원본에서 자동으로 만들어요 |
+| 내부 스킬 (이 프로젝트에만, 자동 설치) | 공식 도메인 스킬(Next.js, React, Better Auth, shadcn, turborepo, DB 스킬, Vercel 배포 스킬 등), mattpocock 필수 3개, skill-creator(Claude 플러그인과 Codex 스킬). 두뇌와 과설계 방지 스킬은 고른 것만 설치해요(기본은 없음. [두뇌와 선택 스킬](../skills/brains.md)). UI 스킬(impeccable, hallmark)도 고른 것만 설치하고 기본은 impeccable이에요. ponytail을 고르면 Codex 스킬 Ponytail 6종도 받고, Codex 네이티브 Ponytail은 `--with-global`일 때만 선택 설치해요 |
 | 외부 스킬 위임 | 설치 목록 밖에서도 현재 접근 가능한 사용자 지정·프로젝트별 전문 스킬을 확인해 연결해요. 출처와 부작용을 확인하고 결과와 증거를 받아 최종 검수해요 |
 | 선택 스킬 묶음 (기본 설치 안 함) | `ops`(배포한 서비스의 비용·성능 점검), `motion`(화면 전환 애니메이션), `mobile`(React Native·Expo 앱), `i-have-adhd`(짧은 행동 중심 응답), `taste`(화면 디자인 보조 taste-skill) |
 

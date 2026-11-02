@@ -4,7 +4,7 @@ ego-browser는 ego lite 앱(macOS)이 설치하는 CLI와 전역 `ego-browser` �
 
 ## 준비
 - `command -v ego-browser`가 없으면 이 문서 대신 `agent-browser`와 `next-dev-loop`의 브라우저 절차를 쓰고, 증거에 `대안: agent-browser (ego-browser 없음)`을 적는다.
-- `pnpm dev`(web 포트 3001)를 먼저 띄운다. 띄우기 전에 `lsof -nP -iTCP:3001 -sTCP:LISTEN`으로 포트를 본다. 이 프로젝트의 개발 서버(`lsof -a -p <PID> -d cwd -Fn`이 이 프로젝트 안)면 그대로 쓴다. 다른 프로세스면 끄지 않고 사용자에게 알려 정리를 부탁한다. 다른 포트로 피하지 않는다. 인증 주소(`BETTER_AUTH_URL`)가 3001이라 로그인 흐름이 깨진다.
+- `pnpm dev`(web 포트 3001)를 먼저 띄운다. 띄우기 전에 `lsof -nP -iTCP:3001 -sTCP:LISTEN`으로 포트를 본다. 이 프로젝트의 개발 서버(`lsof -a -p <PID> -d cwd -Fn`이 이 프로젝트 안)면 그대로 쓴다. 다른 프로세스면 끄지 않고 사용자에게 알려 정리를 부탁한다. 다른 포트로 피하지 않는다. 인증 주소(`BETTER_AUTH_URL`)가 3001이라 로그인 흐름이 깨진다. 직접 띄운 서버는 띄울 때 적은 PID의 프로세스 그룹만 끈다. `pkill`처럼 이름이나 포트로 골라 끄면 같은 기기의 다른 프로젝트 서버까지 꺼진다.
 - ego lite 창이 화면에 보여야 한다. 창이 최소화되었거나 다른 데스크톱에 있으면 스크린샷이 `CDP request timed out: Page.captureScreenshot`으로 끝난다. 그러면 사용자에게 창을 보이게 해 달라고 요청하고, 그럴 수 없으면 agent-browser로 바꾸고 `대안: agent-browser (ego-browser 창 표시 불가)`를 적는다.
 - ego-browser는 사용자의 실제 브라우저 프로필(로그인 세션·쿠키)로 동작한다.
   - `http://localhost:3001`만 연다. 다른 사이트로 이동하지 않는다.
@@ -58,7 +58,7 @@ try {
 EOF
 ```
 
-출력에 `결함:` 줄이 없어야 한다. 스크립트는 가로 넘침(모바일 에뮬레이션은 넘친 내용에 맞춰 화면을 넓혀 `innerWidth`가 390보다 커진다)과 콘솔 오류·경고, 잡히지 않은 오류를 `결함:`으로 출력한다. 이 수는 오류 예산(`prokit-verify` 본문)에 넣는다. 브라우저가 직접 남기는 `Failed to load resource` 줄은 여기에 잡히지 않으니 `/_next/mcp`의 `get_errors`로 함께 본다. 그리고 찍은 PNG를 이미지로 열어 화면이 기대한 상태인지 본다. 파일 경로만 적고 보지 않은 스크린샷은 증거가 아니다.
+출력에 `결함:` 줄이 없어야 한다. 스크립트는 가로 넘침(모바일 에뮬레이션은 넘친 내용에 맞춰 화면을 넓혀 `innerWidth`가 390보다 커진다)과 콘솔 오류·경고, 잡히지 않은 오류를 `결함:`으로 출력한다. 이 수는 오류 예산(`prokit-verify` 본문)에 넣는다. 브라우저가 직접 남기는 `Failed to load resource` 줄은 여기에 잡히지 않으니 `/_next/mcp`의 `get_errors`로 함께 본다. 그리고 찍은 PNG를 이미지로 열어 화면이 기대한 상태인지 본다. 파일 경로만 적고 보지 않은 스크린샷은 증거가 아니다. Claude Code(Read)와 Antigravity(`read_file`·`view_file`) 라운드에서는 증거에 적은 `tasks/evidence/` 스크린샷 가운데 열어 본 기록이 없는 것을 audit이 경고로 알린다.
 
 ## 휴대폰 스크롤 측정
 B 라운드가 스크롤 모션(`animation-timeline`, 스크롤 이벤트), 긴 쪽, 반복해서 다시 그리는 요소(타이핑 효과, 자동 넘김)를 더하거나 바꿨을 때 한다. 그 밖의 라운드는 행에 `N/A: 스크롤 모션·긴 쪽 변경 없음`을 적는다. 데스크톱에서 매끄러워도 휴대폰에서는 끊길 수 있어 스크린샷으로는 보이지 않는다.

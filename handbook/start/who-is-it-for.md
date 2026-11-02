@@ -28,11 +28,11 @@
 | 할 일 | 프로킷 없이 | 프로킷으로 | 근거 |
 |---|---|---|---|
 | 시작 준비 | 앱 뼈대를 만든 뒤 규칙, 분야별 지식, 확인 절차를 직접 채워요 | 프롬프트 한 줄로 프로젝트를 만들고 스킬과 검사 도구까지 설치해요(약 3.2분) | [템플릿이 더하는 것](../templates/what-it-adds.md) |
-| 기획과 화면 설계 | 화면 규칙을 지킨 비율 12% | 설계를 먼저 확인받아요. 100% | [검증 결과](https://prokit-web.vercel.app/docs/reference/verification#스킬이-있을-때와-없을-때) |
-| 디자인 | 브랜드 이름과 대표 색만 주면 목표 색과 맞는 비율 71% | 고른 스타일을 `DESIGN.md`로 정해 두고 따라요. 99% | [DESIGN.md 효과](https://prokit-web.vercel.app/docs/reference/verification#두뇌-프로젝트-유형-디자인) |
-| 작업 진행 | 진행 규칙을 지킨 비율 27% | 할 일 목록(대조표)의 칸마다 실행 증거를 남겨요. 93% | [검증 결과](https://prokit-web.vercel.app/docs/reference/verification#스킬이-있을-때와-없을-때) |
-| 검사와 리뷰 | 검사 규칙 71%. 리뷰는 직접 하거나 만든 에이전트가 스스로 해요 | 실행 결과가 모여야 끝나고 리뷰는 다른 에이전트가 해요. 100% | [검증 결과](https://prokit-web.vercel.app/docs/reference/verification#스킬이-있을-때와-없을-때) · [하는 일](what-is-prokit.md#누구나-전문-개발자처럼) |
-| 모든 페이지 확인 | 페이지마다 링크와 버튼을 직접 눌러 봐요 | 자동으로 모두 눌러 봐요. 화면 프리셋 14개, 373쪽에서 없는 페이지, 브라우저 오류, 반응 없는 버튼이 모두 0이었어요 | [검증 결과](https://prokit-web.vercel.app/docs/reference/verification#화면-프리셋) |
+| 기획과 화면 설계 | 화면 규칙을 지킨 비율 12% | 설계를 먼저 확인받아요. 100% | [검증 결과](https://prokit.highvalue.kr/docs/reference/verification#스킬이-있을-때와-없을-때) |
+| 디자인 | 브랜드 이름과 대표 색만 주면 목표 색과 맞는 비율 71% | 고른 스타일을 `DESIGN.md`로 정해 두고 따라요. 99% | [DESIGN.md 효과](https://prokit.highvalue.kr/docs/reference/verification#두뇌-프로젝트-유형-디자인) |
+| 작업 진행 | 진행 규칙을 지킨 비율 27% | 할 일 목록(대조표)의 칸마다 실행 증거를 남겨요. 93% | [검증 결과](https://prokit.highvalue.kr/docs/reference/verification#스킬이-있을-때와-없을-때) |
+| 검사와 리뷰 | 검사 규칙 71%. 리뷰는 직접 하거나 만든 에이전트가 스스로 해요 | 실행 결과가 모여야 끝나고 리뷰는 다른 에이전트가 해요. 100% | [검증 결과](https://prokit.highvalue.kr/docs/reference/verification#스킬이-있을-때와-없을-때) · [하는 일](what-is-prokit.md#누구나-전문-개발자처럼) |
+| 모든 페이지 확인 | 페이지마다 링크와 버튼을 직접 눌러 봐요 | 자동으로 모두 눌러 봐요. 화면 프리셋 14개, 373쪽에서 없는 페이지, 브라우저 오류, 반응 없는 버튼이 모두 0이었어요 | [검증 결과](https://prokit.highvalue.kr/docs/reference/verification#화면-프리셋) |
 | 배포 | 올릴 파일에 비밀값이 섞이지 않게 직접 챙겨요 | 내보낸 HTML에 비밀값이 섞이지 않았는지 검사해요 | [하는 일](what-is-prokit.md#누구나-전문-개발자처럼) |
 | 다음에 이어 하기 | 세션이 바뀌면 맥락과 진행 상황을 다시 알려 줘요 | "하던 작업 이어서 해줘"로 멈춘 곳부터 해요 | [시간을 줄이는 법](../../tutorials/reference/process-and-time.md#시간을-줄이는-법) · [하는 일](what-is-prokit.md#그냥-ai에게-맡길-때와-다른-점) |
 
@@ -45,7 +45,7 @@
 | 사례 | 무엇을 했나 | 숫자 | 기록 |
 |---|---|---|---|
 | 올곧 | 입시학원 웹 앱 203쪽(48종)을 같은 흐름으로 만들고 모든 페이지의 링크와 버튼을 눌러 봤어요 | 눌러 본 링크와 버튼 2,025번 · 식단표 한 줄 고치기는 고치기 1분, 앞뒤 확인 6분 | [올곧](../../tutorials/samples/olgot.md) |
-| 같은 요청 비교 | 같은 요청을 스킬과 `DESIGN.md`가 있을 때와 없을 때로 나눠 맡기고 채점했어요 | 화면 설계 12% → 100% · 작업 진행 27% → 93% · 목표 색 71% → 99% | [검증 결과](https://prokit-web.vercel.app/docs/reference/verification) |
+| 같은 요청 비교 | 같은 요청을 스킬과 `DESIGN.md`가 있을 때와 없을 때로 나눠 맡기고 채점했어요 | 화면 설계 12% → 100% · 작업 진행 27% → 93% · 목표 색 71% → 99% | [검증 결과](https://prokit.highvalue.kr/docs/reference/verification) |
 
 
 ## 관련 문서

@@ -1,4 +1,4 @@
-<p align="center"><a href="https://prokit-web.vercel.app/"><img src="docs/assets/brand/banner.png" alt="프로킷. AI 시대, 누구나 프로처럼." width="840"></a></p>
+<p align="center"><a href="https://prokit.highvalue.kr/"><img src="docs/assets/brand/banner.png" alt="프로킷. AI 시대, 누구나 프로처럼." width="840"></a></p>
 
 <h1 align="center">pro-kit-ui</h1>
 
@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://prokit-web.vercel.app/"><strong>프로킷 사이트 보기 →</strong></a><br>
+  <a href="https://prokit.highvalue.kr/"><strong>프로킷 사이트 보기 →</strong></a><br>
   <sub>같은 흐름으로 만든 화면 프리셋 14개를 모든 페이지까지 열어 볼 수 있습니다.</sub>
 </p>
 
@@ -99,7 +99,7 @@ flowchart LR
 
 ```bash
 cd ../living
-.agents/skills/impeccable/scripts/impeccable hooks on   # 화면 디자인 검사 켜기. 작업 폴더에서 시작했다면 이미 켜져 있습니다
+.agents/skills/impeccable/scripts/impeccable hooks on   # impeccable을 고른 경우만. 화면 디자인 검사 켜기, 작업 폴더에서 시작했다면 이미 켜져 있습니다
 claude
 ```
 
@@ -110,12 +110,12 @@ claude
 
 <table>
 <tr>
-<td width="50%" valign="top"><a href="https://prokit-web.vercel.app/pro-kit/goru/"><img src="docs/assets/design-samples/goru.webp" alt="고루 9월 살림 홈 화면, 데스크톱과 모바일"></a><br><strong>고루</strong> · 앱 화면 · 공동 생활비 정산 · 페이지 7개 · <a href="https://prokit-web.vercel.app/pro-kit/goru/">HTML</a> · <a href="tutorials/samples/goru.md">만들어 보기</a><br><sub>위 "화면만 만들기" 프롬프트와 같은 생활비 정산 컨셉으로 실제로 만든 앱</sub></td>
-<td width="50%" valign="top"><a href="https://prokit-web.vercel.app/pro-kit/olgot/"><img src="docs/assets/design-samples/olgot.webp" alt="올곧 첫 화면, 데스크톱과 모바일"></a><br><strong>올곧</strong> · 앱 화면 · 입시학원 수강 신청·상담 · 페이지 203개(48종) · <a href="https://prokit-web.vercel.app/pro-kit/olgot/">HTML</a> · <a href="tutorials/samples/olgot.md">만들어 보기</a><br><sub>이만큼 큰 사이트도 모든 페이지를 같은 흐름으로 만들고 검사합니다</sub></td>
+<td width="50%" valign="top"><a href="https://prokit.highvalue.kr/pro-kit/goru/"><img src="docs/assets/design-samples/goru.webp" alt="고루 9월 살림 홈 화면, 데스크톱과 모바일"></a><br><strong>고루</strong> · 앱 화면 · 공동 생활비 정산 · 페이지 7개 · <a href="https://prokit.highvalue.kr/pro-kit/goru/">HTML</a> · <a href="tutorials/samples/goru.md">만들어 보기</a><br><sub>위 "화면만 만들기" 프롬프트와 같은 생활비 정산 컨셉으로 실제로 만든 앱</sub></td>
+<td width="50%" valign="top"><a href="https://prokit.highvalue.kr/pro-kit/olgot/"><img src="docs/assets/design-samples/olgot.webp" alt="올곧 첫 화면, 데스크톱과 모바일"></a><br><strong>올곧</strong> · 앱 화면 · 입시학원 수강 신청·상담 · 페이지 203개(48종) · <a href="https://prokit.highvalue.kr/pro-kit/olgot/">HTML</a> · <a href="tutorials/samples/olgot.md">만들어 보기</a><br><sub>이만큼 큰 사이트도 모든 페이지를 같은 흐름으로 만들고 검사합니다</sub></td>
 </tr>
 <tr>
-<td width="50%" valign="top"><a href="https://prokit-web.vercel.app/pro-kit/pacecrew/"><img src="docs/assets/landing-samples/pacecrew.webp" alt="PACECREW 랜딩페이지 첫 화면, 데스크톱과 모바일"></a><br><strong>PACECREW</strong> · 랜딩페이지 · 동네 러닝 크루 매칭 · 페이지 22개 · <a href="https://prokit-web.vercel.app/pro-kit/pacecrew/">HTML</a> · <a href="tutorials/samples/pacecrew.md">만들어 보기</a></td>
-<td width="50%" valign="top"><strong>화면 프리셋 14개 전체</strong><br><a href="https://prokit-web.vercel.app/">프로킷 사이트</a>에서 모든 페이지까지 열어 보고, <a href="tutorials/samples/README.md">컨셉으로 화면 만들기</a>에서 같은 컨셉으로 만들어 봅니다.</td>
+<td width="50%" valign="top"><a href="https://prokit.highvalue.kr/pro-kit/pacecrew/"><img src="docs/assets/landing-samples/pacecrew.webp" alt="PACECREW 랜딩페이지 첫 화면, 데스크톱과 모바일"></a><br><strong>PACECREW</strong> · 랜딩페이지 · 동네 러닝 크루 매칭 · 페이지 22개 · <a href="https://prokit.highvalue.kr/pro-kit/pacecrew/">HTML</a> · <a href="tutorials/samples/pacecrew.md">만들어 보기</a></td>
+<td width="50%" valign="top"><strong>화면 프리셋 14개 전체</strong><br><a href="https://prokit.highvalue.kr/">프로킷 사이트</a>에서 모든 페이지까지 열어 보고, <a href="tutorials/samples/README.md">컨셉으로 화면 만들기</a>에서 같은 컨셉으로 만들어 봅니다.</td>
 </tr>
 </table>
 
@@ -141,7 +141,7 @@ UI 스킬셋은 [Pro 스킬셋(pro-kit)](https://github.com/roadkwon-ai/pro-kit)
 |---|---|---|
 | 만드는 것 | 예시 데이터로 채운 화면, HTML 파일 | 화면과 함께 로그인·저장이 되는 실제 서비스 |
 | 템플릿 | `prokit-next-neon`(화면만) | Neon, Supabase 템플릿 두 개 |
-| 프로킷 스킬 | 첫 설정(`prokit-init`), 진행(`prokit-dev-cycle`), 화면(`prokit-ui`), 검사(`prokit-verify`), 팩 활용(`prokit-pack-use`), 스킬 구성 변경(`prokit-skills-manage`), 스킬 갱신(`prokit-skills-update`) | UI 스킬셋의 스킬과 화면 동작·API·DB·배포 스킬 |
+| 프로킷 스킬 | 첫 설정(`prokit-init`), 진행(`prokit-dev-cycle`), 화면(`prokit-ui`), 검사(`prokit-verify`), 팩 활용(`prokit-pack-use`), 스킬 구성 변경(`prokit-skills-manage`), 스킬 갱신(`prokit-skills-update`), 공식 스킬 배치(`prokit-skills-assign`) | UI 스킬셋의 스킬과 화면 동작·API·DB·배포 스킬 |
 | 화면 프리셋 팩 | 쓸 수 있습니다 | 쓸 수 있습니다 |
 | 올리는 곳 | GitHub Pages, Vercel(정적 HTML) | 화면은 같고, 서비스는 Vercel의 개발·운영 환경에 버전 릴리스와 함께 올립니다 |
 | 클론 코딩 튜토리얼, 기존 프로젝트 도입 | 없습니다 | 있습니다 |
@@ -155,7 +155,7 @@ UI 스킬셋은 [Pro 스킬셋(pro-kit)](https://github.com/roadkwon-ai/pro-kit)
 | [문서(handbook)](handbook/README.md) | [시작하기](handbook/start/README.md), [핵심 개념](handbook/concepts/README.md), [템플릿](handbook/templates/README.md), [스킬과 에이전트](handbook/skills/README.md), [디자인](handbook/design/README.md), [배포](handbook/deploy/README.md), [레퍼런스](handbook/reference/README.md). 화면만 만드는 데 필요한 쪽을 담았습니다 |
 | [튜토리얼](tutorials/README.md) | 코드를 몰라도 프롬프트를 붙여 넣으며 화면을 만드는 단계별 안내. [시작하기](tutorials/start/README.md), [컨셉으로 화면 만들기](tutorials/samples/README.md), 비용과 키·배포·용어·문제 해결·Windows 가이드 |
 | [AGENTS.md](AGENTS.md) | 에이전트가 화면만 프로젝트를 만들 때 따르는 절차와 이 저장소의 규칙 |
-| [프로킷 사이트](https://prokit-web.vercel.app/) | 화면 프리셋을 모든 페이지까지 열어 보는 곳. 사이트의 문서에는 Pro 스킬셋 내용도 함께 있습니다 |
+| [프로킷 사이트](https://prokit.highvalue.kr/) | 화면 프리셋을 모든 페이지까지 열어 보는 곳. 사이트의 문서에는 Pro 스킬셋 내용도 함께 있습니다 |
 
 ## 이 저장소에 대해
 이 저장소는 [pro-kit](https://github.com/roadkwon-ai/pro-kit)에서 생성한 읽기 전용 사본입니다. pro-kit을 릴리스할 때 같은 버전 태그로 다시 만들어지고, 올라간 내용이 원본으로 만든 판과 같은지 확인한 뒤에 릴리스가 끝납니다. 파일을 직접 고치지 말고, 이슈와 기여는 pro-kit에 남겨 주세요.
