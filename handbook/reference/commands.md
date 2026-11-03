@@ -33,7 +33,7 @@
 | `pnpm dev-cycle status` | 진행 중인 라운드의 케이스, 채운 칸 수, 다음 행을 보여 줘요. 라운드가 없으면 여는 법을 알려 주고, 외부 스킬의 새 버전도 하루 한 번 확인해요 |
 | `pnpm dev-cycle case` | 현재 diff의 케이스 판정 |
 | `pnpm dev-cycle table <케이스> --write --title "<요약>"` | 대조표를 열어요. `--upgrade`를 붙이면 더 무거운 케이스로 올려요. D·E·F에서 그 계층 패키지에 `test` 스크립트가 없으면 vitest 도입 행이 맨 앞에 자동으로 들어가요 |
-| `pnpm dev-cycle audit` | 빈 칸, 건너뛸 수 없는 칸, 케이스 상향을 검사해요. 화면 리뷰 행은 이번 라운드의 리뷰 기록(`.impeccable/critique/` 또는 `tasks/evidence/ui-review-*.md`)과 감사 보고서(`tasks/evidence/ui-audit-*.md`)의 점수나 결과와 맞는지 대조해요 |
+| `pnpm dev-cycle audit` | 빈 칸, 건너뛸 수 없는 칸, 케이스 상향을 검사해요. 행 증거에 적은 스킬은 훅이 남긴 읽은 기록(`.prokit/`)과, 맡긴 행은 그 에이전트가 일한 기록과 맞는지도 봐요. 화면 리뷰 행은 이번 라운드의 리뷰 기록(`.impeccable/critique/` 또는 `tasks/evidence/ui-review-*.md`)과 감사 보고서(`tasks/evidence/ui-audit-*.md`)의 점수나 결과와 맞는지 대조해요 |
 | `pnpm dev-cycle archive [--title "제목"]` | 진행 중인 라운드는 그대로 두고, 끝낸 일반 할 일과 백로그만 보관해요. 끝나지 않은 항목과 코드 예시는 남기고, 끝난 하위 항목은 상위 항목의 맥락과 함께 기록해요 |
 | `pnpm dev-cycle evidence <행 번호> --file <증거 파일>` | 진행 중인 대조표에서 지정한 행의 증거 칸을 증거 파일(프로젝트 안의 한 줄짜리 일반 파일) 내용으로 바꿔요(끝 줄바꿈 하나는 허용해요). 표 머리, stage, 다른 행, 메모, 코드 블록은 그대로 둬요 |
 | `pnpm dev-cycle close` | audit과 실제 사용자 확인을 마친 뒤 라운드를 닫아요. 대조표와 끝낸 일반 할 일·백로그는 KST 날짜 파일로 보관해요. `blocked`나 `미실행` 칸이 있으면 사용자가 동의한 뒤 `close --partial`로 닫아요 |
@@ -42,6 +42,13 @@
 
 
 라운드가 무엇이고 어떻게 도는지는 [dev-cycle](../concepts/dev-cycle.md)에 있어요.
+
+훅이 부르는 명령은 에이전트 도구가 자동으로 실행하니 직접 치지 않아요. 무엇을 막고 기록하는지는 [하네스 엔지니어링](../concepts/harness.md#자세히)의 훅 설명에 있어요.
+
+- `dev-cycle edit-guard`: 편집 도구가 파일을 고치기 전에 열린 라운드와 계층 경계를 확인해 막아요.
+- `dev-cycle shell-guard`: Bash 명령 가운데 `pkill`처럼 이름이나 포트로 골라 프로세스를 끄는 명령을 막아요(Claude Code와 Codex).
+- `dev-cycle skill-log`: 읽은 스킬과 에이전트 이름을 `.prokit/`에 기록해 audit이 증거와 대조하게 해요.
+- `dev-cycle agent-start`: Antigravity에서 서브에이전트 대화를 부른 에이전트 이름에 묶어요.
 
 증거 파일은 이렇게 다뤄요.
 
@@ -57,7 +64,8 @@
 |---|---|
 | `pnpm skills:setup` | `skills.manifest.json`대로 빠진 스킬, 플러그인, OMX 설정, agent-browser CLI를 설치해요. `--with-global`을 붙이면 나머지 전역 도구도 설치해요. 모르는 인자(오타 등)를 주면 설치하지 않고 exit 2로 멈추고, `--help`는 사용법만 보여 줘요 |
 | `pnpm skills:setup --brain <이름>[,…]` | 두뇌를 고르거나 바꿔요. 여러 개는 쉼표로 잇고 첫 번째가 주 두뇌예요. 고르지 않은 설치본은 정리해요(openspec·spec-kit의 도구 파일은 지우지만 `openspec/`, `specs/`, `.specify/memory/` 문서는 남겨요) |
-| `pnpm skills:setup --ui-skill <이름>[,…]` | UI 스킬(`impeccable`, `hallmark`)을 고르거나 바꿔요. 여러 개는 쉼표로 잇고 첫 번째가 주 UI 스킬이에요. 고르지 않은 UI 스킬의 설치본은 정리해요. `--ui-skill none`은 UI 스킬 없이 가요 |
+| `pnpm skills:setup --simplicity <이름>` | 과설계 방지 스킬을 하나 고르거나 바꿔요(`ponytail`, `caveman`, `karpathy`, 없으면 `none`). 고르지 않은 설치본은 정리해요 |
+| `pnpm skills:setup --ui-skill <이름>[,…]` | UI 스킬(`impeccable`, `hallmark`)을 고르거나 바꿔요. 여러 개는 쉼표로 잇고 첫 번째가 주 UI 스킬이에요. 고르지 않은 UI 스킬의 설치본은 정리해요. `--ui-skill none`은 UI 스킬 없이 가고, 기본 AI가 `frontend-design`과 게슈탈트 지침으로 화면을 만들어요. 바꿔도 `PRODUCT.md`, `DESIGN.md`, 화면 설계, 토큰은 그대로 써요. 고르지 않은 UI 스킬이 켠 훅은 `.claude/settings.local.json`과 `.codex/hooks.json`에서 함께 빼요 |
 | `pnpm skills:setup --drop <스킬 또는 묶음>[,…]` | mattpocock 추가 스킬이나 선택 묶음을 지워요. `--drop all`은 설치한 것을 모두 지워요 |
 | `pnpm skills:setup --brain none --simplicity none --drop all` | 순수 AI로 돌아가요. `prokit-*`와 필수·공식 스킬만 남아요 |
 | `pnpm skills:setup --optional <묶음>` | 선택 스킬 묶음(`ops`, `motion`, `mobile`, `i-have-adhd`, `taste`)을 설치해요. 여러 개는 쉼표로 이어요(`ops,motion`) |
@@ -65,7 +73,7 @@
 | `pnpm skills:update --check` | 설치한 외부 스킬을 GitHub 원본과 비교해 새 버전이 있는지만 알려 줘요 |
 | `pnpm skills:update [<이름>...]` | 바뀐 스킬과 빠진 스킬만(이름을 주면 그 스킬만) 다시 설치해요 |
 | `pnpm agents:sync` | `.claude/agents`를 바탕으로 `.codex/agents`(Codex)와 `.agents/agents`(Antigravity)를 만들어요 |
-| `pnpm agents:check` | 정본(`.claude/agents`)과 생성물이 같은지 검사해요 |
+| `pnpm agents:check` | 정본(`.claude/agents`)과 생성물이 같은지 검사해요. `skills.manifest.json`의 `performers`(공식 스킬을 맡을 에이전트 배치)가 실제 에이전트 정의의 공식 스킬 표, `prokit-*` 스킬의 연결 표와 맞는지도 양쪽으로 대조해요 |
 | `claude plugin update <플러그인> --scope project` | Claude 플러그인을 업데이트해요(`skills:update`는 플러그인을 올리지 않아요) |
 | `codex plugin marketplace upgrade ponytail` | 과설계 방지 스킬로 ponytail을 골랐을 때 Ponytail 원본 GitHub marketplace의 사본(snapshot)을 새로 받아요. 이 명령만으로는 플러그인이 갱신된 것이 아니에요. 사용자가 원하고 플러그인을 끄지 않았다면, 훅과 코드를 먼저 검토한 뒤 `codex plugin add ponytail@ponytail`을 실행하고 `codex plugin list --json`으로 설치된 판을 확인해요. 훅 신뢰와 새 세션 열기는 따로 해야 해요 |
 
@@ -134,8 +142,8 @@ Codex 네이티브 Ponytail은 `pnpm skills:setup --with-global`을 실행할 �
 |---|---|
 | `/prokit-init <PRD 파일 경로나 내용>`, `/prokit-init [프로젝트 경로]` | 새 프로젝트를 만들어요. 새 프로젝트는 PRD를 보고 두뇌와 스킬을 추천해 고르게 한 뒤 아래 설치까지 해요. PRD가 없으면 먼저 받고, 끝내 없으면 만들지 않아요. Claude Code 기준이고, Codex에서는 `$prokit-init`이에요. pro-kit-ui 폴더에서 연 세션에서만 불러요([두뇌와 선택 스킬](../skills/brains.md)) |
 | `bash templates/<템플릿>/install.sh <프로젝트>` | 템플릿을 설치해요. 옵션은 `--brain`, `--simplicity`, `--ui-skill`, `--matt`, `--optional`, `--diff`, `--skip-skills`, `--with-global`예요([설치기와 옵션](../templates/installer.md)) |
-| `node scripts/pack.mjs <이름> --zip <경로>` | 크레딧으로 받은 프리셋 팩 zip의 sha256을 확인한 뒤 `packs/<이름>/`에 풀기 |
-| `node scripts/pack.mjs <이름> --zip <경로>` | 미리 받아 둔 팩 zip을 같은 확인을 거쳐 `packs/<이름>/`에 풀기 |
+| `node scripts/pack.mjs <이름>` | `tutorials/packs.json`의 주소에서 프리셋 팩 zip을 받아 sha256을 확인한 뒤 `packs/<이름>/`에 풀기. 같은 판이 이미 있으면 그대로 두고, 이름 없이 실행하면 받을 수 있는 팩 이름을 보여 줘요 |
+| `node scripts/pack.mjs <이름> --zip <경로>` | 미리 받아 둔 팩 zip을 같은 sha256 확인을 거쳐 `packs/<이름>/`에 풀기. 공개하지 않은 팩은 이 방식으로만 확인해요 |
 
 ## 자세히
 

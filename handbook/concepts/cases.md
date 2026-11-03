@@ -7,12 +7,12 @@
 | 케이스 | 언제 | 판정 경로 | 대조표의 대표 행 |
 |---|---|---|---|
 | A | 문서나 설정처럼 규칙에 걸리지 않는 경미한 변경 | 아래 경로 밖 | 타입·린트 검사 |
-| B | 화면, 컴포넌트, 스타일, 화면 유틸 | `apps/web/src`(서버·인증 경로 밖: `app`, `components`, `utils`, `lib`, CSS), `packages/ui` | 주 UI 스킬의 화면 설계, 스크린샷과 오류 예산 0, 디자인 리뷰·감사, 코드 리뷰(+간결성 검토) |
+| B | 화면, 컴포넌트, 스타일, 화면 유틸 | `apps/web/src` 전체(아래 서버 경로와 인증 파일은 빼요), `packages/ui` | 주 UI 스킬의 화면 설계, 스크린샷과 오류 예산 0, 디자인 리뷰·감사, 코드 리뷰(+간결성 검토) |
 | C | 버그 수정 | 경로와 상관없이 선언 | 재현 테스트 먼저 작성, 수정 뒤 통과 |
 | D | 서버와 API | `packages/api`, `apps/web/src/app/api`, 앱 폴더의 `route.ts`·`sitemap.ts`·`robots.ts`·`manifest.ts`, 서버 액션 파일 `actions.ts`, `apps/web/src/instrumentation.ts` | zod 계약, 2계정 격리 테스트, 코드 리뷰 |
 | E | DB 스키마 | `packages/db` | 생성 SQL 검토, 로컬 적용, 병합 전 원격 적용, DB 리뷰 |
 | F | 화면·API·DB 중 둘 이상에 걸친 새 기능 | 두 계층 이상, 또는 새 기능으로 선언 | 스펙(테스트 시나리오 포함)과 계획, 계획 리뷰, E·D·B 행 전체, 전체를 실제로 실행해 확인, 공통화·리팩토링, 최종 리뷰, 시나리오 QA와 발견 수정 |
-| H | 스킬, 에이전트, 에이전트 규칙, dev-cycle 자체와 빌드·배포·작업공간 설정 | 루트 `AGENTS.md`·`CLAUDE.md`, `.agents/skills/`, `.agents/agents/`, `.claude/agents/`, `skills.manifest.json`, `scripts/dev-cycle.mjs`, `docs/dev-workflow.md`, `next.config.*`, 루트 `package.json` 등 | `agents:check`, `skills:check`, 빌드·검사, 스킬 eval |
+| H | 스킬, 에이전트, 에이전트 규칙, 훅 설정, dev-cycle 자체와 빌드·배포·작업공간 설정 | 루트 `AGENTS.md`·`CLAUDE.md`, `.agents/skills/`, `.agents/agents/`, `.claude/agents/`, `.claude/settings.json`, `.agents/hooks.json`, `.codex/hooks.json`, `skills.manifest.json`, `scripts/dev-cycle.mjs`, `docs/dev-workflow.md`, `next.config.*`, 루트 `package.json` 등 | `agents:check`, `skills:check`, 빌드·검사, 스킬 eval |
 
 > [!IMPORTANT]
 > 모든 대조표 끝에는 공통 행 두 개가 붙어요. 문서 영향 확인(`GLOSSARY.md`, `docs/adr/`, `docs/domain/project.md`, 미룬 지적은 백로그로)과 사용자 확인(`[confirm]`)이에요.
@@ -84,7 +84,9 @@ flowchart TD
 - **C. 버그**: 재현 테스트 작성과 실패 확인 → 수정 → 재현 테스트 통과 → 판정된 케이스의 검사·리뷰 행. 화면 문구·모양 버그는 테스트 파일 대신 고치기 전과 뒤의 화면 스크린샷으로 재현과 통과를 보여요.
 - **D. 서버·API**와 **E. DB**: 화면만 프로젝트에서는 쓰지 않는 케이스예요.
 - **F. 새 기능**: 스펙(만들지 않는 것, 인수 조건, 테스트 시나리오) → 구현 계획 → `[design]` 재사용·설정 설계 점검 → 계획 리뷰 → 구현 방식 → E·D·B 행 → 통합 런타임 확인 → 공통화·리팩토링·최적화 점검 → 전체 diff 최종 리뷰 → 사용자 흐름 QA → QA 발견 수정과 재QA.
-- **H. 하네스**: `[design]` 재사용·설정 설계 점검 → `pnpm agents:check` → `pnpm skills:check` → `pnpm dev-cycle case`·`status` 실행 확인 → 빌드·배포 설정이나 작업공간 설정을 바꿨으면 `pnpm build`와 타입·린트 검사 → 스크립트·CI·배포·작업공간 설정을 바꿨으면 `prokit-reviewer(code)` → 스킬을 바꿨으면 skill-creator eval 재실행. 스킬, 에이전트, 에이전트 규칙(루트 `AGENTS.md`, `CLAUDE.md`), dev-cycle 파일과 함께 빌드·배포 설정(`next.config.*`, `vercel.json`, `turbo.json`, `.github/workflows/`)과 작업공간 설정(루트 `package.json`, `biome.json`, `tsconfig.json`, `packages/config/`)을 바꿔도 H로 판정돼요. 기능 의존성이 들어가는 `apps/web`·`packages/*`의 `package.json`, `pnpm-workspace.yaml`의 `catalog:`, `pnpm-lock.yaml`은 H로 보지 않아요.
+- **H. 하네스**: `[design]` 재사용·설정 설계 점검 → 구현(스킬·스크립트·설정을 바꾸는 방법. 스킬 설치·업데이트만 했으면 N/A) → `pnpm agents:check` → `pnpm skills:check` → `pnpm dev-cycle case`·`status` 실행 확인 → 빌드·배포 설정이나 작업공간 설정을 바꿨으면 `pnpm build`와 타입·린트 검사 → 스크립트·CI·배포·작업공간 설정을 바꿨으면 `prokit-reviewer(code)` → 스킬을 바꿨으면 skill-creator eval 재실행. 스킬, 에이전트, 에이전트 규칙(루트 `AGENTS.md`, `CLAUDE.md`), dev-cycle 파일과 함께 빌드·배포 설정(`next.config.*`, `vercel.json`, `turbo.json`, `.github/workflows/`)과 작업공간 설정(루트 `package.json`, `biome.json`, `tsconfig.json`, `packages/config/`)을 바꿔도 H로 판정돼요. 기능 의존성이 들어가는 `apps/web`·`packages/*`의 `package.json`, `pnpm-workspace.yaml`의 `catalog:`, `pnpm-lock.yaml`은 H로 보지 않아요.
+
+- **구현과 실행 확인은 전문 에이전트에 맡겨요**: B는 구현과 수정·다듬기를 `prokit-ui-builder`에, 런타임 확인과 휴대폰 스크롤 측정을 `prokit-runtime-checker`에 맡겨요. H는 `prokit-implementer`에 맡겨요. F의 구현 방식 행은 바꾼 계층마다 맡기고, 통합 런타임 확인과 사용자 흐름 QA는 `prokit-runtime-checker`에, QA 발견 수정은 그 계층 에이전트에 맡겨요. 증거에는 `위임: <에이전트>(사용: …)`를 적어요([위임 에이전트와 리뷰 에이전트](agent-roles.md)).
 
 </details>
 
