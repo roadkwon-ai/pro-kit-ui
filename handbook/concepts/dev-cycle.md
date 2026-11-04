@@ -18,7 +18,12 @@
 **요청** → **케이스 판정** → **대조표 열기** → **행마다 증거** → **내 확인** → **audit** → **close**
 
 ```mermaid
-flowchart LR
+---
+config:
+  flowchart:
+    wrappingWidth: 220
+---
+flowchart TB
   S["status<br/>진행 중 라운드 확인"] --> C["case<br/>케이스 판정"]
   C --> T["table 케이스 --write<br/>대조표 열기"]
   T --> R["행 실행<br/>증거 칸 채우기"]
@@ -30,7 +35,7 @@ flowchart LR
   U --> R
   A -->|통과| Q{"마무리 선택"}
   Q -->|기본| RD["close → 커밋 · push<br/>→ 릴리스 · production 배포"]
-  Q -->|화면만 · 배포 PASS · 준비 안 됨| CL["close → 커밋 · push"]
+  Q -->|"화면만 · 배포 PASS<br/>준비 안 됨"| CL["close → 커밋 · push"]
 ```
 
 | 단계 | 하는 일 |

@@ -9,9 +9,14 @@
 ## 만든 쪽과 검토하는 쪽이 다르다
 
 ```mermaid
-flowchart LR
+---
+config:
+  flowchart:
+    wrappingWidth: 220
+---
+flowchart TB
   ME["나"] <==> CO["코디네이터<br/>메인 세션<br/>배정 · 감독 · 통합"]
-  CO ==>|"파일과 공식 스킬을 정해 맡김"| IM["전문 수행 에이전트<br/>prokit-ui-builder · prokit-runtime-checker<br/>prokit-implementer<br/>공식 스킬을 읽고 따름"]
+  CO ==>|"파일과 공식 스킬을 정해 맡김"| IM["전문 수행 에이전트<br/>prokit-ui-builder<br/>prokit-runtime-checker<br/>prokit-implementer<br/>공식 스킬을 읽고 따름"]
   IM -.->|"내장 리뷰가 없을 때만"| SR["전문 리뷰<br/>specialist-reviewer<br/>읽기 전용"]
   IM ==> FR["최종 리뷰<br/>prokit-reviewer<br/>읽기 전용"]
   SR ==> FR
