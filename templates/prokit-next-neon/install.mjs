@@ -388,6 +388,16 @@ const HOOKS = [
   { event: "PreToolUse", mark: "dev-cycle.mjs\" shell-guard", entry: { matcher: "Bash", hooks: [{ type: "command", command: SHELL_HOOK }] } },
 ];
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+// 프로젝트의 scripts/dev-cycle.mjs가 모르는 훅 하위 명령. 갱신 반영에서 러너는 덮어쓰지 않으므로, 옛 러너에 새 훅을 넣으면
+// 훅이 사용법 오류로 끝나 모든 Bash·편집 호출이 막힌다. 러너가 아직 없으면(새 설치의 미리 보기) 템플릿 러너로 본다.
+// shortcut: 러너 원문에 cmd === "<하위 명령>" 분기가 있는지로 본다. 러너의 분기 꼴을 바꾸면 이 검사도 바꾼다.
+export function unknownHookCommands(target) {
+  const own = join(target, "scripts/dev-cycle.mjs");
+  const runner = readFileSync(existsSync(own) ? own : join(FILES_DIR, "scripts/dev-cycle.mjs"), "utf8");
+  return HOOKS.map(({ mark }) => mark.match(/dev-cycle\.mjs" (\S+)$/)?.[1]).filter((c) => c && !runner.includes(`cmd === "${c}"`));
+}
+const STALE_HOOK = (cmds) =>
+  `경고: 이 프로젝트의 scripts/dev-cycle.mjs가 모르는 훅(${cmds.join(", ")})은 .claude/settings.json에 넣지 않는다. 넣으면 훅이 실패해 모든 Bash·편집 호출이 막힌다. 템플릿의 scripts/dev-cycle.mjs를 먼저 옮긴 뒤 다시 실행한다`;
 export function ensureClaudeHook(target, { dryRun = false } = {}) {
   const p = join(target, ".claude/settings.json");
   let cur = {};
@@ -399,8 +409,10 @@ export function ensureClaudeHook(target, { dryRun = false } = {}) {
   if (!isObject(cur) || !(cur.hooks === undefined || isObject(cur.hooks))) return null;
   if (!HOOKS.every(({ event }) => cur.hooks?.[event] === undefined || Array.isArray(cur.hooks[event]))) return null;
   cur.hooks ??= {};
+  const stale = unknownHookCommands(target);
   let added = false;
   for (const { event, mark, entry } of HOOKS) {
+    if (stale.some((c) => mark.endsWith(`" ${c}`))) continue;
     cur.hooks[event] ??= [];
     if (cur.hooks[event].some((g) => g.hooks?.some((h) => h.command?.includes(mark)))) continue;
     cur.hooks[event].push(entry);
@@ -446,17 +458,18 @@ const gitHookLines = (h, dryRun) =>
       : [];
 
 // 벤더 스킬은 upstream 원본이다. `pnpm check`(biome check --write .)가 고쳐 쓰면 skills-lock.json의 contentHash와 어긋난다.
-// OMC·OMX·pro-kit·impeccable·hallmark 상태 파일과 .claude/settings.json, .codex/(OMX 생성물)는 도구가 다시 쓰는 파일이다.
+// OMC·OMX·pro-kit·impeccable·hallmark·tastemaker 상태 파일과 .claude/settings.json, .codex/(OMX 생성물)는 도구가 다시 쓰는 파일이다.
 // .agents/agents/(agents:sync가 만드는 Antigravity 에이전트)는 Biome 2.6이 YAML 머리를 다시 맞추면 agents:check가 깨진다.
 // biome.json은 vcs.useIgnoreFile이 꺼져 있어 .gitignore만으로는 빠지지 않는다.
 // 마이그레이션(drizzle-kit), schema/auth.ts(`auth:generate`), src/env.ts(varlock이 설치·실행 때마다 다시 씀)는 생성물이라
 // 포맷해도 다시 생성하면 지적이 돌아온다. html/(pnpm export:html이 만든 정적 사이트)은 빌드 결과물이다.
+// .well-known/workflow/는 Workflow SDK가 앱 안에 만드는 생성물이다.
 // 마크다운: Biome 2.6부터 표를 칸 너비로 맞추는데, dev-cycle이 tasks/todo.md에 쓰는 대조표와 AGENTS.md 표의 edition 주석 칸이 매번 다시 바뀌어 lint가 실패한다.
 const BIOME_IGNORES = [
-  "!.agents/skills", "!.agents/agents", "!skills-lock.json", "!**/.omc", "!**/.omx", "!**/.prokit", "!**/.impeccable", "!**/.hallmark", "!.claude", "!.codex",
+  "!.agents/skills", "!.agents/agents", "!skills-lock.json", "!**/.omc", "!**/.omx", "!**/.prokit", "!**/.impeccable", "!**/.hallmark", "!**/.tastemaker", "!.claude", "!.codex",
   "!tasks/evidence",
   "!packages/db/src/migrations", "!packages/db/src/schema/auth.ts", "!apps/web/src/env.ts", "!packages/db/src/env.ts",
-  "!html", "!**/*.md",
+  "!html", "!**/.well-known/workflow", "!**/*.md",
 ];
 // shadcn의 label.tsx·input-group.tsx는 upstream 코드라 Better-T-Stack 생성 직후부터 a11y 오류 4건이 난다(범용 Label 래퍼,
 // role="group", 애드온 클릭 포커스). 고쳐 써도 `shadcn add --overwrite`가 되돌리므로 이 두 파일에서만 세 규칙을 끈다.
@@ -715,6 +728,7 @@ export function main(argv) {
     const proxy = adopt ? null : ensureTurboProxyEnv(target, { dryRun: true });
     const eslint = adopt ? ensureEslintIgnores(target, { dryRun: true }) : null;
     const hook = ensureClaudeHook(target, { dryRun: true });
+    const staleHooks = unknownHookCommands(target);
     const gitHook = ensureGitHook(target, { dryRun: true });
     console.log([
       `파일: 복사 예정 ${files.copied.join(", ") || "없음"}, 덧붙임 예정 ${files.appended.join(", ") || "없음"}, 동일 ${files.same.length}, 유지(템플릿과 다름) ${kept}`,
@@ -733,6 +747,7 @@ export function main(argv) {
       ...(eslint === "manual" ? [`경고: ${ESLINT_MANUAL}`] : []),
       `.claude/settings.json 추가 예정: ${hook ? "SessionStart 훅(scripts/load-keys.mjs), PostToolUse 훅(부른 스킬 기록), PreToolUse 훅(라운드 없는 편집 막기, 이름으로 프로세스 끄기 막기)" : "없음"}`,
       ...(hook === null ? [`경고: ${HOOK_MANUAL}`] : []),
+      ...(staleHooks.length ? [STALE_HOOK(staleHooks)] : []),
       ...gitHookLines(gitHook, true),
       ...(turbo === "manual" ? [`경고: ${TURBO_MANUAL}`] : []),
       ...(proxy === "manual" ? [`경고: ${TURBO_PROXY_MANUAL}`] : []),
@@ -757,11 +772,14 @@ export function main(argv) {
   const proxy = adopt ? null : ensureTurboProxyEnv(target);
   const eslint = adopt ? ensureEslintIgnores(target) : null;
   const hook = ensureClaudeHook(target);
+  const staleHooks = unknownHookCommands(target);
   const gitHook = ensureGitHook(target);
   const toFormat = [
     ...files.copied.filter((f) => /\.(mjs|js|json)$/.test(f)),
     ...(scripts.added.length || scripts.wrapped.length ? ["package.json"] : []),
     ...(Array.isArray(biomeConfig) && biomeConfig.length && !adopt ? ["biome.json"] : []),
+    // 더한 globalPassThroughEnv는 한 줄이라 80자를 넘는다. 포맷하지 않으면 갱신 반영 뒤 lint가 실패한다
+    ...(turbo === "added" || proxy === "added" ? ["turbo.json"] : []),
   ];
   const biome = adopt ? "건너뜀 (adopt: 프로젝트의 포맷 도구를 따른다)" : formatWithBiome(target, toFormat);
   const agents = run(process.execPath, [join(target, "scripts/sync-agents.mjs")], { cwd: target });
@@ -801,6 +819,7 @@ export function main(argv) {
     ...(eslint === "manual" ? [`경고: ${ESLINT_MANUAL}`] : []),
     ...(hook ? [".claude/settings.json: SessionStart 훅(scripts/load-keys.mjs: .env의 이미지 키와 배포 토큰을 세션에 불러온다)과 PostToolUse 훅(dev-cycle skill-log: 부른 스킬을 .prokit/skills-used.jsonl에 남겨 audit이 단계 행 증거와 대조한다), PreToolUse 훅(dev-cycle edit-guard: 열린 라운드 없이 코드·하네스 파일을 고치지 못하게 한다. dev-cycle shell-guard: pkill처럼 이름·포트로 골라 프로세스를 끄지 못하게 한다) 중 없는 것을 더함"] : []),
     ...(hook === null ? [`경고: ${HOOK_MANUAL}`] : []),
+    ...(staleHooks.length ? [STALE_HOOK(staleHooks)] : []),
     ...gitHookLines(gitHook, false),
     ...legacyWarning(target),
     `biome 포맷: ${biome}`,
@@ -827,7 +846,8 @@ export function main(argv) {
         ].map((line, i) => line.replace(/^ {2}\d+\./, `  ${i + 1}.`))),
     ...(picked.simplicity === "caveman" ? ["  - caveman 응답 압축은 /caveman(Codex $caveman)으로 켜고 \"stop caveman\"으로 끈다. 대화 응답에만 쓴다"] : []),
     ...(picked.optional.includes("i-have-adhd") ? ["  - i-have-adhd는 /i-have-adhd(Codex $i-have-adhd)로 켜고 \"stop adhd mode\"로 끈다. 대화 응답에만 쓴다"] : []),
-    ...(picked.optional.includes("taste") ? ["  - taste(design-taste-frontend)는 화면 작업에서 사용자가 고른 화면에만 쓴다(prokit-ui references/taste.md). 검사에는 Chrome·Edge·Chromium이 필요하다"] : []),
+    // 화면 디자인 보조(guide가 있는 선택 묶음)는 주 UI 스킬에 더하는 것이다. 언제 쓰는지는 guide와 prokit-ui가 정한다
+    ...picked.optional.filter((k) => manifest.optional?.[k]?.guide).map((k) => `  - 화면 디자인 보조 ${k}: 주 UI 스킬 흐름에 더한다. 쓰기 전에 ${manifest.optional[k].guide}를 읽는다(prokit-ui "화면 디자인 보조")`),
   ];
   console.log(out.join("\n"));
   if (skills && skills.status !== 0) return 2;

@@ -24,7 +24,7 @@ bash <pro-kit-ui>/templates/prokit-next-neon/install.sh my-app
 | `--brain <이름>[,…]` | 두뇌를 골라요. 여러 개는 쉼표로 잇고 첫 번째가 주 두뇌예요(superpowers, agent-skills, pstack, gstack, oh-my, mattpocock, openspec, spec-kit, compound-engineering). 기본은 `none`이에요 |
 | `--simplicity <이름>` | 과설계 방지 스킬을 하나 골라요(ponytail, caveman, karpathy). 기본은 `none`이에요 |
 | `--ui-skill <이름>[,…]` | UI 스킬을 골라요(impeccable, hallmark). 여러 개는 쉼표로 잇고 첫 번째가 주 UI 스킬이에요. 주지 않으면 `impeccable`이에요. `none`이면 외부 UI 스킬 없이 기본 AI가 Anthropic `frontend-design`(함께 설치)과 게슈탈트 지침으로 디자인해요 |
-| `--matt <스킬>`, `--optional <묶음>` | mattpocock 추가 스킬과 선택 스킬 묶음(i-have-adhd, taste 포함)을 설치해요. 여러 개는 쉼표로 이어요 |
+| `--matt <스킬>`, `--optional <묶음>` | mattpocock 추가 스킬과 선택 스킬 묶음(i-have-adhd, 화면 디자인 보조 포함)을 설치해요. 여러 개는 쉼표로 이어요 |
 | `--with-global` | 전역 도구(agent-browser CLI, Vercel CLI, 고른 두뇌의 gstack·OMX·OpenSpec CLI) 중 없는 것을 설치한 뒤 프로젝트 설치를 이어 가요. ponytail을 골랐으면 네이티브 플러그인을 지원하는 Codex CLI에서 공식 Ponytail marketplace와 플러그인도 선택 설치해요 |
 
 - `AGENTS.md`, `CLAUDE.md`가 이미 있으면 템플릿 블록을 끝에 한 번만 덧붙여요.
@@ -55,7 +55,7 @@ bash <pro-kit-ui>/templates/prokit-next-neon/install.sh my-app
 
 - `templates/<템플릿>/files/` 아래 파일(스킬, 에이전트, dev-cycle, 문서 골격, 스크립트)을 프로젝트에 복사해요.
 - `package.json`에 스크립트(`dev-cycle`, `skills:*`, `agents:*`, `export:html` 등)를 더해요.
-- `.claude/settings.json`에 훅 네 개를 없는 것만 더해요. 세션을 열 때 `.env`의 키를 불러오는 훅, 부른 스킬을 `.prokit/skills-used.jsonl`에 남기는 훅(`skill-log`), 열린 라운드 없이 코드나 하네스를 편집하지 못하게 하는 훅(`edit-guard`), `pkill`처럼 이름이나 포트로 골라 프로세스를 끄는 셸 명령을 막는 훅(`shell-guard`)이에요. 같은 훅의 Antigravity판은 템플릿 파일 `.agents/hooks.json`이고, Codex판 `.codex/hooks.json`은 `pnpm skills:setup`이 기기마다 병합해요(OMX 등 다른 항목은 그대로 둬요). `.claude/settings.json`을 읽지 못하면 직접 더하라고 알려요. 훅이 막고 기록하는 일은 [하네스 엔지니어링](../concepts/harness.md#자세히)에 있어요.
+- `.claude/settings.json`에 훅 네 개를 없는 것만 더해요. 세션을 열 때 `.env`의 키를 불러오는 훅, 부른 스킬을 `.prokit/skills-used.jsonl`에 남기는 훅(`skill-log`), 열린 라운드 없이 코드나 하네스를 편집하지 못하게 하는 훅(`edit-guard`), `pkill`처럼 이름이나 포트로 골라 프로세스를 끄는 셸 명령과 계층 파일을 셸로 고치는 명령을 막는 훅(`shell-guard`)이에요. 같은 훅의 Antigravity판은 템플릿 파일 `.agents/hooks.json`이고, Codex판 `.codex/hooks.json`은 `pnpm skills:setup`이 기기마다 병합해요(OMX 등 다른 항목은 그대로 둬요). `.claude/settings.json`을 읽지 못하면 직접 더하라고 알려요. 훅이 막고 기록하는 일은 [하네스 엔지니어링](../concepts/harness.md#자세히)에 있어요.
 - `.gitignore`에 작업 파일을 더해요. `tasks/evidence/`, `.omc/`·`.omx/`·`.prokit/`, `.claude/settings.local.json`, UI 스킬의 작업 파일(`.impeccable/`의 개인 설정·캐시·스크린샷, `.hallmark/shots/`와 `preflight.json`), `taste` 묶음의 `/.taste-skill/`, 루트와 `packages/*`의 `.env.*`(`.env.schema`·`.env.example` 제외), `/html/`이에요.
 - 다시 생성되는 파일(varlock의 `src/env.ts`)과 `pnpm export:html`이 만든 `html/`을 `biome.json` 검사 대상에서 빼요. 마크다운 파일(`**/*.md`)도 빼요. Biome 2.6의 마크다운 포맷이 `tasks/todo.md`의 대조표와 `AGENTS.md` 표를 매번 바꿔 lint가 실패해서예요.
 - 설치된 turbo가 2.11.5 이상이면 `turbo.json`에 `"agentGuidance": false`를 넣어요. turbo가 AI 에이전트를 감지하면 루트 `AGENTS.md`에 규칙 블록을 쓰고 커밋하라고 지시하기 때문이에요.

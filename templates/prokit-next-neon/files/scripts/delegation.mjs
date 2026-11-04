@@ -596,6 +596,13 @@ function globMatches(path, pattern) {
 	return new RegExp(`^${escaped}$`).test(path);
 }
 
+// 글롭이 없는 scope는 그 파일이거나 그 디렉터리 아래 전체다(apps/web/src → apps/web/src/**).
+const inScope = (path, scope) =>
+	globMatches(path, scope) ||
+	(!scope.includes("*") &&
+		safePath(scope) &&
+		path.startsWith(`${scope.replace(/\/+$/, "")}/`));
+
 function isSubsetPath(candidate, owner) {
 	if (!safePath(candidate) || !safePath(owner)) return false;
 	if (candidate === owner) return true;
@@ -1039,6 +1046,12 @@ export function main(argv = process.argv.slice(2), root = process.cwd()) {
 	const beforeArg = argv[1]?.startsWith("/")
 		? relative(root, argv[1])
 		: argv[1];
+	if (argv[0] === "diff" && argv[1] && !safePath(beforeArg)) {
+		console.error(
+			`기준 snapshot(${argv[1]})이 프로젝트 밖이다. 프로젝트 안(예: tasks/evidence/before.json)에 capture 결과를 두고 그 경로를 준다`,
+		);
+		return 2;
+	}
 	if (argv[0] === "diff" && safePath(beforeArg)) {
 		// scope가 없으면 어떤 변경도 허용하지 않는다(리뷰·QA 전후 대조).
 		const scopes = [];
@@ -1077,15 +1090,22 @@ export function main(argv = process.argv.slice(2), root = process.cwd()) {
 		}
 		// 기준 파일 자체는 `capture > 파일`이 만든 것이라 변경에서 뺀다.
 		const self = relative(after.bindings.root, beforePath);
+		// 대조표 파일도 뺀다. Main이 위임 중에 다른 행의 증거를 채운다(2026-11-03 실측)
+		let table = "tasks/todo.md";
+		try {
+			table =
+				JSON.parse(readFileSync(join(root, ".dev-cycle.json"), "utf8"))
+					.todoPath ?? table;
+		} catch {}
 		const changed = changedEntries(before, after)
-			.filter(({ path }) => path !== self)
+			.filter(({ path }) => path !== self && path !== table)
 			.map(({ path, kind, after: entry }) => ({
 				path,
 				// 지운 추적 파일은 ls-files에 남아 missing 항목이 된다.
 				kind: entry?.kind === "missing" ? "deleted" : kind,
 			}));
 		const outside = changed
-			.filter(({ path }) => !scopes.some((scope) => globMatches(path, scope)))
+			.filter(({ path }) => !scopes.some((scope) => inScope(path, scope)))
 			.map(({ path }) => path);
 		const headChanged = before.bindings.head !== after.bindings.head;
 		const ok = !outside.length && !headChanged;

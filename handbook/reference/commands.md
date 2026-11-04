@@ -46,7 +46,7 @@
 훅이 부르는 명령은 에이전트 도구가 자동으로 실행하니 직접 치지 않아요. 무엇을 막고 기록하는지는 [하네스 엔지니어링](../concepts/harness.md#자세히)의 훅 설명에 있어요.
 
 - `dev-cycle edit-guard`: 편집 도구가 파일을 고치기 전에 열린 라운드와 계층 경계를 확인해 막아요.
-- `dev-cycle shell-guard`: Bash 명령 가운데 `pkill`처럼 이름이나 포트로 골라 프로세스를 끄는 명령을 막아요(Claude Code와 Codex).
+- `dev-cycle shell-guard`: Bash 명령 가운데 `pkill`처럼 이름이나 포트로 골라 프로세스를 끄는 명령과, 계층 파일을 셸(리다이렉션, `sed -i`, `cp`·`mv`, 파일을 쓰는 스크립트)로 고치는 명령을 막아요(Claude Code와 Codex).
 - `dev-cycle skill-log`: 읽은 스킬과 에이전트 이름을 `.prokit/`에 기록해 audit이 증거와 대조하게 해요.
 - `dev-cycle agent-start`: Antigravity에서 서브에이전트 대화를 부른 에이전트 이름에 묶어요.
 
@@ -68,7 +68,7 @@
 | `pnpm skills:setup --ui-skill <이름>[,…]` | UI 스킬(`impeccable`, `hallmark`)을 고르거나 바꿔요. 여러 개는 쉼표로 잇고 첫 번째가 주 UI 스킬이에요. 고르지 않은 UI 스킬의 설치본은 정리해요. `--ui-skill none`은 UI 스킬 없이 가고, 기본 AI가 `frontend-design`과 게슈탈트 지침으로 화면을 만들어요. 바꿔도 `PRODUCT.md`, `DESIGN.md`, 화면 설계, 토큰은 그대로 써요. 고르지 않은 UI 스킬이 켠 훅은 `.claude/settings.local.json`과 `.codex/hooks.json`에서 함께 빼요 |
 | `pnpm skills:setup --drop <스킬 또는 묶음>[,…]` | mattpocock 추가 스킬이나 선택 묶음을 지워요. `--drop all`은 설치한 것을 모두 지워요 |
 | `pnpm skills:setup --brain none --simplicity none --drop all` | 순수 AI로 돌아가요. `prokit-*`와 필수·공식 스킬만 남아요 |
-| `pnpm skills:setup --optional <묶음>` | 선택 스킬 묶음(`ops`, `motion`, `mobile`, `i-have-adhd`, `taste`)을 설치해요. 여러 개는 쉼표로 이어요(`ops,motion`) |
+| `pnpm skills:setup --optional <묶음>` | 선택 스킬 묶음(`ops`, `motion`, `mobile`, `i-have-adhd`, `taste`, `landing`, `tastemaker`, `web-design-engineer`, `awwwards`, `animation`, `visual-critique`, `ui-design`)을 설치해요. 여러 개는 쉼표로 이어요(`ops,motion`) |
 | `pnpm skills:check` | 설치하지 않고 상태만 확인해요. 프로젝트 범위 항목이 빠졌으면 exit 1이에요 |
 | `pnpm skills:update --check` | 설치한 외부 스킬을 GitHub 원본과 비교해 새 버전이 있는지만 알려 줘요 |
 | `pnpm skills:update [<이름>...]` | 바뀐 스킬과 빠진 스킬만(이름을 주면 그 스킬만) 다시 설치해요 |

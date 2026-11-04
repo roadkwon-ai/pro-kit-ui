@@ -26,13 +26,13 @@
 
 ### B. UI
 - 디자인 맥락 확인, PRODUCT.md·DESIGN.md 확인 (주 UI 스킬의 맥락 단계. 새 작업이면: PRODUCT.md가 없을 때 기획 단계, DESIGN.md가 없고 Better-T-Stack 기본 화면뿐이거나 리디자인이면 디자인 카탈로그 스타일 1~3위와 직접 정하기 중 사용자 선택. 카탈로그는 use-design-md로 받고, 직접 정하면 마감에서 기록) → 출력 요약, 고른 스타일, DESIGN.md lint 결과
-- 화면 브리프 확정 (주 UI 스킬의 설계 단계. 좁은 개선이면 N/A: 사유) → 브리프 경로
+- 화면 브리프 확정 (주 UI 스킬의 설계 단계. 설치한 화면 디자인 보조는 guide를 읽고 이 화면에 쓰는 것을 브리프 `보조:` 줄에 적는다. 좁은 개선이면 N/A: 사유) → 브리프 경로
 - [design] 재사용·설정 설계 점검 (prokit-dev-cycle의 references/reuse-design.md와 해당 공식 스킬) → 기존: 경로·소비자; 결정: 재사용·분리; 설정: 환경 변수·설정 영향; 검증: 회귀 검사
-- 구현 (구현 단계, prokit-ui, 컴포넌트 조합·추가는 shadcn, 컴포넌트·훅 작성은 vercel-react-best-practices. prokit-ui-builder에 위임하고 공식 스킬은 그 에이전트가 읽는다) → 위임: prokit-ui-builder(사용: 읽은 공식 스킬), 변경 파일 요약, 사용한 스킬
+- 구현 (구현 단계, prokit-ui, 컴포넌트 조합·추가는 shadcn, 컴포넌트·훅 작성은 vercel-react-best-practices. prokit-ui-builder에 위임하고 공식 스킬은 그 에이전트가 읽는다. 브리프 `보조:` 줄의 보조 스킬은 guide의 개발 단계대로 SKILL.md 경로를 위임 지시에 넣는다) → 위임: prokit-ui-builder(사용: 읽은 공식 스킬), 변경 파일 요약, 사용한 스킬
 - [verify] 타입·린트·빌드 → 명령과 결과
 - [verify] next-dev-loop 런타임 확인과 ego-browser(없으면 agent-browser)로 desktop·mobile 스크린샷 (prokit-runtime-checker에 위임) → 위임: prokit-runtime-checker(사용: next-dev-loop), 확인한 경로, 오류 예산(콘솔·개발 오버레이·get_errors·서버 로그, 환경 탓도 빼지 않음) 수, tasks/evidence/ 경로
 - [verify] 휴대폰 스크롤 측정 (prokit-runtime-checker에 위임. prokit-verify의 references/browser.md "휴대폰 스크롤 측정". 스크롤 모션·긴 쪽·반복해서 다시 그리는 요소를 바꾸지 않았으면 N/A: 사유) → 위임: prokit-runtime-checker, 고치기 전·뒤의 50ms 넘는 프레임 수, 스크롤 모션 수, 레이어 수
-- [review] 디자인 리뷰 (주 UI 스킬의 리뷰 단계. 대상은 화면 경로나 주소. 결과의 꼴과 기록 위치는 prokit-ui의 references/<주 UI 스킬>-map.md) → 점수나 판정, 막는 지적 목록, 기록 파일 경로
+- [review] 디자인 리뷰 (주 UI 스킬의 리뷰 단계. 대상은 화면 경로나 주소. 결과의 꼴과 기록 위치는 prokit-ui의 references/<주 UI 스킬>-map.md. 브리프 `보조:` 줄의 보조마다 guide와 그 리뷰 칸이 가리키는 스킬 파일을 읽고 같은 보고서에 절로 더한다. 주 UI 스킬의 리뷰가 비슷한 것을 봤어도 보조를 대신하지 않고, 못 하면 `<보조> 미실행: 사유`로 적는다. guide의 결과 문구는 증거 끝에 붙인다) → 점수나 판정, 막는 지적 목록, 보조 결과, 기록 파일 경로
 - [review] 디자인 감사와 web-design-guidelines 코드 검사 (주 UI 스킬의 감사 단계는 Main이, web-design-guidelines는 prokit-reviewer(ui)가 하고 두 결과를 tasks/evidence/ui-audit-<시각>.md에 저장) → 감사 결과(꼴은 prokit-ui의 references/<주 UI 스킬>-map.md), web-design-guidelines 위반 수, 보고서 경로
 - 수정과 다듬기를 한 번에 (주 UI 스킬의 마감 단계. Main이 고칠 것을 모으고 수정은 prokit-ui-builder에 맡긴다. 고칠 것이 없으면 N/A: 사유) → 위임: prokit-ui-builder(사용: 읽은 공식 스킬), 반영 내역
 - [verify] 재확인 1회 → 스크린샷 경로와 점수
@@ -58,7 +58,7 @@
 - 스키마 수정 + dbGenerate, 생성 SQL 검토 (구현 단계, 컬럼 타입·제약·인덱스는 supabase-postgres-best-practices) → 위임: <에이전트>(사용: 읽은 공식 스킬), 마이그레이션 파일 경로와 요약, 사용한 스킬
 - [verify] 타입·린트 검사 (commands.typecheck, commands.lint) → 명령과 결과 요약
 - [verify] 로컬 개발 DB에 dbMigrate 적용 → 호스트:포트와 출력 요약
-- [verify] 병합 전 Neon 개발 브랜치에 dbMigrate 적용 (neon-postgres-branches) → 브랜치 이름과 출력 요약 또는 N/A: Neon 미연결(.neon 없음)
+- [verify] 병합 전 Neon 개발 브랜치에 dbMigrate 적용 (neon-postgres) → 브랜치 이름과 출력 요약 또는 N/A: Neon 미연결(.neon 없음)
 - 파괴적 변경 여부 판단 → 없음 또는 2단계 계획
 - [review] prokit-reviewer(db) → verdict, max_severity, 반영·기각 내역
 
@@ -81,7 +81,7 @@
 - [verify] pnpm agents:check → 출력
 - [verify] pnpm skills:check → 출력
 - [verify] pnpm dev-cycle case·status 실행 확인 → 출력 요약
-- [verify] 빌드·검사 (빌드·배포 설정(next.config, vercel.json·vercel.ts, turbo.json, .github/workflows·actions)이나 작업공간 설정(루트 package.json, biome.json, tsconfig.json, packages/config)을 바꿨으면 pnpm build와 타입·린트 검사(commands.typecheck, commands.lint). 아니면 N/A: 사유) → 명령과 결과 요약 또는 N/A: 사유
+- [verify] 빌드·검사 (빌드·배포 설정(next.config, vercel.json·vercel.ts, turbo.json, .github/workflows·actions)이나 작업공간 설정(루트 package.json, pnpm-workspace.yaml, biome.json, tsconfig.json, packages/config)을 바꿨으면 pnpm build와 타입·린트 검사(commands.typecheck, commands.lint). 아니면 N/A: 사유) → 명령과 결과 요약 또는 N/A: 사유
 - [review] 하네스 변경 리뷰 (스크립트·CI·배포·작업공간 설정·.dev-cycle.json 규칙을 바꿨으면 prokit-reviewer(code). 스킬 설치·문서만 바꿨으면 N/A: 사유) → verdict, max_severity, 반영·기각 내역 또는 N/A: 사유
 - 스킬을 바꿨으면 skill-creator eval 재실행 → 벤치마크 경로 또는 N/A: 사유
 
