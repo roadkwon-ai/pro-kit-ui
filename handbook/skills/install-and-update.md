@@ -12,9 +12,9 @@
 | 누가 | 무엇을 |
 |---|---|
 | 프로킷이 자동으로 | 새 프로젝트를 만들 때 최신판을 받아 설치해요. 작업을 시작할 때(`pnpm dev-cycle status`) 하루에 한 번 새 버전이 있는지 확인하고, 있으면 에이전트가 물어봐요 |
-| 내가 | 보통은 에이전트가 물을 때 답하기만 하면 돼요. 직접 하려면 "스킬 업데이트해줘"라고 말하고, 상태만 보려면 `pnpm skills:check`를 실행해요 |
+| 내가 | 보통은 에이전트가 물을 때 답하기만 하면 돼요. 직접 하려면 “스킬 업데이트해줘”라고 말하고, 상태만 보려면 `pnpm skills:check`를 실행해요 |
 
-"스킬 업데이트해줘", "스킬 최신인지 확인해줘"라고 요청하면 `prokit-skills-update` 스킬이 받아서 바뀐 스킬을 확인하고, 한 번의 작업(케이스 H 라운드)으로 올려서 커밋해요. 두뇌나 추가 스킬을 바꾸는 일은 이 스킬이 아니라 `prokit-skills-manage`가 해요([두뇌와 선택 스킬](brains.md#바꾸기)). 에이전트 없이 프로젝트의 `pnpm` 명령으로 하는 방법은 아래 "업데이트"에 있어요.
+“스킬 업데이트해줘”, “스킬 최신인지 확인해줘”라고 요청하면 `prokit-skills-update` 스킬이 받아서 바뀐 스킬을 확인하고, 한 번의 작업(케이스 H 라운드)으로 올려서 커밋해요. 두뇌나 추가 스킬을 바꾸는 일은 이 스킬이 아니라 `prokit-skills-manage`가 해요([두뇌와 선택 스킬](brains.md#바꾸기)). 에이전트 없이 프로젝트의 `pnpm` 명령으로 하는 방법은 아래 “업데이트”에 있어요.
 
 ## status가 알려 주는 것
 
@@ -40,10 +40,10 @@
 
 | 하고 싶은 일 | 말 | 명령 |
 |---|---|---|
-| 지금은 알림을 미루기 | "나중에" | `pnpm skills:update --snooze`. 처음 하루, 그다음 이틀, 그다음 일주일씩 늘어나요. 알림 목록이 바뀌면 미뤘어도 다시 알려요 |
-| 묻지 않고 자동으로 | "항상 자동으로" | `pnpm skills:update --mode auto` |
-| 확인 자체를 끄기 | "다시 묻지 않기" | `pnpm skills:update --mode off`. 다시 켜려면 `--mode ask` |
-| 지금 한 번 확인만 | "스킬 최신인지 확인해줘" | `pnpm skills:update --check` |
+| 지금은 알림을 미루기 | “나중에” | `pnpm skills:update --snooze`. 처음 하루, 그다음 이틀, 그다음 일주일씩 늘어나요. 알림 목록이 바뀌면 미뤘어도 다시 알려요 |
+| 묻지 않고 자동으로 | “항상 자동으로” | `pnpm skills:update --mode auto` |
+| 확인 자체를 끄기 | “다시 묻지 않기” | `pnpm skills:update --mode off`. 다시 켜려면 `--mode ask` |
+| 지금 한 번 확인만 | “스킬 최신인지 확인해줘” | `pnpm skills:update --check` |
 | 하루 한 번 확인(자동으로 불리는 명령) | | `pnpm --silent skills:update --if-due`. 설치하지 않고, 알릴 것이 있을 때만 출력해요 |
 
 > [!NOTE]
@@ -57,25 +57,50 @@
 ---
 config:
   flowchart:
-    wrappingWidth: 290
+    wrappingWidth: 230
+    rankSpacing: 25
 ---
-flowchart LR
-  S["scripts/skills-setup.mjs<br/>skills.manifest.json 목록대로<br/>install.sh<br/>pnpm skills:setup<br/>skills:check · skills:update"]
-  S --> P1["늘: 공식 도메인 스킬<br/>.agents/skills + .claude/skills 링크"]
-  S --> P2["늘: Claude 플러그인<br/>.claude/settings.json · skill-creator"]
-  S --> AB["없거나 최신판보다 낮으면<br/>agent-browser CLI(전역)"]
-  S -.-> SEL["고른 것만(brain · simplicity)<br/>두뇌(하나 이상)<br/>superpowers · agent-skills<br/>gstack · oh-my · pstack · mattpocock<br/>openspec · spec-kit<br/>compound-engineering<br/>과설계 방지(하나)<br/>ponytail · caveman · karpathy"]
-  S -.-> UI["고른 것만(uiSkill, 없으면 impeccable)<br/>impeccable · hallmark 중 하나 이상<br/>none이면 frontend-design"]
-  S -.-> MATT["--matt일 때<br/>mattpocock 추가 스킬"]
-  S -.-> OPT["--optional일 때<br/>선택 스킬 묶음<br/>ops · motion · mobile · i-have-adhd<br/>화면 디자인 보조<br/>(taste · landing · animation 등)"]
-  S -.-> P4["두뇌가 oh-my이고 omx CLI가 있을 때<br/>OMX 프로젝트 설정<br/>.codex/skills · agents · prompts"]
-  S -.-> BG["gstack · oh-my · openspec을 골랐고<br/>--brain을 줬거나 --with-global일 때<br/>두뇌 전역 도구<br/>gstack · OMX CLI · OpenSpec CLI"]
-  S -.-> G["--with-global일 때<br/>나머지 전역 도구<br/>Vercel CLI<br/>Neon CLI 또는 Supabase CLI"]
-  S -.-> CP["ponytail · --with-global · 지원 CLI일 때<br/>Codex 네이티브 Ponytail<br/>공식 marketplace · plugin"]
-  S -.-> DROP["--drop일 때<br/>추가 스킬·선택 묶음 삭제<br/>skills-lock.json 출처가 맞는 설치본만"]
-  S -.-> HK["고르지 않은 스킬을 지울 때<br/>그 폴더를 부르는 훅만 뺌<br/>.claude/settings.local.json<br/>.codex/hooks.json"]
-  S -.-> LOC["전역에 켜진 고르지 않은 플러그인<br/>.claude/settings.local.json으로<br/>이 프로젝트에서만 끔"]
+flowchart TB
+  accTitle: 스킬 설치 구조
+  accDescr: skills-setup.mjs가 매니페스트대로 늘 설치하는 것과, 조건이 맞을 때만 설치하거나 바꾸는 것을 나눠 처리해요. 실선은 늘, 점선은 조건이 맞을 때만이에요.
+  S["scripts/skills-setup.mjs<br/>skills.manifest.json<br/>목록대로 설치<br/>install.sh<br/>skills:setup<br/>skills:check<br/>skills:update"]
+  S --> ALW
+  S -.-> CND
+  subgraph ALW["늘 설치"]
+    P1["공식 도메인 스킬<br/>.agents/skills<br/>.claude/skills<br/>링크"]
+    P2["Claude 플러그인<br/>settings.json<br/>skill-creator"]
+    AB["agent-browser<br/>CLI(전역)<br/>없거나 최신판보다<br/>낮으면 설치"]
+    P1 ~~~ P2 ~~~ AB
+  end
+  subgraph CND["조건이 맞을 때만"]
+    SEL["고른 것만<br/>(brain · simplicity)<br/>두뇌와<br/>과설계 방지 스킬"]
+    UI["고른 것만<br/>(uiSkill)<br/>UI 스킬<br/>없으면 impeccable"]
+    MATT["--matt일 때<br/>mattpocock<br/>추가 스킬"]
+    OPT["--optional일 때<br/>선택 스킬 묶음"]
+    P4["두뇌가 oh-my이고<br/>omx CLI가 있을 때<br/>OMX 프로젝트<br/>설정"]
+    BG["gstack · oh-my ·<br/>openspec을 골랐고<br/>--brain을 줬거나<br/>--with-global일 때<br/>두뇌 전역 도구"]
+    G["--with-global일 때<br/>나머지 전역 도구"]
+    CP["ponytail ·<br/>--with-global ·<br/>지원 CLI일 때<br/>Codex 네이티브<br/>Ponytail"]
+    DROP["--drop일 때<br/>추가 스킬 ·<br/>선택 묶음 삭제"]
+    HK["고르지 않은 스킬을<br/>지울 때 그 폴더를<br/>부르는 훅만 뺌"]
+    LOC["전역에 켜진<br/>고르지 않은<br/>플러그인을 이<br/>프로젝트에서만 끔"]
+    SEL ~~~ UI ~~~ MATT ~~~ OPT ~~~ P4 ~~~ BG ~~~ G ~~~ CP ~~~ DROP ~~~ HK ~~~ LOC
+  end
+  ALW ~~~ CND
 ```
+
+도식에 나온 것을 더 자세히 적으면 이래요.
+
+- **늘 설치**: 공식 도메인 스킬은 `.agents/skills`에 두고 `.claude/skills`에 링크해요. Claude 플러그인은 `.claude/settings.json`에 등록하고 `skill-creator`도 넣어요.
+- **두뇌(하나 이상)와 과설계 방지(하나)**: 두뇌는 superpowers, agent-skills, gstack, oh-my, pstack, mattpocock, openspec, spec-kit, compound-engineering 중에서, 과설계 방지는 ponytail, caveman, karpathy 중에서 골라요.
+- **UI 스킬**: `uiSkill`이 없으면 impeccable이에요. impeccable과 hallmark 중 하나 이상을 고르고, `none`이면 frontend-design을 써요.
+- **선택 스킬 묶음(`--optional`)**: ops, motion, mobile, i-have-adhd, 화면 디자인 보조(taste, landing, animation 등)예요.
+- **OMX 프로젝트 설정**: `.codex/skills`, agents, prompts를 만들어요.
+- **두뇌 전역 도구**: gstack, OMX CLI, OpenSpec CLI예요.
+- **나머지 전역 도구**: Vercel CLI, Neon CLI 또는 Supabase CLI예요.
+- **Codex 네이티브 Ponytail**: 공식 marketplace와 plugin을 등록해요.
+- **`--drop`**: `skills-lock.json`의 출처가 맞는 설치본만 지워요.
+- **훅과 플러그인 끄기**: 고르지 않은 스킬을 지울 때 그 폴더를 부르는 훅만 `.claude/settings.local.json`과 `.codex/hooks.json`에서 빼요. 전역에 켜진 고르지 않은 플러그인은 `.claude/settings.local.json`으로 이 프로젝트에서만 꺼요.
 
 ### 설치할 때 알아 둘 것
 
@@ -151,6 +176,7 @@ review는 한 번의 검토일 뿐 세션을 영구 review 모드로 바꾸지 �
 
 ## 관련 문서
 
+- [스킬 구조 한눈에](skill-map.md)
 - [공식 스킬과 연결](official-skills.md)
 - [두뇌와 선택 스킬](brains.md)
 - [선택 스킬 묶음](optional-bundles.md)

@@ -40,14 +40,14 @@ bash <pro-kit-ui>/templates/prokit-next-neon/install.sh my-app
 > [!IMPORTANT]
 > 첫 라운드를 열기 전에 설치 결과를 먼저 커밋해요. 이유는 [첫 커밋이 중요한 이유](#첫-커밋이-중요한-이유)에 있어요.
 
-에이전트가 따르는 규칙의 원문은 [AGENTS.md의 "템플릿으로 새 프로젝트 만들기"](../../AGENTS.md#템플릿으로-새-프로젝트-만들기)예요.
+에이전트가 따르는 규칙의 원문은 [AGENTS.md의 “템플릿으로 새 프로젝트 만들기”](../../AGENTS.md#템플릿으로-새-프로젝트-만들기)예요.
 
 1. **DB 준비는 건너뛰어요**: 화면만 프로젝트는 DB를 쓰지 않아요.
 2. **포맷 정리와 커밋**: `pnpm check`로 Better-T-Stack이 만든 코드의 포맷과 정렬을 한 번 정리하고 `pnpm exec biome check .`가 exit 0인지 봐요. 설치 결과, 포맷 정리를 기본 브랜치에 커밋해요.
 3. **새 세션 열기**: 스킬과 에이전트는 새 세션부터 보여요. 첫 실행 때 묻는 신뢰 질문에 동의해야 프로젝트 설정이 켜져요. Claude Code는 플러그인, Codex는 에이전트와 프로젝트 스킬, Grok Build는 규칙과 스킬이에요(`grok --trust`로 열면 묻지 않고 신뢰해요). `--with-global`로 Codex Ponytail을 선택 설치했다면 `/hooks`에서 별도로 신뢰한 뒤 새 세션을 열어요. Antigravity는 `AGENTS.md`, `.agents/skills`, `.agents/agents`를 그대로 읽어요. 라운드 없는 편집 막기와 스킬 기록 훅은 Codex가 `/hooks`에서 `.codex/hooks.json`을 신뢰해야, Antigravity가 폴더를 신뢰해야 돌아요([지원하는 에이전트](../start/supported-agents.md#신뢰-질문)).
 4. **화면 디자인 검사 켜기**: impeccable을 골랐다면 개발자마다 한 번, 프로젝트 루트에서 `.agents/skills/impeccable/scripts/impeccable hooks on`을 실행해요. 켠 뒤 `.claude/settings.local.json`의 훅 명령이 `…/scripts/impeccable" hook`인지 확인해요. hallmark만 골랐다면 이 단계는 없어요. 대신 첫 화면 라운드가 만드는 `.hallmark/log.json`, `.hallmark/salt`, `.hallmark/.gitignore`는 커밋해요(`shots/`와 `preflight.json`은 설치기가 git 무시에 넣었어요).
 5. **프로젝트 소개 채우기**: `GLOSSARY.md`와 `docs/domain/project.md`를 채워요.
-6. **첫 요청**: "…을 만들어줘"처럼 요청하면 `prokit-dev-cycle`이 라운드를 열어요([dev-cycle 라운드](../concepts/dev-cycle.md)). 
+6. **첫 요청**: “…을 만들어줘”처럼 요청하면 `prokit-dev-cycle`이 라운드를 열어요([dev-cycle 라운드](../concepts/dev-cycle.md)). 
 
 ## 자세히
 

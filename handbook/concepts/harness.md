@@ -1,10 +1,10 @@
 # 하네스 엔지니어링
 
-> 한눈에: 하네스는 에이전트가 정해진 순서와 검사를 지키며 일하게 만드는 규칙, 스킬, 자동 검사의 묶음이에요. 에이전트에게 "잘해 줘"라고 부탁하는 대신 해야 할 일과 확인할 일을 파일과 명령으로 정해 둬요. **그래서 누가 요청하든 에이전트가 같은 순서로 일해요.**
+> 한눈에: 하네스는 에이전트가 정해진 순서와 검사를 지키며 일하게 만드는 규칙, 스킬, 자동 검사의 묶음이에요. 에이전트에게 “잘해 줘”라고 부탁하는 대신 해야 할 일과 확인할 일을 파일과 명령으로 정해 둬요. **그래서 누가 요청하든 에이전트가 같은 순서로 일해요.**
 
 ## 왜 필요한가
 
-AI 에이전트는 똑똑하지만 부탁한 대로만 움직여서, 바쁘면 검사를 건너뛰거나 "다 됐어요"라고 먼저 말하기도 해요. 순서와 검사를 파일과 명령으로 정해 둔 이 묶음을 하네스라고 불러요([용어](../../tutorials/reference/glossary.md#도구)).
+AI 에이전트는 똑똑하지만 부탁한 대로만 움직여서, 바쁘면 검사를 건너뛰거나 “다 됐어요”라고 먼저 말하기도 해요. 순서와 검사를 파일과 명령으로 정해 둔 이 묶음을 하네스라고 불러요([용어](../../tutorials/reference/glossary.md#도구)).
 
 > [!IMPORTANT]
 > 프로킷은 에이전트의 기억력이나 성의에 기대지 않고, 순서와 검사를 파일과 명령으로 못 박아 둬요.
@@ -21,17 +21,17 @@ AI 에이전트는 똑똑하지만 부탁한 대로만 움직여서, 바쁘면 �
 
 ## 하네스를 이루는 것
 
-템플릿을 설치하면 프로젝트에 다섯 가지가 생겨요.
+템플릿을 설치하면 프로젝트에 다섯 가지가 생겨요. 에이전트는 가운데서 일하고, 바깥 층이 순서와 검사를 지켜요. 아래 번호는 그림의 바깥 층부터 세어요.
 
-![가운데 AI 에이전트를 규칙 문서, 스킬, 역할 나누기, 대조표와 audit, 자동 검사 다섯 층이 안쪽부터 차례로 감싸고 있어요.](assets/harness-layers@2x.webp)
+![다섯 층이 가운데 AI 에이전트를 감싼 그림이에요. 층은 바깥부터 본문 번호 순서예요.](assets/harness-layers@2x.webp)
 
-| 부분 | 파일 | 하는 일 |
+| 부분 | 파일과 명령 | 하는 일 |
 |---|---|---|
-| 규칙 문서 | `AGENTS.md`, `CLAUDE.md`, `GLOSSARY.md`, `docs/domain/project.md` | 에이전트가 시작할 때 읽는 개발 원칙과 공통 규칙, 용어집, 프로젝트 소개. `CLAUDE.md`는 `@AGENTS.md`로 같은 지침을 읽어요 |
-| 스킬 | `.agents/skills/prokit-*` 7개와 공식 스킬 | 분야마다 일하는 법을 알려 줘요. `prokit-*`는 일을 나누고 맡기고 검수하고, 공식 스킬은 그 일을 맡은 전문 에이전트가 읽고 따라요. 대조표의 행마다 그 단계에서 읽을 공식 스킬과 맡는 에이전트가 정해져 있어요 |
-| 역할 나누기 | `.claude/agents/`의 전문 수행 에이전트(`prokit-ui-builder.md`, `prokit-runtime-checker.md`, `prokit-implementer.md`), `specialist-reviewer.md`, `prokit-reviewer.md` | 코디네이터는 직접 구현하지 않고 계층별 수행자와 읽기 전용 분석·리뷰에 나눠 맡겨요. `prokit-reviewer(...)` 통합 리뷰 행은 최종 리뷰어만 채울 수 있어요 |
-| 대조표와 audit | `scripts/dev-cycle.mjs`, `.dev-cycle.json`, `docs/dev-workflow.md`, `tasks/` | 작업을 케이스로 나누고 케이스별 대조표를 연 뒤 빈칸이 없는지 검사해요. |
-| 자동 검사 | `.dev-cycle.json`의 `commands`, `pnpm skills:check`, `pnpm agents:check`, `pnpm dev-cycle secrets`, `pnpm vercel:deploy … --check`, 에이전트 도구의 훅 | 타입, 린트, 빌드, 테스트, 스킬과 에이전트 상태, 비밀값, 배포 준비를 명령으로 확인해요. 실행한 결과가 곧 증거예요. 훅은 라운드 없는 편집 같은 길을 일하는 도중에 막아요 |
+| 1. 자동 검사 | `.dev-cycle.json`의 `commands`, 에이전트 도구의 훅, `pnpm`으로 돌리는 `skills:check`, `agents:check`, `dev-cycle secrets`, `vercel:deploy <대상> --check` | 타입, 린트, 빌드, 테스트, 스킬과 에이전트 상태, 비밀값, 배포 준비를 명령으로 확인해요. 실행한 결과가 곧 증거예요. 훅은 라운드 없는 편집 같은 길을 일하는 도중에 막아요 |
+| 2. 대조표와 audit | `scripts/dev-cycle.mjs`, `.dev-cycle.json`, `docs/dev-workflow.md`, `tasks/` | 작업을 케이스로 나누고 케이스별 대조표를 연 뒤 빈칸이 없는지 검사해요. |
+| 3. 역할 나누기 | `.claude/agents/`의 전문 수행, 리뷰 에이전트([이름과 하는 일](agent-roles.md)) | 코디네이터는 직접 구현하지 않고 계층별 수행자와 읽기 전용 분석·리뷰에 나눠 맡겨요. `prokit-reviewer(...)` 통합 리뷰 행은 최종 리뷰어만 채울 수 있어요 |
+| 4. 스킬 | `.agents/skills/prokit-*` 7개와 공식 스킬 | 분야마다 일하는 법을 알려 줘요. `prokit-*`는 일을 나누고 맡기고 검수하고, 공식 스킬은 그 일을 맡은 전문 에이전트가 읽고 따라요. 대조표의 행마다 그 단계에서 읽을 공식 스킬과 맡는 에이전트가 정해져 있어요 |
+| 5. 규칙 문서 | `AGENTS.md`, `CLAUDE.md`, `GLOSSARY.md`, `docs/domain/project.md` | 에이전트가 시작할 때 읽는 개발 원칙과 공통 규칙, 용어집, 프로젝트 소개. `CLAUDE.md`는 `@AGENTS.md`로 같은 지침을 읽어요 |
 
 ## 요청이 흘러가는 길
 
@@ -47,7 +47,7 @@ AI 에이전트는 똑똑하지만 부탁한 대로만 움직여서, 바쁘면 �
 ## 자세히
 
 - **프로세스 스킬 고르기**: 설계, 계획, 구현, 디버깅, 리뷰, QA, 검증에 쓸 프로세스 스킬은 설치된 프로젝트의 `.agents/skills/prokit-dev-cycle/references/process-routing.md`에 표로 정리돼 있어요. 단계마다 1순위 스킬, Claude와 Codex의 대안, 스킬이 없을 때의 절차가 적혀 있어요. 필요한 전문 스킬이 없으면 검증한 대안을 찾고, 대안도 없으면 막힌 이유를 남겨요.
-- **과설계 막기**: 스펙에 "만들지 않는 것" 절을 두고, 계획은 `prokit-reviewer(plan)`이 재사용·설정 결정까지 검토해요. 고른 과설계 방지 스킬이 있으면 그 스킬이, 없으면 내장 간결성 규칙과 `prokit-reviewer`가 이 일을 맡아요. 어떤 스킬의 규칙보다 `prokit-dev-cycle`, `AGENTS.md`, 대조표가 우선해요(스킬별 설명은 [두뇌와 선택 스킬](../skills/brains.md)).
+- **과설계 막기**: 스펙에 “만들지 않는 것” 절을 두고, 계획은 `prokit-reviewer(plan)`이 재사용·설정 결정까지 검토해요. 고른 과설계 방지 스킬이 있으면 그 스킬이, 없으면 내장 간결성 규칙과 `prokit-reviewer`가 이 일을 맡아요. 어떤 스킬의 규칙보다 `prokit-dev-cycle`, `AGENTS.md`, 대조표가 우선해요(스킬별 설명은 [두뇌와 선택 스킬](../skills/brains.md)).
 - **하네스를 고치는 일**: 스킬, 에이전트, dev-cycle 자체와 빌드·배포·작업공간 설정을 바꾸는 작업도 라운드로 해요. 케이스 H예요([케이스 A\~F·H와 대조표](cases.md)). 대조표 행의 정본인 `docs/dev-workflow.md`는 프로젝트에 맞게 고쳐도 되고, 고치는 일 자체가 케이스 H 변경이에요.
 - **일하는 도중에 막는 훅**: 설치기가 Claude Code 설정(`.claude/settings.json`)에 훅을 넣고, Codex(`.codex/hooks.json`)와 Antigravity(`.agents/hooks.json`)에도 비슷한 훅을 넣어요(도구마다 조금 달라요. 아래 괄호와 [지원하는 에이전트](../start/supported-agents.md)). 훅은 audit이 끝에서 잡는 일을 중간에 막거나 기록해요.
   - 편집 막기(`edit-guard`): 열린 라운드 없이 코드나 하네스 파일을 편집 도구로 고치려 하면 막아요. 라운드가 열려 있어도 코디네이터가 계층 코드를, 계층 에이전트가 다른 계층 파일을 고치려 하면 막아요.
@@ -60,6 +60,7 @@ AI 에이전트는 똑똑하지만 부탁한 대로만 움직여서, 바쁘면 �
 
 ## 관련 문서
 
+- [스킬 구조 한눈에](../skills/skill-map.md)
 - [dev-cycle 라운드](dev-cycle.md)
 - [라운드 한 번 따라가 보기](round-example.md)
 - [위임 에이전트와 리뷰 에이전트](agent-roles.md)

@@ -8,9 +8,9 @@
 
 | 때 | 에이전트가 묻는 것(예시) | 사용자가 하는 일 |
 |---|---|---|
-| 스타일 선택 | "스타일 후보 1\~3위예요. 어느 쪽으로 할까요? 대표 색은 원본으로 할까요, 제품 색으로 바꿀까요?" | 미리 보기 주소를 열어 보고 하나를 골라요. 마음에 드는 서비스가 있으면 "토스처럼"처럼 말해도 돼요 |
-| 화면 설계 확인 | "사이트맵과 화면 설계예요. 이대로 만들까요?" | 화면 목록, 링크와 버튼이 이어지는 곳, 문구를 읽고 빠진 것을 알려 줘요 |
-| 화면 확인 | "화면을 만들고 점수를 확인했어요. 직접 보고 알려 주세요" | 개발 서버(`pnpm dev:web`)로 직접 눌러 보고, 고칠 곳을 말하거나 "좋아"라고 해요 |
+| 스타일 선택 | “스타일 후보 1\~3위예요. 어느 쪽으로 할까요? 대표 색은 원본으로 할까요, 제품 색으로 바꿀까요?” | 미리 보기 주소를 열어 보고 하나를 골라요. 마음에 드는 서비스가 있으면 “토스처럼”처럼 말해도 돼요 |
+| 화면 설계 확인 | “사이트맵과 화면 설계예요. 이대로 만들까요?” | 화면 목록, 링크와 버튼이 이어지는 곳, 문구를 읽고 빠진 것을 알려 줘요 |
+| 화면 확인 | “화면을 만들고 점수를 확인했어요. 직접 보고 알려 주세요” | 개발 서버(`pnpm dev:web`)로 직접 눌러 보고, 고칠 곳을 말하거나 “좋아”라고 해요 |
 
 > [!IMPORTANT]
 > 답하기 전에는 에이전트가 코드를 쓰지 않아요.
@@ -25,31 +25,33 @@
 ---
 config:
   flowchart:
-    wrappingWidth: 420
+    wrappingWidth: 230
 ---
 flowchart TB
-  R["첫 화면·리디자인 요청<br/>리디자인이면 지금 화면 진단"] --> I["기획<br/>PRODUCT.md<br/>주 UI 스킬의 인터뷰"]
-  I --> Q["한 번에 묻기<br/>카탈로그 3곳에서 스타일 1~3위<br/>주 UI 스킬로 정하기(hallmark는 테마 배정) · 방향 보조(설치했을 때) · 대표 색 · 이름·헤드라인 후보<br/>사이트맵 · 화면 설계(브리프의 보조: 줄)"]
+  accTitle: 화면 작업 순서
+  accDescr: 첫 화면이나 리디자인 요청에서 시작해 기획, 한 번에 묻기, DESIGN.md 받기, 시각 자산, 구현, 실행 확인, 리뷰, 다듬기, DESIGN.md 기록, 사용자 확인을 거쳐 dev-cycle audit과 close로 끝나요.
+  R["첫 화면·리디자인 요청<br/>리디자인이면<br/>지금 화면 진단"] --> I["기획<br/>PRODUCT.md<br/>주 UI 스킬의 인터뷰"]
+  I --> Q["한 번에 묻기<br/>카탈로그 3곳에서 스타일 1~3위<br/>주 UI 스킬로 정하기<br/>(hallmark는 테마 배정)<br/>방향 보조(설치했을 때)<br/>대표 색 · 이름·헤드라인 후보<br/>사이트맵 · 화면 설계<br/>(브리프의 보조: 줄)"]
   Q --> D["DESIGN.md 받기<br/>curl · agent-browser<br/>명세 lint"]
-  D --> A["시각 자산<br/>서체 파일 받기 · 자체 호스팅<br/>이미지를 그릴 수 있으면 comp 3장 · plate 이미지"]
-  A --> C["구현(prokit-ui-builder)<br/>토큰 → globals.css<br/>shadcn · 바닥 규칙 · 모션<br/>보조 스킬은 위임 지시의 경로로 읽기"]
-  C --> X["실행 확인(prokit-runtime-checker)<br/>스크린샷 · 오류 0 · 링크·버튼 전부 누르기"]
-  X --> V["리뷰(메인 세션)<br/>주 UI 스킬의 리뷰 · 감사<br/>보조: 줄의 보조와 검수 보조의 리뷰<br/>코드 검사 prokit-reviewer(ui)"]
-  V --> P["다듬기 · 재확인<br/>impeccable이면 audit 16/20 · 접근성 3/4"]
+  D --> A["시각 자산<br/>서체 파일 받기 · 자체 호스팅<br/>이미지를 그릴 수 있으면<br/>comp 3장 · plate 이미지"]
+  A --> C["구현<br/>(prokit-ui-builder)<br/>토큰 → globals.css<br/>shadcn · 바닥 규칙 · 모션<br/>보조 스킬은 위임 지시의<br/>경로로 읽기"]
+  C --> X["실행 확인<br/>(prokit-runtime-checker)<br/>스크린샷 · 오류 0<br/>링크·버튼 전부 누르기"]
+  X --> V["리뷰(메인 세션)<br/>주 UI 스킬의 리뷰 · 감사<br/>보조: 줄의 보조와<br/>검수 보조의 리뷰<br/>코드 검사<br/>prokit-reviewer(ui)"]
+  V --> P["다듬기 · 재확인<br/>impeccable이면<br/>audit 16/20 · 접근성 3/4"]
   P --> M["DESIGN.md 기록<br/>merge · diff"]
   M --> U["사용자 확인"]
-  U --> AU["dev-cycle audit · close<br/>리뷰 기록 · 보조 결과 · 읽은 스킬 대조"]
+  U --> AU["dev-cycle audit · close<br/>리뷰 기록 · 보조 결과<br/>읽은 스킬 대조"]
 ```
 <!-- /b -->
 
 | 단계 | 에이전트가 하는 일 | 남는 것 | 사용자가 하는 일 |
 |---|---|---|---|
 | 기획 (프로젝트당 1회) | 주 UI 스킬의 기획 단계(impeccable은 `init` 인터뷰)로 서비스를 파악해요 | `PRODUCT.md` | 질문에 답하기 |
-| 시각 방향 (첫 화면, 리디자인) | 리디자인이면 지금 화면을 찍어 진단(impeccable은 critique)하고 버릴 것을 적어요. 카탈로그 1\~3위와 "직접 정하기"를 추천하고(hallmark는 테마 배정 셋을 내요. 방향을 정하는 화면 디자인 보조가 있으면 그 방향도), 고른 스타일의 원문을 받아 스펙 검사기(lint)로 확인해요 | `DESIGN.md` | 스타일과 대표 색 고르기 |
+| 시각 방향 (첫 화면, 리디자인) | 리디자인이면 지금 화면을 찍어 진단(impeccable은 critique)하고 버릴 것을 적어요. 카탈로그 1\~3위와 “직접 정하기”를 추천하고(hallmark는 테마 배정 셋을 내요. 방향을 정하는 화면 디자인 보조가 있으면 그 방향도), 고른 스타일의 원문을 받아 스펙 검사기(lint)로 확인해요 | `DESIGN.md` | 스타일과 대표 색 고르기 |
 | 설계 (화면마다) | 사이트맵에 링크와 버튼이 이어지는 곳을 모두 적고, 주 UI 스킬의 설계 단계(impeccable은 `shape`)로 화면마다 상호작용, 서체, 이미지, 아이콘, 모션 계획을 세워요. 이름이나 헤드라인을 새로 정하면 비슷한 서비스를 조사해 후보 3\~4개를 내요 | `docs/briefs/site-map.md`, `docs/briefs/<화면>.md` | 화면 설계 확인, 이름·문구 고르기 |
 | 시각 자산 (화면마다) | 서체 파일을 받아 프로젝트에 직접 넣어요. 이미지를 그릴 수 있으면 방향 comp 3장을 그리고, 고른 comp에 맞춰 사진·일러스트(plate)를 만들어요 | `apps/web/src/fonts/`, `apps/web/public/images/`, `.impeccable/mocks/`(impeccable) | comp 고르기 |
 | 개발 | 화면 코드는 `prokit-ui-builder`가 써요. 디자인 토큰을 `globals.css`의 shadcn 변수로 옮기고 컴포넌트를 조합해 화면을 만들어요. 그 화면에 쓰는 화면 디자인 보조가 있으면 메인 세션이 위임 지시에 그 보조 스킬의 경로를 넣어 `prokit-ui-builder`가 읽게 해요 | 코드 | |
-| 리뷰 | `prokit-runtime-checker`가 스크린샷을 찍고 모든 링크·버튼을 눌러요(404, "준비 중", 반응 없는 버튼이 없어야 해요). 주 UI 스킬의 리뷰와 감사는 메인 세션이 해요(impeccable은 `critique`·`audit`, hallmark는 `sloplint`와 마감 리뷰, UI 스킬이 없으면 게슈탈트 점검). 코드의 `web-design-guidelines` 검사는 `prokit-reviewer`(ui)가 해요. 브리프의 `보조:` 줄에 적은 화면 디자인 보조와 설치한 검수 보조(`visual-critique`, `ui-design`. impeccable이 주 UI 스킬이면 `visual-critique`는 요청할 때만)의 리뷰도 메인 세션이 이어서 해요 | 점수나 판정(기본 AI는 `게슈탈트 위반 N`), 위반 목록, 리뷰 기록(impeccable은 `.impeccable/critique/…md`, 기록 파일을 남기지 않는 스킬은 `tasks/evidence/ui-review-<시각>.md`), 감사 보고서(`tasks/evidence/ui-audit-<시각>.md`) | |
+| 리뷰 | `prokit-runtime-checker`가 스크린샷을 찍고 모든 링크·버튼을 눌러요(404, “준비 중”, 반응 없는 버튼이 없어야 해요). 주 UI 스킬의 리뷰와 감사는 메인 세션이 해요(impeccable은 `critique`·`audit`, hallmark는 `sloplint`와 마감 리뷰, UI 스킬이 없으면 게슈탈트 점검). 코드의 `web-design-guidelines` 검사는 `prokit-reviewer`(ui)가 해요. 브리프의 `보조:` 줄에 적은 화면 디자인 보조와 설치한 검수 보조(`visual-critique`, `ui-design`. impeccable이 주 UI 스킬이면 `visual-critique`는 요청할 때만)의 리뷰도 메인 세션이 이어서 해요 | 점수나 판정(기본 AI는 `게슈탈트 위반 N`), 위반 목록, 리뷰 기록(impeccable은 `.impeccable/critique/…md`, 기록 파일을 남기지 않는 스킬은 `tasks/evidence/ui-review-<시각>.md`), 감사 보고서(`tasks/evidence/ui-audit-<시각>.md`) | |
 | 마감 | 다듬기(impeccable은 `polish`, 마무리 손질). 고칠 것을 한 번에 모아 `prokit-ui-builder`가 적용하고, 재확인은 1회 | 통과 점수나 판정 | 기준에 못 미치면 더 다듬을지 결정 |
 | 기록 | 정본 갱신(impeccable은 `document` merge, 기존 파일에 합치기), lint, diff | 갱신한 `DESIGN.md` | 덮어쓰기 전 확인 |
 
@@ -59,28 +61,34 @@ flowchart TB
 
 ## 구조
 
-`prokit-ui`는 순서와 규칙, 통과 기준만 정하고, 단계마다 무엇을 할지는 세 갈래의 참고 파일에서 읽어요. 메인 세션은 이 파일들로 화면 일을 정해 전문 에이전트에 맡기고, 모든 결과는 대조표 증거로 모여 `dev-cycle audit`이 확인해요. 점선 상자는 설치했을 때만 쓰는 선택이에요.
+`prokit-ui`는 순서와 규칙, 통과 기준만 정하고, 단계마다 무엇을 할지는 세 갈래의 참고 파일에서 읽어요. 메인 세션은 이 파일들로 화면 일을 정해 전문 에이전트에 맡기고, 모든 결과는 대조표 증거로 모여 `dev-cycle audit`이 확인해요. 점선 테두리는 설치했을 때만 쓰는 선택이에요.
 
 ```mermaid
 ---
 config:
   flowchart:
-    wrappingWidth: 180
+    wrappingWidth: 240
 ---
 flowchart TB
-  DC["prokit-dev-cycle<br/>케이스 B 대조표"] --> UI["prokit-ui<br/>순서 · 규칙 · 통과 기준"]
-  UI --> MAP["주 UI 스킬 지도<br/>impeccable · hallmark<br/>기본 AI"]
-  UI --> FLOW["design-flow<br/>카탈로그 · 사이트맵<br/>자산 · DESIGN.md 검사"]
-  UI --> ADD["보조 guide<br/>설치한 화면 디자인 보조"]
-  MAP --> MAIN["메인 세션<br/>기획 · 시각 방향 · 브리프<br/>리뷰·감사 · 마감 판단"]
-  FLOW --> MAIN
-  ADD --> MAIN
-  MAIN --> B["prokit-ui-builder<br/>화면 코드"]
-  MAIN --> RC["prokit-runtime-checker<br/>스크린샷 · 링크·버튼"]
-  MAIN --> RV["prokit-reviewer(ui)<br/>web-design-guidelines"]
-  B --> EV["대조표 증거<br/>tasks/evidence/"]
-  RC --> EV
-  RV --> EV
+  accTitle: 화면 단계의 연결
+  accDescr: 대조표의 케이스 B에서 prokit-ui로, 다시 세 갈래의 참고 파일과 메인 세션을 거쳐 전문 에이전트 셋으로 이어지고 증거와 audit으로 끝나요. 보조 guide는 설치했을 때만 쓰는 점선이에요.
+  DC["prokit-dev-cycle<br/>케이스 B 대조표"] --> UI["prokit-ui<br/>순서 · 규칙<br/>통과 기준"]
+  UI --> REF
+  subgraph REF["세 갈래의 참고 파일"]
+    MAP["주 UI 스킬 지도<br/>impeccable · hallmark<br/>기본 AI"]
+    FLOW["design-flow<br/>카탈로그 · 사이트맵<br/>자산 · DESIGN.md 검사"]
+    ADD["보조 guide<br/>설치한 화면 디자인<br/>보조"]
+    MAP ~~~ FLOW ~~~ ADD
+  end
+  REF --> MAIN["메인 세션<br/>기획 · 시각 방향<br/>브리프 · 리뷰·감사<br/>마감 판단"]
+  MAIN --> AGS
+  subgraph AGS["전문 에이전트"]
+    B["prokit-ui-builder<br/>화면 코드"]
+    RC["prokit-runtime-checker<br/>스크린샷 · 링크·버튼"]
+    RV["prokit-reviewer(ui)<br/>web-design-guidelines"]
+    B ~~~ RC ~~~ RV
+  end
+  AGS --> EV["대조표 증거<br/>tasks/evidence/"]
   EV --> AU["dev-cycle audit<br/>기록 파일 · 결과<br/>읽은 스킬 대조"]
   classDef opt stroke-dasharray: 5 5
   class ADD opt
@@ -105,8 +113,8 @@ flowchart TB
 | [Refero Styles](https://styles.refero.design) | 해외 제품 웹사이트 1,342개(2026-10-04) | 랜딩, 가격, 브랜드 페이지처럼 시각 연출이 큰 화면 |
 
 - 화면 유형과 관계없이 세 카탈로그를 모두 봐요. `PRODUCT.md`의 분야, 화면 모드(앱 화면, 랜딩, 문서), 정보 밀도, 어조, UI 언어로 순위를 매겨요.
-- "토스처럼", "넷플릭스처럼"처럼 브랜드를 지목하면 세 카탈로그 모두에서 그 브랜드를 찾고, 찾은 원문이 1위예요. Refero 분류 페이지에는 일부 스타일만 실리고 분류 이름이 실제 화면 성격과 다를 수 있어요(넷플릭스는 "에디토리얼" 분류에만 있어요). 그래서 분류에 없으면 웹 검색(`site:styles.refero.design <브랜드>`)으로 찾아요. 같은 브랜드의 스타일이 여럿이면 모두 후보로 두고, 세 곳 모두 없으면 "카탈로그에 없음"이라고 알린 뒤 같은 분야 후보를 내요.
-- 후보마다 카탈로그 이름, 이유 한 줄, 미리 보기 주소를 붙여요. "카탈로그 없이 주 UI 스킬로 정하기"도 선택지에 넣어요(hallmark는 테마 배정 셋, UI 스킬이 없으면 "카탈로그 없이 직접 정하기"). 방향을 정하는 화면 디자인 보조를 설치했으면 그 선택지도 넣어요(`taste`는 "taste-skill로 방향 뽑기", `tastemaker`는 "레퍼런스로 스타일 고정", `web-design-engineer`는 지목한 스타일 레시피). 고르면 그 보조의 방향으로 화면 설계를 쓰고 브리프의 `보조:` 줄에 적어요. 고르지 않은 화면에는 쓰지 않고, 주 UI 스킬의 리뷰·감사와 통과 기준은 그대로예요([화면 디자인 보조](../skills/brains.md#화면-디자인-보조)). 대표 색은 원본을 쓸지 제품 색으로 바꿀지도 물어요.
+- “토스처럼”, “넷플릭스처럼”처럼 브랜드를 지목하면 세 카탈로그 모두에서 그 브랜드를 찾고, 찾은 원문이 1위예요. Refero 분류 페이지에는 일부 스타일만 실리고 분류 이름이 실제 화면 성격과 다를 수 있어요(넷플릭스는 “에디토리얼” 분류에만 있어요). 그래서 분류에 없으면 웹 검색(`site:styles.refero.design <브랜드>`)으로 찾아요. 같은 브랜드의 스타일이 여럿이면 모두 후보로 두고, 세 곳 모두 없으면 “카탈로그에 없음”이라고 알린 뒤 같은 분야 후보를 내요.
+- 후보마다 카탈로그 이름, 이유 한 줄, 미리 보기 주소를 붙여요. “카탈로그 없이 주 UI 스킬로 정하기”도 선택지에 넣어요(hallmark는 테마 배정 셋, UI 스킬이 없으면 “카탈로그 없이 직접 정하기”). 방향을 정하는 화면 디자인 보조를 설치했으면 그 선택지도 넣어요(`taste`는 “taste-skill로 방향 뽑기”, `tastemaker`는 “레퍼런스로 스타일 고정”, `web-design-engineer`는 지목한 스타일 레시피). 고르면 그 보조의 방향으로 화면 설계를 쓰고 브리프의 `보조:` 줄에 적어요. 고르지 않은 화면에는 쓰지 않고, 주 UI 스킬의 리뷰·감사와 통과 기준은 그대로예요([화면 디자인 보조](../skills/brains.md#화면-디자인-보조)). 대표 색은 원본을 쓸지 제품 색으로 바꿀지도 물어요.
 - 고른 원문의 값은 그대로 두고, 이름은 제품명으로 바꿔요. 같은 업종이면 원래 브랜드와 헷갈리지 않도록 제품 색을 권해요.
 
 > [!WARNING]
@@ -123,13 +131,13 @@ flowchart TB
 
 ### 지키는 규칙
 
-- **모든 링크와 버튼이 동작해요**: 실제 페이지나 실제 동작(모달, 드로어, 상태 바꾸기, 복사, 폼 제출 뒤 완료 화면)으로 이어져요. 404, "준비 중", `#`만 걸린 링크는 두지 않아요.
+- **모든 링크와 버튼이 동작해요**: 실제 페이지나 실제 동작(모달, 드로어, 상태 바꾸기, 복사, 폼 제출 뒤 완료 화면)으로 이어져요. 404, “준비 중”, `#`만 걸린 링크는 두지 않아요.
 - **토큰만 써요**: 색, 간격, 반경, 그림자는 토큰으로만 쓰고 색 코드(hex)나 임의 Tailwind 값(`bg-[#123456]`)을 새로 넣지 않아요.
-- **통과 기준**: 주 UI 스킬의 기준을 따라요. impeccable을 골랐다면 critique의 P0·P1은 해결하거나 사유를 적어요. audit 총점은 16/20 이상, 접근성 점수는 3/4 이상이에요(`.dev-cycle.json`의 `ui.auditMin`, `ui.a11yMin`). hallmark를 골랐다면 sloplint FAIL이 0건이고, REFLEX는 고치거나 사유를 적어 보류하고, 마감 리뷰가 `ship`(`fix`면 고친 뒤 다시 확인)이어야 해요. UI 스킬이 없으면 게슈탈트 필수 3문항이 모두 "예"여야 하고, 게슈탈트 위반은 고치거나 사유를 적어요. 점수 기준은 impeccable에만 써요. 어느 쪽이든 `web-design-guidelines` 위반은 고치거나 사유를 적어요. 못 미치면 완료로 보고하지 않고 더 다듬을지 물어요. 점수만 적어서는 안 되고, 이번 라운드에 실행해 남긴 리뷰 기록 파일과 감사 보고서가 있어야 해요. 파일이 없거나 결과가 다르면 `dev-cycle audit`이 거절해요.
+- **통과 기준**: 주 UI 스킬의 기준을 따라요. impeccable을 골랐다면 critique의 P0·P1은 해결하거나 사유를 적어요. audit 총점은 16/20 이상, 접근성 점수는 3/4 이상이에요(`.dev-cycle.json`의 `ui.auditMin`, `ui.a11yMin`). hallmark를 골랐다면 sloplint FAIL이 0건이고, REFLEX는 고치거나 사유를 적어 보류하고, 마감 리뷰가 `ship`(`fix`면 고친 뒤 다시 확인)이어야 해요. UI 스킬이 없으면 게슈탈트 필수 3문항이 모두 “예”여야 하고, 게슈탈트 위반은 고치거나 사유를 적어요. 점수 기준은 impeccable에만 써요. 어느 쪽이든 `web-design-guidelines` 위반은 고치거나 사유를 적어요. 못 미치면 완료로 보고하지 않고 더 다듬을지 물어요. 점수만 적어서는 안 되고, 이번 라운드에 실행해 남긴 리뷰 기록 파일과 감사 보고서가 있어야 해요. 파일이 없거나 결과가 다르면 `dev-cycle audit`이 거절해요.
 - **hallmark의 화면 검사**: 화면을 찍는 검사(`sloplint --render`)는 Chrome과 `puppeteer-core`가 있어야 돌아요. `puppeteer-core`는 전역에 두거나, 프로젝트 밖 폴더에 받고 `HALLMARK_PUPPETEER`로 가리켜요. 둘 다 없으면 정적 검사만 돌고, 그 결과를 render 통과로 적지 않아요. Better-T-Stack의 shadcn 기본 `.dark` 블록이 FAIL로 잡히므로, 같은 명령을 기준 커밋에도 돌려 이번 변경에서 새로 생긴 FAIL이 0건이면 통과로 봐요.
 - **hallmark가 남기는 파일**: `.hallmark/log.json`(다음 테마 배정이 같은 조합을 피하게 하는 기록), `.hallmark/salt`, `.hallmark/.gitignore`는 커밋해요. `.hallmark/shots/`와 `.hallmark/preflight.json`은 커밋하지 않아요.
-- **한글 제목은 어절 단위로 줄을 바꿔요**: 페이지·섹션·카드 제목에 `word-break: keep-all`(Tailwind `break-keep`)을 줘요. 없으면 "시계 대 / 신"처럼 낱말 중간에서 끊겨요. 데스크톱과 모바일 스크린샷에서 확인하고, 빠졌으면 `prokit-reviewer`(ui)가 타이포그래피 위반으로 적어요.
-- **스크린샷은 열어 본 것만 증거예요**: `prokit-runtime-checker`는 이미지로 열어 본 스크린샷만 증거로 적고, 열지 않은 것은 "열지 않음"으로 따로 적어요. 증거에 적은 스크린샷을 아무도 열어 보지 않았으면 `dev-cycle audit`이 경고해요(막지는 않아요).
+- **한글 제목은 어절 단위로 줄을 바꿔요**: 페이지·섹션·카드 제목에 `word-break: keep-all`(Tailwind `break-keep`)을 줘요. 없으면 “시계 대 / 신”처럼 낱말 중간에서 끊겨요. 데스크톱과 모바일 스크린샷에서 확인하고, 빠졌으면 `prokit-reviewer`(ui)가 타이포그래피 위반으로 적어요.
+- **스크린샷은 열어 본 것만 증거예요**: `prokit-runtime-checker`는 이미지로 열어 본 스크린샷만 증거로 적고, 열지 않은 것은 “열지 않음”으로 따로 적어요. 증거에 적은 스크린샷을 아무도 열어 보지 않았으면 `dev-cycle audit`이 경고해요(막지는 않아요).
 - **편집 중 자동 검사**: impeccable을 골랐다면 프로젝트 루트에서 `.agents/skills/impeccable/scripts/impeccable hooks on`을 실행해 켜 두면(스킬 호출로 켜지 않아요) UI 파일을 고칠 때마다 detector가 결과를 알려 줘요. Antigravity에서는 이 훅이 돌지 않아서 화면을 고친 뒤 critique의 detector로 확인해요. hallmark의 편집 훅은 쓰지 않아요. 설치기가 기기마다 다른 절대 경로를 공유 설정 `.claude/settings.json`에 쓰기 때문이에요.
 
 ### 화면 일을 나눠 맡아요
@@ -145,8 +153,8 @@ flowchart TB
 
 ### UI 스킬이 여럿이거나 바뀔 때
 
-- **여럿 고르면**: 첫 값이 주 UI 스킬이에요. 두 번째 이후 스킬은 사용자가 그 화면에 지목했을 때만 쓰고("hallmark로", "impeccable로"), 그 화면의 단계와 증거도 주 UI 스킬의 지도를 따라요. 지목한 스킬의 검사는 더하는 검사이지 주 UI 스킬의 검사를 대신하지 않아요.
-- **중간에 바꾸기**: "UI 스킬을 hallmark로 바꿔줘"처럼 말하면 `prokit-skills-manage`가 `pnpm skills:setup --ui-skill <이름>`으로 바꿔요([바꾸기](../skills/brains.md#바꾸기)). 고르지 않은 UI 스킬은 이 기기의 전역에 설치돼 있어도 쓰지 않아요.
+- **여럿 고르면**: 첫 값이 주 UI 스킬이에요. 두 번째 이후 스킬은 사용자가 그 화면에 지목했을 때만 쓰고(“hallmark로”, “impeccable로”), 그 화면의 단계와 증거도 주 UI 스킬의 지도를 따라요. 지목한 스킬의 검사는 더하는 검사이지 주 UI 스킬의 검사를 대신하지 않아요.
+- **중간에 바꾸기**: “UI 스킬을 hallmark로 바꿔줘”처럼 말하면 `prokit-skills-manage`가 `pnpm skills:setup --ui-skill <이름>`으로 바꿔요([바꾸기](../skills/brains.md#바꾸기)). 고르지 않은 UI 스킬은 이 기기의 전역에 설치돼 있어도 쓰지 않아요.
 - **이어지는 것**: `PRODUCT.md`, `DESIGN.md`(스펙 형식), `docs/briefs/`, `globals.css` 토큰은 어느 스킬에도 묶이지 않은 정본이라 그대로 이어져요. 새 스킬로 시각 방향을 다시 고르거나 테마를 다시 배정하지 않고, 사용자가 리디자인을 요청할 때만 다시 정해요. 이전 스킬의 작업 기록(`.impeccable/`, `.hallmark/` 등)은 지우지 않고 새 스킬의 근거로도 쓰지 않아요.
 
 ### UI 스킬마다 단계에서 하는 일
@@ -156,7 +164,7 @@ flowchart TB
 | 단계 | impeccable | hallmark | 기본 AI(`none`) |
 |---|---|---|---|
 | 맥락 | `impeccable context` 실행 | 0단계 사전 점검 | `PRODUCT.md`, `DESIGN.md`, `frontend-design` 읽기 |
-| 기획 | `init` 인터뷰 | 1단계 "Ask once"를 기획 질문과 한 번에 | design-flow의 `PRODUCT.md` 질문 |
+| 기획 | `init` 인터뷰 | 1단계 “Ask once”를 기획 질문과 한 번에 | design-flow의 `PRODUCT.md` 질문 |
 | 시각 방향 | 카탈로그 스타일이나 직접 정하기 | 카탈로그 스타일이나 테마 배정(`theme.mjs deal`) | 카탈로그 스타일이나 `frontend-design`의 계획과 검토로 직접 정하기 |
 | 설계 | `shape <기능>` | Shape와 Picks 블록 | 브리프에 목적, 주인공 하나, 의도한 그룹 수 적기 |
 | 리뷰 | `critique`(Design Health 점수, P0\~P3) | `sloplint`와 마감 리뷰(`ship`·`fix` 등) | 게슈탈트 점검(`게슈탈트 위반 N`) |
@@ -165,7 +173,7 @@ flowchart TB
 | 정본 갱신 | `document` merge | 정한 체계를 `DESIGN.md` 명세 형식으로 쓰기 | 계획한 토큰을 `DESIGN.md` 명세 형식으로 쓰기 |
 | 남는 기록 | `.impeccable/critique/`, `tasks/evidence/ui-audit-<시각>.md` | `tasks/evidence/ui-review-<시각>.md`, `ui-audit-<시각>.md`, `.hallmark/` | `tasks/evidence/ui-review-<시각>.md`, `ui-audit-<시각>.md` |
 
-리뷰와 감사는 어느 쪽이든 메인 세션이 하고, `web-design-guidelines`는 `prokit-reviewer`(ui)가 맡아요. 통과 기준은 위 "지키는 규칙"에 있어요.
+리뷰와 감사는 어느 쪽이든 메인 세션이 하고, `web-design-guidelines`는 `prokit-reviewer`(ui)가 맡아요. 통과 기준은 위 “지키는 규칙”에 있어요.
 
 **impeccable**: 명령 하나가 단계 하나를 맡고, 리뷰는 점수로 판정해요.
 
@@ -173,9 +181,11 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 300
+    wrappingWidth: 240
 ---
 flowchart TB
+  accTitle: impeccable 순서
+  accDescr: context와 init으로 시작해 시각 방향, shape, 시각 자산, 개발, critique와 audit, polish, document merge로 이어져요. 점선은 리뷰에서 통과 기준으로 가는 길이에요.
   C["context<br/>맥락 확인"] --> I["init<br/>PRODUCT.md"]
   I --> V["시각 방향<br/>use-design-md 또는 직접 정하기"]
   V --> S["shape<br/>사이트맵 · 브리프"]
@@ -184,7 +194,8 @@ flowchart TB
   B --> R["critique · audit<br/>+ web-design-guidelines"]
   R --> P["polish"]
   P --> D["document merge<br/>DESIGN.md"]
-  R -.-> G["통과: P0·P1 해결<br/>audit · 접근성 점수 기준 이상"]
+  R -.-> G["통과: P0·P1 해결<br/>audit · 접근성 점수<br/>기준 이상"]
+  D ~~~ G
 ```
 
 **hallmark**: 테마를 한 번 배정하고, 바닥 규칙과 `sloplint`로 지켜요.
@@ -193,9 +204,11 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 300
+    wrappingWidth: 240
 ---
 flowchart TB
+  accTitle: hallmark 순서
+  accDescr: 사전 점검과 한 번에 묻기로 시작해 시각 방향, Shape, 시각 자산, 개발, 마감 리뷰, Floor 고침, DESIGN.md 명세로 이어져요. 점선은 리뷰에서 통과 기준으로 가는 길이에요.
   C["0단계 사전 점검"] --> I["Ask once<br/>기획 질문과 한 번에"]
   I --> V["시각 방향<br/>카탈로그 또는 theme.mjs deal"]
   V --> S["Shape · Picks 블록<br/>사이트맵 · 브리프"]
@@ -204,7 +217,8 @@ flowchart TB
   B --> R["sloplint · 마감 리뷰<br/>audit + web-design-guidelines"]
   R --> P["Floor 고침<br/>Reflex 고침이나 사유"]
   P --> D["정한 체계를<br/>DESIGN.md 명세로"]
-  R -.-> G["통과: FAIL 0 · REFLEX 처리<br/>마감 리뷰 ship"]
+  R -.-> G["통과: FAIL 0<br/>REFLEX 처리<br/>마감 리뷰 ship"]
+  D ~~~ G
 ```
 
 **기본 AI**: 외부 UI 스킬 없이 `frontend-design`과 게슈탈트 지침으로 해요.
@@ -213,17 +227,20 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 300
+    wrappingWidth: 190
 ---
 flowchart TB
-  C["PRODUCT.md · DESIGN.md<br/>frontend-design 읽기"] --> I["PRODUCT.md 질문"]
-  I --> V["시각 방향<br/>카탈로그 또는 계획과 검토로 직접"]
+  accTitle: 기본 AI 순서
+  accDescr: PRODUCT.md와 DESIGN.md를 읽고 질문, 시각 방향, 브리프, 개발, 게슈탈트 점검, 약한 수단부터 고치기, DESIGN.md 명세로 이어져요. 점선은 점검에서 통과 기준으로 가는 길이에요.
+  C["PRODUCT.md<br/>DESIGN.md<br/>frontend-design 읽기"] --> I["PRODUCT.md 질문"]
+  I --> V["시각 방향<br/>카탈로그 또는<br/>계획과 검토로 직접"]
   V --> S["브리프<br/>목적 · 주인공 하나 · 그룹 수"]
-  S --> B["개발(prokit-ui-builder)<br/>frontend-design · 게슈탈트 지침"]
-  B --> R["게슈탈트 점검 · 자기 비평<br/>+ web-design-guidelines"]
-  R --> P["약한 수단부터 고치기<br/>간격 → 색·모양 → 박스 → 선"]
+  S --> B["개발<br/>(prokit-ui-builder)<br/>frontend-design<br/>게슈탈트 지침"]
+  B --> R["게슈탈트 점검<br/>자기 비평<br/>+ web-design-guidelines"]
+  R --> P["약한 수단부터 고치기<br/>간격 → 색·모양<br/>→ 박스 → 선"]
   P --> D["계획한 토큰을<br/>DESIGN.md 명세로"]
-  R -.-> G["통과: 필수 3문항 모두 예<br/>위반은 고치거나 사유"]
+  R -.-> G["통과: 필수 3문항<br/>모두 예<br/>위반은 고치거나 사유"]
+  D ~~~ G
 ```
 
 ### 화면 디자인 보조가 더하는 단계
@@ -234,14 +251,17 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 300
+    wrappingWidth: 240
 ---
 flowchart TB
-  V1["시각 방향<br/>+ 방향 보조"] --> V2["설계(브리프)<br/>+ 방향 · 원칙 · 모션 · 검수(ui-design)"]
+  accTitle: 보조 스킬 단계
+  accDescr: 시각 방향부터 마감까지 각 단계에 화면 디자인 보조가 더해져요. 점선은 리뷰에서 디자인 리뷰 증거를 거쳐 dev-cycle audit으로 가는 길이에요.
+  V1["시각 방향<br/>+ 방향 보조"] --> V2["설계(브리프)<br/>+ 방향 · 원칙 · 모션 ·<br/>검수(ui-design)"]
   V2 --> V3["개발<br/>+ 방향 · 원칙 · 모션"]
   V3 --> V4["리뷰<br/>+ 방향 · 원칙 · 모션 · 검수"]
-  V4 --> V5["마감<br/>+ 모션 · 검수(visual-critique)"]
-  V4 -.-> E["디자인 리뷰 증거<br/>주 UI 스킬 결과 뒤에 보조 결과<br/>못 했으면 미실행 사유"]
+  V4 --> V5["마감<br/>+ 모션 · 검수<br/>(visual-critique)"]
+  V4 -.-> E["디자인 리뷰 증거<br/>주 UI 스킬 결과 뒤에<br/>보조 결과<br/>못 했으면 미실행 사유"]
+  V5 ~~~ E
   E -.-> AU["dev-cycle audit<br/>보조 결과와 읽은 기록 확인"]
 ```
 
@@ -250,11 +270,11 @@ flowchart TB
 | 묶음 | 종류 | 시각 방향 | 설계 | 개발 | 리뷰 증거 문구 |
 |---|---|---|---|---|---|
 | `landing` | 방향 | | 페이지 구조, 레이아웃, 헤드라인과 CTA 후보(기획 질문에 전환 인테이크를 더해요) | 섹션 순서와 카피, 검색에 나올 랜딩이면 제목과 설명 | `landing 체크리스트 미충족 N` |
-| `tastemaker` | 방향 | 레퍼런스에서 값을 뽑아 "레퍼런스로 스타일 고정" | 고정한 값과 범위 화면 | 고정한 값을 토큰으로 옮기고 그 규칙대로 | `tastemaker audit HIGH N, MEDIUM N` |
+| `tastemaker` | 방향 | 레퍼런스에서 값을 뽑아 “레퍼런스로 스타일 고정” | 고정한 값과 범위 화면 | 고정한 값을 토큰으로 옮기고 그 규칙대로 | `tastemaker audit HIGH N, MEDIUM N` |
 | `taste` | 방향 | 방향 셋을 뽑아 스타일 선택지로 | 그 서비스에만 있는 것, 섹션마다 주장과 증거, 카피 | 고른 방향의 시트대로 | `taste inspect FAIL 0, WARN N` |
-| `web-design-engineer` | 원칙(레시피는 방향) | 지목한 스타일 레시피("Linear처럼") | 화면 읽기와 다섯 다이얼 | 레시피 값을 토큰으로 | `web-design-engineer 철학 N, 위계 N, 완성도 N, 기능성 N, 독창성 N` |
+| `web-design-engineer` | 원칙(레시피는 방향) | 지목한 스타일 레시피(“Linear처럼”) | 화면 읽기와 다섯 다이얼 | 레시피 값을 토큰으로 | `web-design-engineer 철학 N, 위계 N, 완성도 N, 기능성 N, 독창성 N` |
 | `awwwards` | 원칙 | | 모션 서사와 스크롤 계획 | 애니메이션 중에도 CTA를 누를 수 있게, 움직임 줄이기 대응 | `awwwards 거부 목록 걸림 N, 검증 미충족 N` |
-| `animation` | 모션 | | 모션 계획을 "움직여야 하나"로 거르기 | 움직임 줄이기 대응을 처음부터 | `motion 지적 N` |
+| `animation` | 모션 | | 모션 계획을 “움직여야 하나”로 거르기 | 움직임 줄이기 대응을 처음부터 | `motion 지적 N` |
 | `visual-critique` | 검수 | | | | `visual-critique P1 N, P2 N, P3 N` |
 | `ui-design` | 검수 | | 간격, 타입, 그리드, 색 체계를 새로 정할 때 | | `ui-design 지적 N` |
 
@@ -264,7 +284,7 @@ flowchart TB
 
 ### 이미지 그리기
 
-사용자 요청이나 승인된 화면 설계에 생성 이미지가 있으면 실제로 생성해 화면에 연결하고 출처·검수 증거를 남겨요. 수행자에 도구가 없으면 코디네이터가 접근 가능한 이미지 도구로 위임해요. 에이전트가 마음대로 "SVG로 충분하다"고 정해서 사용자 승인을 대신하지 않아요.
+사용자 요청이나 승인된 화면 설계에 생성 이미지가 있으면 실제로 생성해 화면에 연결하고 출처·검수 증거를 남겨요. 수행자에 도구가 없으면 코디네이터가 접근 가능한 이미지 도구로 위임해요. 에이전트가 마음대로 “SVG로 충분하다”고 정해서 사용자 승인을 대신하지 않아요.
 
 그리는 길은 이 순서로 골라요.
 
@@ -280,7 +300,7 @@ flowchart TB
 | 순위 | 스타일 | 추천 이유 |
 |---|---|---|
 | 1 | [Default](https://styles.refero.design/style/eeeb6ac9-fc07-4965-935a-e1989ed831f1) (Refero Styles) | 무광 검정 바탕에 대표 색 Signal Blue 하나만 써요. 초록과 빨강은 상태 신호로만 써서, 하루 종일 띄워 두는 모니터에서 인시던트(장애) 빨강이 가장 눈에 띄어요 |
-| 2 | [리멤버](https://www.getdesign.kr/services/remember) (getdesign.kr) | 흰 바탕에 검정과 오렌지 한 점만 써요. "색이 보이면 곧 이상"이라는 규칙으로 이전 시안의 색 문제를 구조로 풀어요 |
+| 2 | [리멤버](https://www.getdesign.kr/services/remember) (getdesign.kr) | 흰 바탕에 검정과 오렌지 한 점만 써요. “색이 보이면 곧 이상”이라는 규칙으로 이전 시안의 색 문제를 구조로 풀어요 |
 | 3 | [ClickHouse](https://getdesign.md/clickhouse/design-md) (awesome-design-md) | 검정 바탕, 전기 노랑, 72px 굵은 제목으로 인상이 가장 강해요. 노랑이 경고색과 헷갈릴 수 있어요 |
 | 4 | 카탈로그 없이 impeccable로 정하기 | 스타일 세 가지를 새로 만들어 이미지 시안과 함께 보여 줘요 |
 

@@ -14,7 +14,7 @@
 | `pnpm dev-cycle status` | 지금 어디까지 했는지 궁금할 때 | 열린 라운드, 채운 칸 수, 다음 할 일 |
 | `pnpm skills:check` | 스킬이 제대로 설치됐는지 볼 때 | 빠진 스킬이나 플러그인 |
 | `pnpm dev:web` | 화면을 내 브라우저로 볼 때 | 개발 서버 주소(보통 `http://localhost:3001`) |
-| `pnpm export:html` | 화면만 프로젝트를 HTML 파일로 내보낼 때 | `html/` 폴더(보통은 "HTML로 내보내줘"라고 말해요) |
+| `pnpm export:html` | 화면만 프로젝트를 HTML 파일로 내보낼 때 | `html/` 폴더(보통은 “HTML로 내보내줘”라고 말해요) |
 | `.agents/skills/impeccable/scripts/impeccable hooks on` | impeccable을 고른 새 프로젝트에서 처음 한 번(켜 두면 화면을 고칠 때마다 디자인 검사가 돌아요) | 훅이 켜졌다는 출력 |
 
 > [!TIP]

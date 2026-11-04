@@ -10,21 +10,23 @@
 ---
 config:
   flowchart:
-    wrappingWidth: 300
+    wrappingWidth: 230
 ---
 flowchart TB
+  accTitle: 한 라운드의 두뇌 흐름
+  accDescr: 요청이 prokit-dev-cycle로 들어가 요구 명확화, 계획, 계획 리뷰, 구현, 디버깅, 리뷰, 지적 처리, QA, 검증, 완료 기록을 거쳐 사용자 확인과 audit으로 끝나요. 점선 단계는 케이스나 두뇌에 따라 있을 때만 해요.
   R["요청<br/>“할 일에 마감일을 붙여줘”"] --> DC["prokit-dev-cycle<br/>케이스 판정 · 대조표 열기"]
-  DC --> S1["요구 명확화<br/>+ 두뇌의 요구 스킬 · 간결성 사다리"]
-  S1 --> S2["계획<br/>+ 두뇌의 계획 스킬 · 계획 간결성 기준"]
+  DC --> S1["요구 명확화<br/>+ 두뇌의 요구 스킬<br/>· 간결성 사다리"]
+  S1 --> S2["계획<br/>+ 두뇌의 계획 스킬<br/>· 계획 간결성 기준"]
   S2 --> PR["계획 리뷰<br/>prokit-reviewer(plan)"]
   PR --> S3["구현<br/>수행 에이전트에 위임<br/>+ 위임 지시에 두뇌의 구현 스킬"]
   S3 --> S4["디버깅(C)<br/>+ 두뇌의 디버깅 스킬"]
-  S4 --> RV["리뷰<br/>prokit-reviewer(code) 게이트<br/>+ 과설계 방지 보완 검토 · 두뇌의 리뷰 관점"]
+  S4 --> RV["리뷰<br/>prokit-reviewer(code) 게이트<br/>+ 과설계 방지 보완 검토<br/>+ 두뇌의 리뷰 관점"]
   RV --> FX["지적 처리<br/>다시 확인한 지적만 반영"]
   FX --> QA["QA(F)<br/>+ 두뇌의 QA 스킬"]
   QA --> V["검증<br/>prokit-verify + 두뇌의 검증 스킬"]
-  V --> DN["완료 기록<br/>+ 두뇌의 스펙 보관 · 배운 것 기록"]
-  DN --> AU["사용자 확인 · audit · close<br/>증거의 스킬 이름과 읽은 기록 대조"]
+  V --> DN["완료 기록<br/>+ 두뇌의 스펙 보관<br/>· 배운 것 기록"]
+  DN --> AU["사용자 확인 · audit · close<br/>증거의 스킬 이름과<br/>읽은 기록 대조"]
   classDef opt stroke-dasharray: 5 5
   class S4,QA,DN opt
 ```
@@ -34,32 +36,40 @@ flowchart TB
 
 ## 구조
 
-`prokit-dev-cycle`이 `.dev-cycle.json`에 적힌 구성을 읽고, 단계 행마다 어느 파일의 방법을 쓸지 정해요. 메인 세션이 그 스킬을 부르거나 위임 지시에 넣고, 쓴 스킬 이름은 대조표 증거로 모여 audit이 훅 기록과 대조해요. 점선 상자는 고른 구성에 따라 있을 때만 쓰는 선택이에요.
+`prokit-dev-cycle`이 `.dev-cycle.json`에 적힌 구성을 읽고, 단계 행마다 어느 파일의 방법을 쓸지 정해요. 메인 세션이 그 스킬을 부르거나 위임 지시에 넣고, 쓴 스킬 이름은 대조표 증거로 모여 audit이 훅 기록과 대조해요. 점선 테두리는 고른 구성에 따라 있을 때만 쓰는 선택이에요.
 
 ```mermaid
 ---
 config:
   flowchart:
-    wrappingWidth: 190
+    wrappingWidth: 150
+    rankSpacing: 30
 ---
 flowchart TB
+  accTitle: 스킬 구성이 읽히는 구조
+  accDescr: dev-cycle.json의 구성을 prokit-dev-cycle이 읽어 두뇌 파일과 기본 절차를 정하고, 메인 세션이 일을 맡기고 검토해요. 결과는 대조표 증거로 모여 audit이 기록과 대조해요. 점선 테두리는 고른 구성에 따라 있을 때만 쓰는 곳이에요.
   CFG[".dev-cycle.json<br/>brain · simplicity"] --> DC["prokit-dev-cycle<br/>대조표 단계 행"]
-  DC --> BF["두뇌 파일<br/>brains/두뇌.md<br/>맡는 단계의 스킬<br/>금지 · 에이전트"]
-  DC --> PRT["process-routing.md<br/>기본 칸 · 간결성 규칙<br/>과설계 방지 역할 표"]
-  BF --> MAIN["메인 세션<br/>단계 행마다 스킬 부르기<br/>위임 · 지적 처리"]
+  DC --> BF["두뇌 파일<br/>brains/두뇌.md"]
+  DC --> PRT["process-routing.md"]
+  BF ~~~ PRT
+  BF --> MAIN["메인 세션<br/>스킬 부르기 · 위임<br/>지적 처리"]
   PRT --> MAIN
-  MAIN --> IMP["수행 에이전트<br/>구현"]
-  MAIN --> SIM["과설계 방지 리뷰<br/>ponytail-review 등"]
-  MAIN --> REV["prokit-reviewer<br/>plan · code 게이트"]
-  MAIN --> BA["두뇌 에이전트<br/>읽기 전용 보완 검토"]
-  BA --> REV
-  IMP --> EV["대조표 증거<br/>사용: 스킬 · 반영 a, 기각 b"]
-  SIM --> EV
-  REV --> EV
-  EV --> AU["dev-cycle audit<br/>증거의 스킬 이름과<br/>훅이 남긴 읽은 기록 대조"]
+  MAIN --> W
+  subgraph W["일을 맡기고 검토하는 곳"]
+    IMP["수행 에이전트<br/>구현"]
+    SIM["과설계 방지<br/>리뷰"]
+    BA["두뇌 에이전트<br/>읽기 전용 검토"]
+    REV["prokit-reviewer<br/>plan · code<br/>게이트"]
+    IMP ~~~ SIM ~~~ BA
+    BA --> REV
+  end
+  W --> EV["대조표 증거<br/>사용: 스킬<br/>반영 a, 기각 b"]
+  EV --> AU["dev-cycle audit<br/>스킬 이름과<br/>읽은 기록 대조"]
   classDef opt stroke-dasharray: 5 5
   class SIM,BA opt
 ```
+
+수행 에이전트, 과설계 방지 리뷰, `prokit-reviewer`가 낸 결과가 대조표 증거로 모여요. 두뇌 에이전트의 검토는 `prokit-reviewer`로 이어져요.
 
 | 파일 | 하는 일 |
 |---|---|
@@ -77,15 +87,20 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 240
+    wrappingWidth: 160
+    rankSpacing: 30
 ---
 flowchart TB
+  accTitle: 단계마다 방법 정하기
+  accDescr: 단계 행에서 그 단계를 맡는 두뇌가 있으면 첫 두뇌의 스킬을 써요. 없으면 설치된 추가 스킬을, 그것도 없으면 내장 절차를 써요. 두뇌 스킬을 쓸 수 없으면 사유를 적고 막혀요. 점선은 그때만 있는 길이에요.
   ROW["단계 행<br/>예: 계획 단계"] --> Q1(["목록 순서에서<br/>이 단계를 맡는<br/>두뇌가 있나요"])
   Q1 -->|"있어요"| B["그 첫 두뇌의 스킬<br/>사용: 스킬 이름"]
   Q1 -->|"없어요"| Q2(["이 단계를 맡는<br/>추가 스킬이<br/>설치됐나요"])
+  B -->|"쓸 수 없으면"| BL["blocked: 사유"]
+  BL ~~~ Q2
   Q2 -->|"있어요"| M["mattpocock 추가 스킬<br/>사용: 스킬(추가 스킬)"]
   Q2 -->|"없어요"| D["기본 칸(내장 절차)<br/>사용: 내장(단계): 사유"]
-  B -->|"쓸 수 없으면"| BL["blocked: 사유"]
+  M ~~~ D
   classDef opt stroke-dasharray: 5 5
   class BL opt
 ```
@@ -110,7 +125,7 @@ flowchart TB
 
 ## 두뇌마다 단계에서 하는 일
 
-두뇌가 맡는 단계만 그렸어요. 이름은 Claude Code에서 부르는 이름이고 플러그인 접두어(`superpowers:` 등)는 뺐어요. 다른 도구에서 쓰는 이름은 설치된 프로젝트의 `brains/<두뇌>.md`에 있어요. 점선 상자는 고른 추가 스킬이 있거나 마무리 점검처럼 필요할 때만 써요.
+두뇌가 맡는 단계만 그렸어요. 이름은 Claude Code에서 부르는 이름이고 플러그인 접두어(`superpowers:` 등)는 뺐어요. 다른 도구에서 쓰는 이름은 설치된 프로젝트의 `brains/<두뇌>.md`에 있어요. 점선 테두리는 고른 추가 스킬이 있거나 마무리 점검처럼 필요할 때만 써요.
 
 ### 진행 규율: superpowers와 agent-skills
 
@@ -120,24 +135,24 @@ superpowers는 설계 합의, 계획, 테스트 먼저, 작업별 리뷰를 강�
 ---
 config:
   flowchart:
-    wrappingWidth: 240
+    wrappingWidth: 200
 ---
 flowchart TB
-  subgraph AS["agent-skills"]
-    AS1["요구 명확화<br/>spec-driven-development"] --> AS2["계획<br/>planning-and-task-breakdown"]
-    AS2 --> AS3["구현<br/>incremental-implementation<br/>+ test-driven-development"]
-    AS3 --> AS4["디버깅(C)<br/>debugging-and-error-recovery"]
-    AS4 --> AS5["리뷰 관점<br/>code-review-and-quality<br/>security-and-hardening<br/>performance-optimization"]
-    AS5 --> AS6["QA 보조<br/>browser-testing-with-devtools"]
-    AS6 --> AS7["마무리 점검<br/>shipping-and-launch"]
-  end
-  subgraph SP["superpowers"]
-    SP1["요구 명확화<br/>brainstorming"] --> SP2["계획<br/>writing-plans"]
-    SP2 --> SP3["구현<br/>subagent-driven-development<br/>+ test-driven-development"]
-    SP3 --> SP4["디버깅(C)<br/>systematic-debugging"]
-    SP4 --> SP5["리뷰 지적 처리<br/>receiving-code-review"]
-    SP5 --> SP6["검증<br/>verification-before-completion<br/>+ prokit-verify"]
-  end
+  accTitle: agent-skills와 superpowers
+  accDescr: agent-skills는 요구 명확화부터 마무리 점검까지, superpowers는 요구 명확화부터 검증까지 단계마다 쓰는 스킬을 보여 줘요. 점선 단계는 필요할 때만 해요.
+  AS0(["agent-skills"]) --> AS1
+  AS1["요구 명확화<br/>spec-driven-development"] --> AS2["계획<br/>planning-and-task-breakdown"]
+  AS2 --> AS3["구현<br/>incremental-implementation<br/>+ test-driven-development"]
+  AS3 --> AS4["디버깅(C)<br/>debugging-and-error-recovery"]
+  AS4 --> AS5["리뷰 관점<br/>code-review-and-quality<br/>security-and-hardening<br/>performance-optimization"]
+  AS5 --> AS6["QA 보조<br/>browser-testing-with-devtools"]
+  AS6 --> AS7["마무리 점검<br/>shipping-and-launch"]
+  AS7 ~~~ SP0(["superpowers"])
+  SP0 --> SP1["요구 명확화<br/>brainstorming"] --> SP2["계획<br/>writing-plans"]
+  SP2 --> SP3["구현<br/>subagent-driven-development<br/>+ test-driven-development"]
+  SP3 --> SP4["디버깅(C)<br/>systematic-debugging"]
+  SP4 --> SP5["리뷰 지적 처리<br/>receiving-code-review"]
+  SP5 --> SP6["검증<br/>verification-before-completion<br/>+ prokit-verify"]
   classDef opt stroke-dasharray: 5 5
   class AS7 opt
 ```
@@ -150,22 +165,22 @@ pstack(Claude Code만)은 `poteto-mode`가 일에 맞는 플레이북을 골라 
 ---
 config:
   flowchart:
-    wrappingWidth: 240
+    wrappingWidth: 200
 ---
 flowchart TB
-  subgraph MP["mattpocock"]
-    MP1["요구 명확화<br/>grilling(늘 설치)"] --> MP2["계획<br/>codebase-design · prototype<br/>research"]
-    MP2 --> MP3["구현<br/>tdd"]
-    MP3 --> MP4["디버깅(C)<br/>diagnosing-bugs"]
-    MP4 --> MP5["리뷰 관점<br/>code-review"]
-    MP5 --> MP6["인계<br/>handoff · pr"]
-  end
-  subgraph PS["pstack"]
-    PS1["요구 확인<br/>in-your-own-words"] --> PS2["계획<br/>poteto-mode 플레이북<br/>+ architect · how"]
-    PS2 --> PS3["구현<br/>플레이북의 구현 단계<br/>+ tdd · typescript-best-practices"]
-    PS3 --> PS4["디버깅(C)<br/>Bug fix · Perf 플레이북<br/>+ benchmark-checklist"]
-    PS4 --> PS5["리뷰 관점<br/>interrogate · blast-radius"]
-  end
+  accTitle: pstack과 mattpocock
+  accDescr: mattpocock은 요구 명확화부터 인계까지, pstack은 요구 확인부터 리뷰 관점까지 단계마다 쓰는 스킬을 보여 줘요. 점선은 고른 추가 스킬이 있을 때만 써요.
+  MP0(["mattpocock"]) --> MP1
+  MP1["요구 명확화<br/>grilling(늘 설치)"] --> MP2["계획<br/>codebase-design · prototype<br/>research"]
+  MP2 --> MP3["구현<br/>tdd"]
+  MP3 --> MP4["디버깅(C)<br/>diagnosing-bugs"]
+  MP4 --> MP5["리뷰 관점<br/>code-review"]
+  MP5 --> MP6["인계<br/>handoff · pr"]
+  MP6 ~~~ PS0(["pstack"])
+  PS0 --> PS1["요구 확인<br/>in-your-own-words"] --> PS2["계획<br/>poteto-mode 플레이북<br/>+ architect · how"]
+  PS2 --> PS3["구현<br/>플레이북의 구현 단계<br/>+ tdd<br/>+ typescript-best-practices"]
+  PS3 --> PS4["디버깅(C)<br/>Bug fix · Perf 플레이북<br/>+ benchmark-checklist"]
+  PS4 --> PS5["리뷰 관점<br/>interrogate · blast-radius"]
   classDef opt stroke-dasharray: 5 5
   class MP2,MP3,MP4,MP5,MP6 opt
 ```
@@ -178,20 +193,23 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 240
+    wrappingWidth: 230
 ---
 flowchart TB
+  accTitle: spec-kit과 openspec
+  accDescr: spec-kit은 원칙에서 시작해 요구 명확화, 계획, 구현, 남은 일 확인으로, openspec은 요구 명확화, 계획, 구현, 완료 기록으로 이어져요.
   subgraph SK["spec-kit"]
     SK0["원칙(프로젝트당 한 번)<br/>/speckit-constitution"] --> SK1["요구 명확화<br/>/speckit-specify<br/>/speckit-clarify"]
-    SK1 --> SK2["계획<br/>/speckit-plan · /speckit-tasks<br/>/speckit-checklist<br/>/speckit-analyze"]
+    SK1 --> SK2["계획<br/>/speckit-plan<br/>/speckit-tasks<br/>/speckit-checklist<br/>/speckit-analyze"]
     SK2 --> SK3["구현<br/>/speckit-implement"]
     SK3 --> SK4["남은 일 확인<br/>/speckit-converge"]
   end
   subgraph OS["openspec"]
-    OS1["요구 명확화<br/>/opsx:explore → /opsx:propose<br/>proposal · design · tasks"] --> OS2["계획<br/>design.md · tasks.md<br/>고칠 때 /opsx:update"]
+    OS1["요구 명확화<br/>/opsx:explore<br/>→ /opsx:propose<br/>proposal · design · tasks"] --> OS2["계획<br/>design.md · tasks.md<br/>고칠 때 /opsx:update"]
     OS2 --> OS3["구현<br/>/opsx:apply<br/>tasks.md를 차례로"]
     OS3 --> OS4["완료 기록<br/>/opsx:archive<br/>openspec/specs/에 반영"]
   end
+  SK ~~~ OS
 ```
 
 ### 제품·장기 실행·학습: gstack, oh-my, compound-engineering
@@ -205,6 +223,8 @@ config:
     wrappingWidth: 200
 ---
 flowchart TB
+  accTitle: oh-my와 gstack
+  accDescr: oh-my는 요구 명확화부터 검증까지, gstack은 제품 판단 요구부터 QA까지 단계마다 쓰는 스킬을 보여 줘요.
   subgraph OM["oh-my"]
     OM1["요구 명확화<br/>deep-interview"] --> OM2["계획<br/>omc-plan · ralplan"]
     OM2 --> OM3["구현<br/>수행 에이전트 위임<br/>큰 병렬은 team<br/>반복은 ralph"]
@@ -218,6 +238,7 @@ flowchart TB
     GS3 --> GS4["리뷰 관점<br/>review · design-review<br/>cso"]
     GS4 --> GS5["QA<br/>qa-only(보고만)"]
   end
+  OM ~~~ GS
 ```
 
 ```mermaid
@@ -227,6 +248,8 @@ config:
     wrappingWidth: 200
 ---
 flowchart TB
+  accTitle: compound-engineering 단계
+  accDescr: compound-engineering은 요구 명확화, 계획, 구현, 디버깅, 리뷰 관점, QA 보조를 거쳐 배운 것 기록으로 이어져요.
   subgraph CE["compound-engineering"]
     CE1["요구 명확화<br/>/ce-brainstorm"] --> CE2["계획<br/>/ce-plan<br/>docs/solutions/ 읽기"]
     CE2 --> CE3["구현<br/>/ce-work"]
@@ -255,20 +278,21 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 240
+    wrappingWidth: 190
+    rankSpacing: 30
 ---
 flowchart TB
-  Q0(["지금 필요한가요"]) -->|"아니요"| N0["만들지 않아요<br/>스펙의 만들지 않는 것에<br/>뺀 것과 다시 넣을 조건"]
-  Q0 -->|"예"| Q1(["이미 코드에 있나요"])
-  Q1 -->|"아니요"| Q2(["표준 라이브러리에 있나요"])
-  Q2 -->|"아니요"| Q3(["플랫폼 기능에 있나요"])
-  Q3 -->|"아니요"| Q4(["설치된 의존성에 있나요"])
+  accTitle: 늘 지키는 사다리
+  accDescr: 필요한지, 코드에 있는지, 표준 라이브러리에 있는지, 플랫폼 기능에 있는지, 설치된 의존성에 있는지를 차례로 물어요. 첫 질문이 아니요면 만들지 않아요. 뒤 네 질문 가운데 하나라도 예면 있는 것을 쓰고, 뒤 질문이 모두 아니요일 때만 새 코드를 써요.
+  Q0(["지금 필요한가요<br/>아니요: 만들지 않아요"]) -->|"예"| Q1(["이미 코드에 있나요<br/>예: 그대로 써요"])
+  Q1 -->|"아니요"| Q2(["표준 라이브러리에 있나요<br/>예: 그대로 써요"])
+  Q2 -->|"아니요"| Q3(["플랫폼 기능에 있나요<br/>예: 그대로 써요"])
+  Q3 -->|"아니요"| Q4(["설치된 의존성에 있나요<br/>예: 그대로 써요"])
   Q4 -->|"아니요"| NEW["새 코드<br/>가장 짧게 동작하는 해법"]
-  Q1 -->|"예"| USE["있는 것을 그대로 써요"]
-  Q2 -->|"예"| USE
-  Q3 -->|"예"| USE
-  Q4 -->|"예"| USE
 ```
+
+- 첫 질문의 답이 아니요면 만들지 않아요. 스펙의 만들지 않는 것에 뺀 것과 다시 넣을 조건을 적어요.
+- 뒤의 네 질문 가운데 하나라도 답이 예면 있는 것을 그대로 써요. 모두 아니요일 때만 새 코드를 써요.
 
 일부러 한계를 둔 단순화는 코드에 `shortcut:` 주석으로 한계와 넘으면 할 일을 적어요.
 
@@ -280,9 +304,11 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 170
+    wrappingWidth: 190
 ---
 flowchart TB
+  accTitle: caveman과 ponytail
+  accDescr: caveman은 작업 스킬, 계획 기준, 구현 diff 보완 검토, 공통화로, ponytail은 늘 켜짐, 계획 기준, 보완 검토, 공통화로 이어져요. 점선은 요청할 때만 쓰는 스킬이에요.
   subgraph CV["caveman"]
     CV1["일에 맞는 작업 스킬<br/>새 기능 lean-build<br/>버그 surgical-patch"] --> CV2["계획 기준<br/>lean-build<br/>(C는 surgical-patch)"]
     CV2 --> CV3["구현 diff 보완 검토<br/>caveman-review"]
@@ -294,6 +320,7 @@ flowchart TB
     PT3 --> PT4["F 공통화<br/>ponytail-review"]
     PT4 --> PT5["요청할 때만<br/>ponytail-audit · debt<br/>help · gain"]
   end
+  CV ~~~ PT
   classDef opt stroke-dasharray: 5 5
   class PT5 opt
 ```
@@ -302,9 +329,11 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 185
+    wrappingWidth: 200
 ---
 flowchart TB
+  accTitle: 없음과 karpathy
+  accDescr: 없음은 하네스 규칙만으로 계획 기준과 diff 검토, 공통화를 해요. karpathy는 karpathy-guidelines를 계획 기준으로 쓰고 나머지는 prokit-reviewer가 함께 봐요.
   subgraph NO["없음(기본 AI)"]
     NO1["하네스 규칙만"] --> NO2["계획 기준<br/>하네스 사다리"]
     NO2 --> NO3["구현 diff 검토<br/>prokit-reviewer(code)<br/>focus에 간결성"]
@@ -315,6 +344,7 @@ flowchart TB
     KP2 --> KP3["구현 diff 검토<br/>prokit-reviewer(code)<br/>focus에 간결성"]
     KP3 --> KP4["F 공통화<br/>prokit-reviewer(code)<br/>+ 정밀 수정 원칙"]
   end
+  NO ~~~ KP
 ```
 
 - 계획 기준은 `prokit-reviewer(plan)`이 계획을 볼 때 읽어요. 코드 diff용 보완 검토가 계획 리뷰를 대신하지 않아요.
@@ -329,21 +359,27 @@ flowchart TB
 ---
 config:
   flowchart:
-    wrappingWidth: 160
-    rankSpacing: 30
+    wrappingWidth: 200
 ---
-flowchart LR
-  Q(["리뷰 지적이 코드에서<br/>다시 확인되나요"]) -->|"아니요"| X["근거를 적고 기각"]
-  Q --> K(("예"))
-  K --> K1["정확성 · 보안<br/>데이터 손실 · 부하<br/>회귀 테스트를 먼저<br/>더하고 고쳐요"]
-  K --> K2["테스트 누락<br/>이번 diff의 로직이면<br/>테스트 하나를 더해요"]
-  K --> K3["이번 라운드가<br/>만들지 않은 문제<br/>tasks/todo.md 백로그"]
-  K --> K4["속도<br/>측정 근거가 있을 때만<br/>고치고 없으면 백로그"]
-  K --> K5["간결성<br/>이번 diff 안에서<br/>동작이 같은 것만 반영"]
+flowchart TB
+  accTitle: 리뷰 지적 처리
+  accDescr: 리뷰 지적이 코드에서 다시 확인되면 종류에 따라 이번 라운드에서 고치거나 백로그로 보내고, 확인되지 않으면 근거를 적고 기각해요.
+  Q(["리뷰 지적이 코드에서<br/>다시 확인되나요"]) -->|"예"| K
+  Q -->|"아니요"| X["근거를 적고 기각"]
+  K ~~~ X
+  subgraph K["확인된 지적의 처리"]
+    K1["정확성 · 보안<br/>데이터 손실 · 부하<br/>회귀 테스트를 먼저<br/>더하고 고쳐요"]
+    K2["테스트 누락<br/>이번 diff의 로직이면<br/>테스트 하나를 더해요"]
+    K3["이번 라운드가<br/>만들지 않은 문제<br/>tasks/todo.md 백로그"]
+    K4["속도<br/>측정 근거가 있을 때만<br/>고치고 없으면 백로그"]
+    K5["간결성<br/>이번 diff 안에서<br/>동작이 같은 것만 반영"]
+    K1 ~~~ K2 ~~~ K3 ~~~ K4 ~~~ K5
+  end
 ```
 
 ## 관련 문서
 
+- [스킬 구조 한눈에](skill-map.md)
 - [두뇌와 선택 스킬](brains.md)
 - [공식 스킬과 연결](official-skills.md)
 - [대조표와 라운드](../concepts/dev-cycle.md)
