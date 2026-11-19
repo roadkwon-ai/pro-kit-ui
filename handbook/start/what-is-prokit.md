@@ -52,7 +52,7 @@ pro-kit-ui 저장소는 새 프로젝트를 만들어 주는 생성기예요. �
 - 스타일 추천부터 `DESIGN.md`까지 이어지는 UI/UX 흐름
 - 에이전트가 쓰는 공식 스킬과 플러그인(그때의 최신판)
 - 프로젝트마다 고르는 두뇌(하나를 추천하고 여럿도 고를 수 있어요)와 과설계 방지 스킬. 고르지 않으면 지금 에이전트가 내장 절차로 진행해요([두뇌와 선택 스킬](../skills/brains.md))
-- 필요할 때 더하는 선택 스킬 묶음(`ops`, `motion`, `mobile`, `i-have-adhd`, `taste`, `landing`, `tastemaker`, `web-design-engineer`, `awwwards`, `animation`, `visual-critique`, `ui-design`)
+- 필요할 때 더하는 선택 스킬 묶음(`ops`, `motion`, `ui-sdk`, `mobile`, `i-have-adhd`, `taste`, `landing`, `tastemaker`, `web-design-engineer`, `awwwards`, `animation`, `visual-critique`, `ui-design`)
 
 ![내가 서비스 설명이나 진행 중인 프로젝트를 주면, 프로킷이 규칙 문서와 스킬, 역할 에이전트, 검사 도구를 프로젝트에 깔아 주고, 나는 증거가 남은 변경과 커밋, 배포 준비를 받아요.](assets/prokit-at-a-glance@2x.webp)
 
