@@ -16,6 +16,9 @@
 
 ## 검사와 증거
 
+- 같은 코드 지문·패키지·Vitest 설정·환경에서 공유 상태에 의존하지 않는 단위 테스트는 한 명령에 묶는다. 예를 들어 웹 패키지의 두 파일은 `pnpm dev-cycle resource run --kind verify -- pnpm --filter web exec vitest run src/lib/a.test.ts src/lib/b.test.ts --reporter=verbose`로 실행한다. 다른 패키지나 별도 초기화·격리가 필요한 테스트는 따로 실행한다.
+- 묶음 결과에는 파일 경로·테스트 전체 이름·판정과 실행·통과·실패·건너뜀 건수를 남긴다. 개별 실행을 대체할 때는 기대한 테스트가 같은 횟수만큼 실행됐는지 대조하고, 누락·실패·필수 테스트 건너뜀이 있으면 통과로 기록하지 않는다.
+
 
 - 같은 artifact·도구·조건·환경·baseline·trusted receipt가 모두 알려져 같을 때만 그 검증을 재사용한다. 하나라도 unknown이면 관련 범위를 다시 검사한다. 최초 baseline은 유효한 초기 검사가 있을 때만 생략하며, 새 사이트·layout·token·route는 관련 전체를 검사한다. dev 런타임 증거와 정적 build 증거는 서로 대신하지 않는다.
 - 재검사는 이전 검사가 실패했거나, 해당 검사 입력이 바뀌었거나, 바뀐 공유 의존성의 소비자가 있을 때 한다. stale `.next/types` 오류는 먼저 원인을 확인하고 필요한 생성물만 새로 고치며, 무관한 전체 build로 덮지 않는다.
