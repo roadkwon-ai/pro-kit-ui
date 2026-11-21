@@ -53,8 +53,8 @@ my-app/
 | `GLOSSARY.md` | 용어집. 새 용어는 라운드에서 바로 기록해요 | [dev-cycle 라운드](../concepts/dev-cycle.md) |
 | `docs/domain/project.md` | 프로젝트 소개. 화면 표 | [만든 뒤 개발하기](../start/after-create.md) |
 | `docs/adr/` | 설계 결정 기록 | |
-| `docs/dev-workflow.md` | 케이스별 대조표 행의 정본 | [케이스 A\~F·H와 대조표](../concepts/cases.md) |
-| `.dev-cycle.json` | 케이스 판정 경로, 인증 경로, 검사 명령, 화면 점수 기준 | [케이스 A\~F·H와 대조표](../concepts/cases.md) |
+| `docs/dev-workflow.md` | 케이스별 대조표 행의 정본 | [케이스 A\~F·H·L와 대조표](../concepts/cases.md) |
+| `.dev-cycle.json` | 케이스 판정 경로, 인증 경로, 검사 명령, 화면 점수 기준 | [케이스 A\~F·H·L와 대조표](../concepts/cases.md) |
 | `openspec/`, `specs/`, `.specify/` | openspec·spec-kit 두뇌를 골랐을 때만 생기는 명세 문서. 두뇌를 바꿔도 문서는 남겨요 | [두뇌와 선택 스킬](../skills/brains.md) |
 | `tasks/todo.md`, `tasks/archive/`, `tasks/evidence/` | 남은 일반 할 일·백로그와 진행 중 대조표, 날짜별 완료 기록과 색인, 스크린샷과 `ui-audit-*.md` 같은 증거(`tasks/evidence/`는 git이 무시해요) | [증거와 audit, 사용자 확인](../concepts/audit-and-confirm.md) |
 | `skills.manifest.json`, `skills-lock.json` | 설치할 스킬 목록과 설치한 판 | [설치와 업데이트 구조](../skills/install-and-update.md) |

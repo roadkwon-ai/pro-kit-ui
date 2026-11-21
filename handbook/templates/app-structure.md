@@ -32,4 +32,4 @@
 - [템플릿이 더하는 것](what-it-adds.md)
 - [prokit 스킬](../skills/prokit-skills.md)
 - [설치된 프로젝트의 폴더 구조](../reference/project-structure.md)
-- [케이스 A\~F·H와 대조표](../concepts/cases.md)
+- [케이스 A\~F·H·L와 대조표](../concepts/cases.md)

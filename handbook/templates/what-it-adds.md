@@ -21,7 +21,7 @@
 
 | 구성 | 내용 |
 |---|---|
-| dev-cycle | 작업을 케이스(A\~F·H)로 나눠요. 케이스별 대조표의 모든 행에 증거를 채워야 라운드가 끝나요(`pnpm dev-cycle …`). 설치기가 git pre-commit 훅을 걸어 라운드 없이 코드나 하네스를 커밋하지 못하게 해요 |
+| dev-cycle | 작업을 케이스(A\~F·H·L)로 나눠요. 케이스별 대조표의 모든 행에 증거를 채워야 라운드가 끝나요(`pnpm dev-cycle …`). 설치기가 git pre-commit 훅을 걸어 라운드 없이 코드나 하네스를 커밋하지 못하게 해요 |
 | 일하는 도중에 막는 훅 | Claude Code는 `.claude/settings.json`, Codex는 `.codex/hooks.json`, Antigravity는 `.agents/hooks.json`에 훅을 둬요. 열린 라운드 없이 코드나 하네스를 고치려 하면 막고, 계층 파일은 그 계층 에이전트만 고치게 해요. `pkill`처럼 이름이나 포트로 골라 프로세스를 끄는 명령도 막고(Claude Code·Codex), 부른 스킬은 `.prokit/`에 기록해서 audit이 증거와 대조해요. Antigravity는 서브에이전트가 시작될 때 세션 시작 훅(`agent-start`)으로 그 대화를 부른 이름에 묶어요([하네스 엔지니어링](../concepts/harness.md#자세히)) |
 | 문서 골격 | `AGENTS.md`(맨 앞에 개발 원칙: 계획, 서브에이전트, 교훈 기록, 완료 전 확인. 이어서 공통 규칙), `CLAUDE.md`(`@AGENTS.md`로 같은 지침을 읽어요), `GLOSSARY.md`, `docs/adr/`, `docs/domain/project.md`, `docs/dev-workflow.md` |
 | 개발 자원 보호 | 캐시·Next 출력·설치 패키지·Python 실행환경·관리 임시 폴더를 감시해요. 새 프로젝트의 개발·빌드 명령에 연결하고, 이미 프로킷을 설치한 프로젝트는 H 라운드에서 반영해요([위임과 자원 관리](../concepts/delegation-and-resources.md)) |

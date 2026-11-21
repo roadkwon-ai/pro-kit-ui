@@ -3,17 +3,41 @@
 ego-browser는 ego lite 앱(macOS)이 설치하는 CLI와 전역 `ego-browser` 스킬이다. API 문법은 그 스킬을 따른다. 여기에는 dev-cycle 증거용 스크린샷과 QA 흐름 절차만 적는다.
 
 ## 준비
-- `command -v ego-browser`가 없으면 이 문서 대신 `agent-browser`와 `next-dev-loop`의 브라우저 절차를 쓰고, 증거에 `대안: agent-browser (ego-browser 없음)`을 적는다.
-- `pnpm dev`(web 포트 3001)를 먼저 띄운다. 띄우기 전에 `lsof -nP -iTCP:3001 -sTCP:LISTEN`으로 포트를 본다. 이 프로젝트의 개발 서버(`lsof -a -p <PID> -d cwd -Fn`이 이 프로젝트 안)면 그대로 쓴다. 다른 프로세스면 끄지 않고 사용자에게 알려 정리를 부탁한다. 다른 포트로 피하지 않는다. 인증 주소(`BETTER_AUTH_URL`)가 3001이라 로그인 흐름이 깨진다. 직접 띄운 서버는 띄울 때 적은 PID의 프로세스 그룹만 끈다. `pkill`처럼 이름이나 포트로 골라 끄면 같은 기기의 다른 프로젝트 서버까지 꺼진다.
+- `command -v ego-browser`가 없으면 `agent-browser`로 확인하고, 증거에 `대안: agent-browser (ego-browser 없음)`을 적는다.
+- 개발 진단에만 `pnpm dev`(web 포트 3001)를 쓴다. 빌드 결과 비교는 위임 지시에 지정된 기존 로컬 빌드 서버를 쓴다. 개발 서버를 띄우기 전에 `lsof -nP -iTCP:3001 -sTCP:LISTEN`으로 포트를 본다. 이 프로젝트의 개발 서버(`lsof -a -p <PID> -d cwd -Fn`이 이 프로젝트 안)면 그대로 쓴다. 다른 프로세스면 끄지 않고 사용자에게 알려 정리를 부탁한다. 다른 포트로 피하지 않는다. 인증 주소(`BETTER_AUTH_URL`)가 3001이라 로그인 흐름이 깨진다. 직접 띄운 서버는 띄울 때 적은 PID의 프로세스 그룹만 끈다. `pkill`처럼 이름이나 포트로 골라 끄면 같은 기기의 다른 프로젝트 서버까지 꺼진다.
 - ego lite 창이 화면에 보여야 한다. 창이 최소화되었거나 다른 데스크톱에 있으면 스크린샷이 `CDP request timed out: Page.captureScreenshot`으로 끝난다. 그러면 사용자에게 창을 보이게 해 달라고 요청하고, 그럴 수 없으면 agent-browser로 바꾸고 `대안: agent-browser (ego-browser 창 표시 불가)`를 적는다.
 - ego-browser는 사용자의 실제 브라우저 프로필(로그인 세션·쿠키)로 동작한다.
-  - `http://localhost:3001`만 연다. 다른 사이트로 이동하지 않는다.
+  - 위임 지시에 지정된 로컬 서버의 출처만 연다. 개발 서버의 기본 출처는 `http://localhost:3001`이다.
   - 로컬 앱에는 테스트 전용 이메일 계정으로 가입·로그인한다. 소셜·OAuth 로그인은 쓰지 않는다(사용자의 실제 계정이 연결된다). 비밀번호는 증거에 적지 않는다.
   - 되돌릴 수 없는 버튼(탈퇴, 삭제, 결제, 발송)은 화면에 보이는 계정이 테스트 계정인지 확인한 뒤에만 누른다. 이 프로필에는 사용자 본인의 로컬 앱 세션이 남아 있을 수 있다. 확인하지 못하면 누르지 않고 사용자에게 맡긴다.
   - 쿠키·저장소를 지우지 않는다. 지우기는 프로필 전체에 닿을 수 있다. 로그인 상태를 바꿔야 하면 앱의 로그아웃을 쓴다.
 
 ## 검증 증거 묶음
-화면 라운드의 런타임 확인은 묶음을 한 번 찍는다. 디자인 리뷰·감사·리뷰어·재확인이 이 묶음을 읽으므로 각자 다시 찍지 않는다(규칙은 `prokit-dev-cycle`의 `references/execution-efficiency.md` "검증 증거 묶음").
+L 라운드는 바뀐 요소가 보이는 폭과 상태를 각각 1\~2개 확인하고 오류 예산 수를 기록한다. 표준 묶음은 찍지 않는다.
+
+브라우저를 열기 전 실행 모드를 확인한다. 서버가 준비된 뒤 대상 URL의 응답을 확인하고, 인증이 필요한 경로라면 로그인 리다이렉트 등 예상 응답을 구분한다.
+
+테스트 데이터와 브라우저 상태는 같은 출처에서 준비한다. 상태 준비용 URL을 쓸 때는 브라우저에서 열기 전에 리다이렉트를 따라가지 않고 응답을 확인한다. 대상 화면으로 자동 이동하지 않는 경로에서 상태를 준비한 뒤 대상 화면을 연다. 그런 경로가 없으면 대상 화면의 첫 요청이 끝난 뒤 상태를 바꾼다. 목표 뷰포트와 대화상자 등 대상 상태·치수가 전환 뒤 안정된 것을 확인하고 촬영한다. 처음 발견한 오류와 조사·재확인 결과는 구분해 남기고, 재현되지 않은 오류는 원인 미확인으로 보고한다.
+
+직접 조작할 때는 현재 스냅샷에서 역할과 접근성 이름으로 대상을 찾는다. 대화상자는 실제 요소의 표시 여부와 기대한 상태, 뷰포트와 요소의 치수를 확인한다. 화면 전체의 문구를 차례로 기다리는 방식은 길어질 수 있으므로 각 조건에 짧은 대기 한도를 정한다. 한도를 넘으면 스냅샷을 새로 찍고 관련 요청의 응답이나 진행 상태를 확인한 뒤 이어 간다.
+
+닫힌 상태를 찍을 때는 촬영할 뷰포트에서 대화상자와 가림막이 화면에서 사라지고 뒤쪽 화면의 치수가 안정됐는지 확인한다. 포커스 복귀가 검사 범위에 들면 기대한 요소로 돌아온 것도 확인한 뒤 촬영한다.
+
+스타일과 치수를 잴 때는 같은 문구가 부모와 자식에 함께 잡힐 수 있다. 변경 diff의 태그·클래스나 실제 역할을 대조해 바뀐 요소를 찾고, 측정값과 함께 어느 요소를 쟀는지 한 번에 남긴다.
+
+여러 줄 JavaScript나 따옴표가 겹치는 식은 확인에 쓰던 세션으로 `agent-browser eval --stdin`에 넘긴다. 아래에서 `"$session"`은 현재 세션 이름이다.
+
+```bash
+agent-browser --session "$session" eval --stdin <<'JS'
+({
+  width: innerWidth,
+  height: innerHeight,
+  horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
+})
+JS
+```
+
+대조표의 런타임 확인 행에 검증 증거 묶음이 있으면 한 번 찍는다. B와 F, B 검증 행을 상속한 화면 버그 C도 이 절차를 따른다. 디자인 리뷰·감사·리뷰어·재확인이 이 묶음을 읽으므로 각자 다시 찍지 않는다(규칙은 `prokit-dev-cycle`의 `references/execution-efficiency.md` "검증 증거 묶음").
 
 ```bash
 pnpm dev-cycle packet capture http://localhost:3001/<경로> tasks/evidence/<라운드 제목>/packet-1
@@ -25,7 +49,7 @@ pnpm dev-cycle packet capture http://localhost:3001/<경로> tasks/evidence/<라
 - agent-browser(깨끗한 프로필)로 1440·1024·768·390·320 너비와 라이트·다크마다 첫 화면(`<너비>-<테마>.png`)과 전체 쪽(`-full.png`)을 찍는다. 같은 화면에서 가로 넘침과 원인 요소, 터치 영역(24px 미만 목록, 44px 미만 수), 글자 대비(WCAG AA 실패 목록, 잴 수 없는 수: 그림·그라데이션·흐림 위 글자, 안 보이는 수 `hidden`: 투명하거나 나타나기 전인 글자), 콘솔 오류·경고와 잡히지 않은 오류를 잰다. 1440·390에서는 처음부터 Tab을 30번 눌러 포커스 순서와 포커스 표시가 없는 수를, 끝으로 `/_next/mcp`의 `get_errors`를 남긴다. 결과는 `measure.json`이고 명령이 바로 봉인한다.
 - 출력 `packet: <경로> sha256=<값>`을 보고와 증거에 그대로 옮긴다. `표준에서 빠진 뷰포트`·`재지 못한 검사` 줄이 나오면 함께 보고한다.
 - 한 묶음은 16\~20초 걸린다(Better-T-Stack 기본 화면 실측). 띄운 세션은 끝나면 닫는다. `--session`으로 준 세션은 닫지 않는다.
-- 찍은 뒤 `measure.json`에서 결함 후보(가로 넘침 `over: true`, `contrast.fail`, `touchTargets.under24`, `console`, `tabOrder.noRing`, `get_errors`의 오류)을 오류 예산과 함께 보고한다. 데스크톱과 휴대폰 너비의 스크린샷은 이미지로 열어 기대한 상태인지 본다. 연 것만 증거에 적는다(아래 audit 경고). 개발 전용 요소(Next 개발 표시 `nextjs-portal`, TanStack Query devtools 버튼)는 결함으로 세지 않는다.
+- 찍은 뒤 `measure.json`에서 결함 후보(가로 넘침 `over: true`, `contrast.fail`, `touchTargets.under24`, `console`, `tabOrder.noRing`, `get_errors`의 오류)을 오류 예산과 함께 보고한다. `contrast.hidden`이 0보다 크면 그 수와, 전체 쪽 스크린샷에서 글자가 비어 보이는 자리를 함께 보고한다(끝내 나타나지 않는 등장 모션이면 실제 글자가 대비 검사에서 빠진다). 데스크톱과 휴대폰 너비의 스크린샷은 이미지로 열어 기대한 상태인지 본다. 연 것만 증거에 적는다(아래 audit 경고). 개발 전용 요소(Next 개발 표시 `nextjs-portal`, TanStack Query devtools 버튼)는 결함으로 세지 않는다.
 - 측정은 Chromium 흉내라 Safari 차이와 hover·메뉴·폼 입력·애니메이션 중간 상태는 담지 않는다. 그것은 평가자가 필요할 때 브라우저로 직접 본다.
 - 묶음 밖에서 너비를 정해 볼 때는 너비와 높이를 따로 넘긴다: `agent-browser set viewport 390 844`. `"390 844"`처럼 따옴표로 하나로 묶으면 기본 너비로 열린다. 재기 전에 `agent-browser eval 'innerWidth'`가 그 너비인지 본다. critique B처럼 평가자가 직접 브라우저를 열 때도 위임 지시에 이 두 줄을 넣는다.
 - agent-browser가 없으면 명령이 exit 2로 알린다. 설치는 사용자가 요청할 때 한다. 그동안은 아래 ego-browser 촬영으로 desktop·mobile만 찍고, 증거에 `묶음 없음: agent-browser 없음`을 적는다. 다른 도구로 같은 꼴의 `measure.json`과 스크린샷을 만들었으면 `pnpm dev-cycle packet seal <폴더>`로 봉인한다(재지 못한 칸은 `{"skipped": "사유"}`).

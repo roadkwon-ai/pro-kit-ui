@@ -123,5 +123,5 @@ UI 스킬 선택(`--ui-skill`, hallmark)을 쓰려면 H 라운드에서 템플�
 ## 관련 문서
 
 - [설치기와 옵션](installer.md)
-- [케이스 A\~F·H와 대조표](../concepts/cases.md)
+- [케이스 A\~F·H·L와 대조표](../concepts/cases.md)
 - [설치와 업데이트 구조](../skills/install-and-update.md)

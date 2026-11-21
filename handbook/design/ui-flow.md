@@ -348,5 +348,5 @@ flowchart TB
 - [화면 디자인 보조 조합](../skills/optional-bundles.md#화면-디자인-보조-조합)
 - [완성팩 활용과 담당 구분](preset-publication.md)
 - [화면만 프로젝트와 HTML 내보내기](screen-only.md)
-- [케이스 A\~F·H와 대조표](../concepts/cases.md)
+- [케이스 A\~F·H·L와 대조표](../concepts/cases.md)
 - [공식 스킬과 연결](../skills/official-skills.md)

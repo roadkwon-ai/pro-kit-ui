@@ -4,6 +4,8 @@
 
 ## 묶음 목록
 
+처음 프로젝트를 만들 때도 이 목록에서 필요한 묶음을 직접 고를 수 있어요. `prokit-init`이 PRD에 맞는 항목에 추천을 표시하고, 내가 선택하거나 맡긴 항목을 설치해요.
+
 | 묶음 | 이럴 때 | 스킬 | 관련 prokit 스킬 |
 |---|---|---|---|
 | `motion` | 화면 전환이나 공유 요소 애니메이션(React `<ViewTransition>`)을 만들 때 | `vercel-react-view-transitions` | `prokit-ui` |

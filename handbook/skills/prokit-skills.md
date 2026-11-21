@@ -136,7 +136,7 @@ flowchart TB
 - **에이전트**: 스킬과 별개로 프로젝트 에이전트가 5개예요. `prokit-*` 스킬은 일을 나누고 맡기고 검수하고, 공식 스킬로 하는 일은 전문 에이전트가 해요. 화면은 `prokit-ui-builder`, 실행 확인은 `prokit-runtime-checker`, 하네스와 계층 밖 파일은 `prokit-implementer`가 맡고, 리뷰는 `prokit-reviewer`(내장 리뷰가 없는 전문 산출물만 `specialist-reviewer`)가 해요([에이전트 역할](../concepts/agent-roles.md)).
 - **Next.js는 설치된 판의 문서부터**: `node_modules/next/dist/docs`를 먼저 읽게 해요. 에이전트가 학습한 옛 API를 그대로 쓰는 일을 줄이려는 거예요.
 - **효과**: 같은 요청을 스킬이 있을 때와 없을 때로 나눠 체크 항목으로 채점했어요. 스킬이 있을 때 `prokit-dev-cycle` 93%(없을 때 27%), `prokit-ui` 100%(12%)였어요. 
-- **스킬을 고치는 일**: `prokit-*` 스킬을 바꾸는 작업은 케이스 H 라운드로 하고, 스킬 본문을 바꿨으면 skill-creator eval을 다시 돌려요([케이스 A\~F·H와 대조표](../concepts/cases.md)).
+- **스킬을 고치는 일**: `prokit-*` 스킬을 바꾸는 작업은 케이스 H 라운드로 하고, 스킬 본문을 바꿨으면 skill-creator eval을 다시 돌려요([케이스 A\~F·H·L와 대조표](../concepts/cases.md)).
 
 ## 관련 문서
 
